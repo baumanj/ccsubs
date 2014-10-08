@@ -7,4 +7,5 @@ class User < ActiveRecord::Base
   before_save do
     self.email.downcase!
   end
+  #has_secure_password
 end
