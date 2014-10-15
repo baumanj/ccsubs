@@ -5,7 +5,8 @@ class User < ActiveRecord::Base
   validates :email, presence: true, format: { with: VALID_EMAIL_REGEX },
     uniqueness: { case_sensitive: false }
   has_secure_password
-  validates :password, length: { minimum: 6 }
+  # allow_nil so that users can edit their profile w/o entering password
+  validates :password, length: { minimum: 6 }, allow_nil: true
 
   before_create :create_remember_token
 
