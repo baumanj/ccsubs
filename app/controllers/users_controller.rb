@@ -1,4 +1,5 @@
 class UsersController < ApplicationController
+  before_action :require_signin, except: [:new, :create]
   def new
     @user = User.new
   end
@@ -13,7 +14,7 @@ class UsersController < ApplicationController
       render 'new' # Try again
     end
   end
-  
+
   def edit
     @user = User.find(params[:id])
   end
@@ -43,4 +44,7 @@ class UsersController < ApplicationController
                      :password_confirmation)
     end
 
+    def require_signin
+      redirect_to signin_path, notice: "You must sign in to do that." unless signed_in?
+    end
 end
