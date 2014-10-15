@@ -1,5 +1,7 @@
 class UsersController < ApplicationController
   before_action :require_signin, except: [:new, :create]
+  before_action :check_authorization
+
   def new
     @user = User.new
   end
@@ -45,6 +47,14 @@ class UsersController < ApplicationController
     end
 
     def require_signin
-      redirect_to signin_path, notice: "You must sign in to do that." unless signed_in?
+      unless signed_in?
+        redirect_to signin_path, notice: "You must sign in to do that."
+      end
+    end
+    
+    def check_authorization
+      unless params[:id].to_i == current_user.id
+        redirect_to root_url, notice: "You don't have the rights to do that."
+      end
     end
 end
