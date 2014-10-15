@@ -51,9 +51,9 @@ class UsersController < ApplicationController
         redirect_to signin_path, notice: "You must sign in to do that."
       end
     end
-    
+
     def check_authorization
-      unless params[:id].to_i == current_user.id
+      if params.include?(:id) && params[:id].to_i != current_user.id
         redirect_to root_url, notice: "You don't have the rights to do that."
       end
     end
