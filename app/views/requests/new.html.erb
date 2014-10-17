@@ -1,0 +1,16 @@
+<% provide(:title, 'New request') %>
+<h1>New Request</h1>
+
+<div class="row">
+  <div class="span6 offset3">
+    <%= form_for(@request) do |f| %>
+      <!-- error messages -->
+
+      <%= f.label :start %>
+      <%= f.datetime_local_field :start %>
+
+      <%= f.submit "Create my request", class: "btn btn-large btn-primary" %>
+    <% end %>
+  </div>
+</div>
+

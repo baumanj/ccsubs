@@ -50,24 +50,4 @@ class UsersController < ApplicationController
       params.require(:user).permit(:name, :email, :password,
                      :password_confirmation)
     end
-
-    def require_signin
-      unless signed_in?
-        session[:pre_signin_url] = request.url
-        redirect_to signin_path, notice: "You must sign in to do that."
-      end
-    end
-
-    def check_authorization
-      if params.include?(:id) && params[:id].to_i != current_user.id &&
-        !current_user.admin?
-        redirect_to root_url, notice: "You don't have the rights to do that."
-      end
-    end
-
-    def require_admin
-      unless current_user.admin?
-        redirect_to root_url, notice: "You don't have the rights to do that."
-      end
-    end
 end
