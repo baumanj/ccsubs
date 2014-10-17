@@ -48,6 +48,7 @@ class UsersController < ApplicationController
 
     def require_signin
       unless signed_in?
+        session[:pre_signin_url] = request.url
         redirect_to signin_path, notice: "You must sign in to do that."
       end
     end
