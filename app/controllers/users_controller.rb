@@ -1,6 +1,7 @@
 class UsersController < ApplicationController
   before_action :require_signin, except: [:new, :create]
   before_action :check_authorization
+  before_action :require_admin, except: [:new, :create, :edit, :show]
 
   def new
     @user = User.new
@@ -58,7 +59,14 @@ class UsersController < ApplicationController
     end
 
     def check_authorization
-      if params.include?(:id) && params[:id].to_i != current_user.id
+      if params.include?(:id) && params[:id].to_i != current_user.id &&
+        !current_user.admin?
+        redirect_to root_url, notice: "You don't have the rights to do that."
+      end
+    end
+
+    def require_admin
+      unless current_user.admin?
         redirect_to root_url, notice: "You don't have the rights to do that."
       end
     end
