@@ -7,14 +7,16 @@ class RequestsController < ApplicationController
   end
 
   def create
-    # @user = User.new(user_params)
-    # if @user.save
-    #   # sign_in @user # If we want to sign in upon sign-up
-    #   flash[:success] = "Welcome, #{@user.name}"
-    #   redirect_to @user
-    # else
-    #   render 'new' # Try again
-    # end
+    @request = Request.new(request_params)
+    @request.start = DateTime.parse(params[:request][:start])
+    @request.user = current_user
+    if @request.save
+      flash[:success] = "Request created"
+      redirect_to @request
+    else
+      @errors = @request.errors
+      render 'new' # Try again
+    end
   end
 
   def edit
@@ -36,17 +38,16 @@ class RequestsController < ApplicationController
   end
 
   def index
-    # @users = User.all
+    @requests = Request.where("start > ?", DateTime.now)
   end
 
   def show
-    # @user = User.find(params[:id])
+    @request = Request.find(params[:id])
   end
 
   private
 
-    # def user_params
-    #   params.require(:user).permit(:name, :email, :password,
-    #                  :password_confirmation)
-    # end
+    def request_params
+      params.require(:request).permit(:start, :text)
+    end
 end

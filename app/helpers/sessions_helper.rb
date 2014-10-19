@@ -26,6 +26,10 @@ module SessionsHelper
     @current_user ||= find_user_by_cookie
   end
 
+  def current_user_owns(obj)
+    current_user && current_user.id == obj.user.id
+  end
+
   def require_signin
     unless signed_in?
       session[:pre_signin_url] = request.url

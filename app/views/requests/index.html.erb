@@ -1,0 +1,12 @@
+<% provide(:title, 'All requests') %>
+<h1>All requests</h1>
+
+<ul class="requests">
+  <% @requests.each do |req| %>
+    <li>
+      <%= req.start %>
+      <%= req.text %>
+      <%= link_to "Edit request", edit_request_path(req) if current_user_owns(req) %>
+    </li>
+  <% end %>
+</ul>
