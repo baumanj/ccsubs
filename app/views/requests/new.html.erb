@@ -6,8 +6,10 @@
     <%= form_for(@request) do |f| %>
       <!-- error messages -->
 
-      <%= f.label :start %>
+      <%= f.label "Shift start time" %>
       <%= f.datetime_local_field :start %>
+
+      <%= f.text_area :text %>
 
       <%= f.submit "Create my request", class: "btn btn-large btn-primary" %>
     <% end %>
