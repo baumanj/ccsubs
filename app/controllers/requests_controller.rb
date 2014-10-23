@@ -1,6 +1,5 @@
 class RequestsController < ApplicationController
   before_action :require_signin
-  before_action :require_admin, except: []
 
   def new
     @request = Request.new
@@ -33,7 +32,21 @@ class RequestsController < ApplicationController
   end
 
   def index
-    @requests = Request.where("start > ?", DateTime.now)
+    if params[:past]
+      if current_user.admin?
+        @requests = Request.order(:start)
+      else
+        redirect_to requests_path
+      end
+    elsif params[:owner]
+      if current_user.admin? || params[:owner].to_i == current_user.id
+        @requests = User.find(params[:owner]).requests.order(:start)
+      else
+        redirect_to requests_path(owner: current_user)
+      end
+    else
+      @requests = Request.where("start > ?", DateTime.now).order(:start)
+    end
   end
 
   def show
@@ -43,6 +56,6 @@ class RequestsController < ApplicationController
   private
 
     def request_params
-      params.require(:request).permit(:start, :shift, :text)
+      params.require(:request).permit(:start, :shift, :text, :fulfilled)
     end
 end

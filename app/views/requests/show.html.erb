@@ -1,5 +1,11 @@
-<%= @request.start %>
-<%= @request.text %>
-
-<%= link_to "Edit request", edit_request_path(@request) %>
+<h1><%= @request.time_string %></h1>
+<p><%= @request.text %></p>
+<% if current_user_owns?(@request) %>
+  <p><%= link_to "Edit request", edit_request_path(@request) %></p>
+<% else %>
+  <p><%= mail_to @request.user.email, "Offer to sub/swap",
+         subject: "Sub/swap: #{@request.time_string}",
+         body: "Regarging your request #{request_url(@request)}" %></p>
+<% end %>
+<p><%= link_to "Back to request list", :back %>
 

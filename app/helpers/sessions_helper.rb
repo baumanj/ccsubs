@@ -26,7 +26,7 @@ module SessionsHelper
     @current_user ||= find_user_by_cookie
   end
 
-  def current_user_owns(obj)
+  def current_user_owns?(obj)
     current_user && current_user.id == obj.user.id
   end
 
