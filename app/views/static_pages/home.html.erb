@@ -1,4 +1,4 @@
 <% provide(:title, 'Home') %>
 <h1>Welcome to Crisis Clinic Sub/Swap</h1>
 <%= link_to "Sign up", signup_path %>
-<%= link_to "Sign in", signin_path %>
+<%= link_to "Sign in", signin_path unless signed_in? %>
