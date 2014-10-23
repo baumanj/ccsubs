@@ -1,34 +1,38 @@
 <% provide(:title, 'Requests') %>
 
-<p><%= link_to "Create new request", new_request_path %></p>
+<div class="jumbotron">
+  <p><%= link_to "Create new request", new_request_path %></p>
 
-<% if params[:owner] %>
-  <p><%= link_to "View everyone's requests" %></p>
-<% else %>
-  <p><%= link_to "View my requests", owner: current_user %></p>
-<% end %>
-
-<% if current_user.admin? %>
-  <% unless params[:past] %>
-    <h1>Current requests</h1>
-    <%= link_to "Show past requests", past: true %>
+  <% if params[:owner] %>
+    <p><%= link_to "View everyone's requests" %></p>
   <% else %>
-    <h1>Past requests</h1>
-    <%= link_to "Show current requests" %>
-  <% end%>
-<% end %>
-
-<ul class="requests">
-  <% @requests.each do |req| %>
-    <li>
-      <%= req.time_string %>
-      <%= link_to req.brief_text, req %>
-      <% if current_user_can_edit?(req) %>
-        <%= link_to "Edit", edit_request_path(req) %>
-        <%= link_to "Delete", req, method: :delete, 
-                    data: { confirm: "Really delete this request?" } %>
-      <% end %>
-      <%= "[fulfilled]" if req.fulfilled %>
-    </li>
+    <p><%= link_to "View my requests", owner: current_user %></p>
   <% end %>
-</ul>
+
+  <% if current_user.admin? %>
+    <% unless params[:past] %>
+      <h1>Current requests</h1>
+      <%= link_to "Show past requests", past: true %>
+    <% else %>
+      <h1>Past requests</h1>
+      <%= link_to "Show current requests" %>
+    <% end%>
+  <% end %>
+</div>
+
+<div>
+  <ul class="requests">
+    <% @requests.each do |req| %>
+      <li>
+        <%= req.time_string %>
+        <%= link_to req.brief_text, req %>
+        <% if current_user_can_edit?(req) %>
+          <%= link_to "Edit", edit_request_path(req) %>
+          <%= link_to "Delete", req, method: :delete, 
+                      data: { confirm: "Really delete this request?" } %>
+        <% end %>
+        <%= "[fulfilled]" if req.fulfilled %>
+      </li>
+    <% end %>
+  </ul>
+</div>
