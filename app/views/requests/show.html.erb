@@ -5,7 +5,7 @@
 <% else %>
   <p><%= mail_to @request.user.email, "Offer to sub/swap",
          subject: "Sub/swap: #{@request.time_string}",
-         body: "Regarging your request #{request_url(@request)}" %></p>
+         body: "Regarding your request #{request_url(@request)}" %></p>
 <% end %>
 <p><%= link_to "Back to request list", :back %>
 
