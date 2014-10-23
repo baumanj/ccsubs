@@ -1,6 +1,6 @@
 <h1><%= @request.time_string %></h1>
 <p><%= @request.text %></p>
-<% if current_user_owns?(@request) %>
+<% if current_user_can_edit?(@request) %>
   <p><%= link_to "Edit request", edit_request_path(@request) %></p>
 <% else %>
   <p><%= mail_to @request.user.email, "Offer to sub/swap",

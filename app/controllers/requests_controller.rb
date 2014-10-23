@@ -45,12 +45,23 @@ class RequestsController < ApplicationController
         redirect_to requests_path(owner: current_user)
       end
     else
-      @requests = Request.where("start > ?", DateTime.now).order(:start)
+      @requests = Request.where(fulfilled: false).where("start > ?", DateTime.now).order(:start)
     end
   end
 
   def show
     @request = Request.find(params[:id])
+  end
+
+  def destroy
+    req = Request.find(params[:id])
+    if current_user_can_edit?(req)
+      req.destroy
+      flash[:success] = "Request deleted"
+    else
+      flash[:error] = "You don't have permission to delete that"
+    end
+    redirect_to :back
   end
 
   private

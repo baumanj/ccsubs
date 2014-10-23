@@ -23,9 +23,12 @@
     <li>
       <%= req.time_string %>
       <%= link_to req.brief_text, req %>
-      <% if current_user_owns?(req) %>
-        <%= link_to "Edit request", edit_request_path(req) %>
+      <% if current_user_can_edit?(req) %>
+        <%= link_to "Edit", edit_request_path(req) %>
+        <%= link_to "Delete", req, method: :delete, 
+                    data: { confirm: "Really delete this request?" } %>
       <% end %>
+      <%= "[fulfilled]" if req.fulfilled %>
     </li>
   <% end %>
 </ul>

@@ -30,6 +30,10 @@ module SessionsHelper
     current_user && current_user.id == obj.user.id
   end
 
+  def current_user_can_edit?(obj)
+    current_user_owns?(obj) || current_user.admin?
+  end
+
   def require_signin
     unless signed_in?
       session[:pre_signin_url] = request.url
