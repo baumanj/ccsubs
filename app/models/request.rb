@@ -12,7 +12,7 @@ class Request < ActiveRecord::Base
   Time::DATE_FORMATS[:shift_date] = "%A, %B %e"
 
   def shift
-    start.hour if start and SHIFTS.keys.include?(start.hour)
+    start.hour if start and SHIFTS.values.include?(start.hour)
   end
 
   def shift=(val)
