@@ -4,9 +4,10 @@ class User < ActiveRecord::Base
   VALID_EMAIL_REGEX = /\A[\w+\-.]+@([a-z\d\-]+\.)+[a-z]+\z/i
   validates :email, presence: true, format: { with: VALID_EMAIL_REGEX },
     uniqueness: { case_sensitive: false }
+  validates :vic, presence: true, uniqueness: true
   has_secure_password
   # allow_nil so that users can edit their profile w/o entering password
-  validates :password, length: { minimum: 6 }, allow_nil: true
+  validates :password, length: { minimum: 5 }, allow_nil: true
 
   before_create :create_remember_token
 
