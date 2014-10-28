@@ -6,7 +6,7 @@
     <%= form_for(@request) do |f| %>
       <%= render 'shared/error_messages' %>
 
-      <%= f.label :start, "date (MM/DD/YYYY)" %>
+      <%= f.label :start, "date" %>
       <%= f.date_field :start %>
       <%= f.label :shift, "time" %>
       <%= f.select :shift, Request::SHIFTS %>
