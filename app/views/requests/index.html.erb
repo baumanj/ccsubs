@@ -1,7 +1,8 @@
 <% provide(:title, 'Requests') %>
 
 <div class="jumbotron">
-  <p><%= link_to "Create new request", new_request_path %></p>
+  <p><%= link_to "Create new request", new_request_path,
+    class: "btn btn-lg btn-primary" %></p>
 
   <% if params[:owner] %>
     <p><%= link_to "View everyone's requests" %></p>
@@ -22,6 +23,9 @@
 
 <div>
   <ul class="requests">
+    <% if @requests.empty? %>
+      <p>There don't appear to be any matching requests</p>
+    <% end %>
     <% @requests.each do |req| %>
       <li>
         <%= req.time_string %>
