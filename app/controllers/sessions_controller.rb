@@ -9,7 +9,7 @@ class SessionsController < ApplicationController
     if user && !user.disabled?
       sign_in user
       url = session.delete(:pre_signin_url)
-      redirect_to url || user
+      redirect_to url || requests_path
     else
       flash.now[:error] = 'Wrong password or email'
       render 'new'

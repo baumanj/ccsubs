@@ -1,3 +1,7 @@
-<%= @user.name %>, <%= @user.email %>
-<%= link_to "Edit profile", edit_user_path(@user) %>
+<dl>
+  <dt>Name</dt> <dd><%= @user.name %></dd>
+  <dt>Email</dt> <dd><%= @user.email %></dd>
+</dl>
+
+<%= link_to "Edit profile", edit_user_path(@user), class: "btn btn-lg btn-primary" %>
 
