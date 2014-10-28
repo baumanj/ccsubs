@@ -1,5 +1,6 @@
 module SessionsHelper
 
+  # This hits the DB for every pageload; we can do better
   def sign_in(user)
     remember_token = User.new_remember_token
     cookies.permanent[:remember_token] = remember_token
@@ -7,10 +8,9 @@ module SessionsHelper
     self.current_user = user
   end
 
-  def sign_out
-    if signed_in?
-      current_user.update_attribute(:remember_token,
-                                    User.digest(User.new_remember_token))
+  def sign_out(user=current_user)
+    user.update_attribute(:remember_token, User.digest(User.new_remember_token))
+    if user == current_user
       cookies.delete(:remember_token)
       self.current_user = nil
     end

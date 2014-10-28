@@ -1,5 +1,5 @@
-<% provide(:title, 'Sign up') %>
-<h1>Sign up</h1>
+<% provide(:title, 'Edit') %>
+<h1>Edit</h1>
 
 <div class="row">
   <div class="col-md-6 col-md-offset-3">
@@ -17,6 +17,11 @@
 
       <%= f.label :password_confirmation, "Confirmation" %>
       <%= f.password_field :password_confirmation %>
+
+      <% if current_user.admin? %>
+        <%= f.label :disabled %>
+        <%= f.check_box :disabled %>
+      <% end %>
 
       <%= f.submit "Save changes", class: "btn btn-large btn-primary" %>
     <% end %>

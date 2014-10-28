@@ -31,6 +31,7 @@ class UsersController < ApplicationController
     end
     if @user.update_attributes(user_params)
       flash[:success] = "Update successful"
+      sign_out(@user) if @user.disabled?
       redirect_to @user
     else
       render 'edit' # Try again
@@ -49,6 +50,6 @@ class UsersController < ApplicationController
 
     def user_params
       params.require(:user).permit(:name, :email, :password,
-                     :password_confirmation)
+                     :password_confirmation, :disabled)
     end
 end
