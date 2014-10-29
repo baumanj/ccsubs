@@ -4,10 +4,9 @@ class SessionsController < ApplicationController
   end
 
   def create
-    user = User.find_by_email(params[:session][:email].downcase).
-               try(:authenticate, params[:session][:password])
-    if user && !user.disabled?
-      sign_in user
+    user = User.find_by_email(params[:session][:email].downcase)
+    logger.debug "Trying to sign in #{user.name}"
+    if sign_in(user, params[:session][:password])
       url = session.delete(:pre_signin_url)
       redirect_to url || requests_path
     else
