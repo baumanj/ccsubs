@@ -37,6 +37,7 @@ end
 
 group :development, :test do
   gem 'rspec-rails', '2.13.1'
+  gem 'ruby-keychain', :require => 'keychain'
 end
 
 group :test do
