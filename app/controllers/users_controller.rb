@@ -19,6 +19,13 @@ class UsersController < ApplicationController
     end
   end
 
+  def confirm
+    @user = User.find(params[:id])
+    flash[:success] = "Confirmation email sent to #{@user.email}"
+    UserMailer.confirm_email(@user).deliver
+    redirect_to :back
+  end
+
   def edit
     @user = User.find(params[:id])
   end

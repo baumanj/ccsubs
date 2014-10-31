@@ -13,6 +13,12 @@
 <body>
     <%= render 'layouts/header' %>
     <div class="container">
+      <% if signed_in? # and not confirmed %>
+        <div class="alert alert-warning">
+          <%= link_to "Please confirm your email address",
+              confirm_user_path(current_user) %>
+        </div>
+      <% end %>
       <% flash.each do |key, value| %>
         <div class="alert alert-<%= key %>"><%= value %></div>
       <% end %>

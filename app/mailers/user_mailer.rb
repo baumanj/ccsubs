@@ -1,25 +1,13 @@
 class UserMailer < ActionMailer::Base
-  default from: "from@example.com"
+  default from: "jonccsubs@shumi.org"
 
-  # Subject can be set in your I18n file at config/locales/en.yml
-  # with the following lookup:
-  #
-  #   en.user_mailer.confirm_email.subject
-  #
-  def confirm_email
-    @greeting = "Hi"
-
-    mail to: "to@example.org"
+  def confirm_email(user)
+    @user = user
+    mail to: user.email, subject: "Confirm your ccsubs email"
   end
 
-  # Subject can be set in your I18n file at config/locales/en.yml
-  # with the following lookup:
-  #
-  #   en.user_mailer.reset_password.subject
-  #
-  def reset_password
-    @greeting = "Hi"
-
-    mail to: "to@example.org"
+  def reset_password(user)
+    @user = user
+    mail to: user.email, subject: "Reset your ccsubs password"
   end
 end
