@@ -1,6 +1,7 @@
 <dl>
   <dt>Name</dt> <dd><%= @user.name %></dd>
-  <dt>Email</dt> <dd><%= @user.email %></dd>
+  <dt>Email</dt> <dd><%= @user.email %>
+    [<%= @user.confirmed? ? "confirmed" : "unconfirmed" %>]</dd>
 </dl>
 
 <%= link_to "Edit profile", edit_user_path(@user), class: "btn btn-lg btn-primary" %>

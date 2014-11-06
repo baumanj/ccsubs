@@ -19,11 +19,22 @@ class UsersController < ApplicationController
     end
   end
 
-  def confirm
+  def send_confirmation
     @user = User.find(params[:id])
+    @user.create_confirmation_token
     flash[:success] = "Confirmation email sent to #{@user.email}"
     UserMailer.confirm_email(@user).deliver
-    redirect_to :back
+    redirect_to @user
+  end
+  
+  def confirm
+    @user = User.find(params[:id])
+    if @user.confirm(params[:confirmation_token])
+      flash[:success] = "#{@user.email} confirmed!"
+    else
+      flash[:error] = "Confirmation failed"
+    end
+    redirect_to @user
   end
 
   def edit

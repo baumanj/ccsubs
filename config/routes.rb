@@ -7,7 +7,8 @@ Ccsubs::Application.routes.draw do
   match '/signin',  to: 'sessions#new',     via: 'get'
   match '/signout', to: 'sessions#destroy', via: 'delete'
 
-  get '/users/confirm/:id', to: 'users#confirm', as: :confirm_user
+  get '/users/confirm/:id', to: 'users#send_confirmation', as: :send_confirmation
+  get '/users/confirm/:id/:confirmation_token', to: 'users#confirm', as: :confirm_user
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 

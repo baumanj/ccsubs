@@ -2,4 +2,4 @@ Hi <%= @user.name %>,
 
 Click on the link below to verify your email:
 
-<%= confirm_user_url(@user.id, email: @user.email) %>
+<%= confirm_user_url(@user, @user.confirmation_token) %>
