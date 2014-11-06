@@ -48,7 +48,7 @@ class User < ActiveRecord::Base
     self.confirmation_token = User.new_secure_token
     update_attribute(:confirmation_digest, User.digest(self.confirmation_token))
   end
-  
+
   def confirm(token)
     if User.digest(token) == confirmation_digest
       update_attribute(:confirmed, true)

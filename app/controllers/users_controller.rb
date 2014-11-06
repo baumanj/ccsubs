@@ -26,7 +26,7 @@ class UsersController < ApplicationController
     UserMailer.confirm_email(@user).deliver
     redirect_to @user
   end
-  
+
   def confirm
     @user = User.find(params[:id])
     if @user.confirm(params[:confirmation_token])
