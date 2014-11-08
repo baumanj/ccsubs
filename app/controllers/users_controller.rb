@@ -47,11 +47,20 @@ class UsersController < ApplicationController
       params[:user].delete(:password)
       params[:user].delete(:password_confirmation)
     end
+    resend_confirmation =
+      params[:user][:email].downcase != @user.email && @user.confirmed?
     if @user.update_attributes(user_params)
       flash[:success] = "Update successful"
-      sign_out(@user) if @user.disabled?
+      if @user.disabled?
+        sign_out(@user)
+      elsif resend_confirmation
+        @user.create_confirmation_token
+        flash[:success] += ". Confirmation email sent to #{@user.email}"
+        UserMailer.confirm_email(@user).deliver
+      end
       redirect_to @user
     else
+      @errors = @user.errors
       render 'edit' # Try again
     end
   end

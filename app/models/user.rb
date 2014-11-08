@@ -15,6 +15,10 @@ class User < ActiveRecord::Base
 
   before_save do
     self.email.downcase!
+    if email_changed? && email != User.find(id).email
+      self.confirmed = false
+    end
+    true
   end
 
   def User.new_secure_token
