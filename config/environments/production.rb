@@ -68,13 +68,13 @@ Ccsubs::Application.configure do
   config.action_mailer.default_url_options = { host: host, protocol: 'https' }
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
-    address: 'smtp.sendgrid.net',
+    address: 'smtp.mandrillapp.com',
     port: '587',
     domain: 'heroku.com',
     authentication: :plain,
-    enable_starttls_auto: true,
-    user_name: ENV['SENDGRID_USERNAME'],
-    password: ENV['SENDGRID_PASSWORD']
+    # enable_starttls_auto: true,
+    user_name: ENV['MANDRILL_USERNAME'],
+    password: ENV['MANDRILL_APIKEY']
   }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
