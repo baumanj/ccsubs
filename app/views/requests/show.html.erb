@@ -2,10 +2,16 @@
 <p><%= @request.text %></p>
 <% if current_user_can_edit?(@request) %>
   <p><%= link_to "Edit request", edit_request_path(@request) %></p>
-<% else %>
+<% else %> 
   <p><%= mail_to @request.user.email, "Offer to sub/swap",
          subject: "Sub/swap: #{@request.time_string}",
          body: "Regarding your request #{request_url(@request)}" %></p>
 <% end %>
+<p>Shifts this user is available to swap for</p>
+  <ul class="availabilities">
+    <% @request.user.availabilities.each do |availability| %>
+      <li><%= availability.time_string %></li>
+    <% end %>
+  </ul>
 <p><%= link_to "Back to request list", :back %>
 

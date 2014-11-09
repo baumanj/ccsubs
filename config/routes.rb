@@ -1,10 +1,5 @@
 Ccsubs::Application.routes.draw do
-  get "availabilities/new"
-  get "availabilities/create"
-  get "availabilities/edit"
-  get "availabilities/index"
-  get "availabilities/show"
-  get "availabilities/destroy"
+  resources :availabilities, only: [:index, :create, :destroy]
   resources :users
   resources :requests
   resources :sessions, only: [:new, :create, :destroy]

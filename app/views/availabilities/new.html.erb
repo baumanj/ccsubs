@@ -1,2 +1,14 @@
-<h1>Availabilities#new</h1>
-<p>Find me in app/views/availabilities/new.html.erb</p>
+<div class="row">
+  <div class="col-md-6 col-md-offset-3">
+    <%= form_for(@availability) do |f| %>
+      <%= render 'shared/error_messages' %>
+
+      <%= f.label :start, "date (MM/DD/YYYY)" %>
+      <%= f.date_field :start %>
+      <%= f.label :shift, "time" %>
+      <%= f.select :shift, Request::SHIFTS, { prompt: 'Select shift'} %>
+
+      <%= f.submit "Add available shift", class: "btn btn-large btn-primary" %>
+    <% end %>
+  </div>
+</div>
