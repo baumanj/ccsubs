@@ -37,7 +37,8 @@ end
 
 group :development, :test do
   gem 'rspec-rails', '2.13.1'
-  gem 'ruby-keychain', :require => 'keychain'
+  gem 'better_errors'
+  gem 'binding_of_caller'
 end
 
 group :test do

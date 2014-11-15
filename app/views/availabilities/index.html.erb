@@ -1,10 +1,15 @@
 <% provide(:title, 'Swap availability') %>
 
-<h1>Shifts you are available to swap for</h1>
+<% if @user == current_user %>
+  <h1>Shifts you are available to swap for</h1>
+<% else %>
+  <h1>Shifts <%= @user.name %> is available to swap for</h1>
+<% end %>
+
 <div>
   <ul class="availabilities">
     <% if @availabilities.empty? %>
-      <h2>You don't have any future availability. You should add some…</h2>
+      <h2>You don't have any swap availability. You should add some…</h2>
     <% end %>
     <% @availabilities.each do |availability| %>
       <li>

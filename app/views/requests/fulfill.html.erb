@@ -1,0 +1,25 @@
+<% provide(:title, 'Fulfill request') %>
+<h1>Fulfill Request</h1>
+
+<p>
+  In fulfillment of your request for coverage on <%= @request.time_string %>,
+  <%= @request.fulfilling_user.name %> would like to 
+  <% if @sub %>
+      sub for you.
+  <% else %>
+      swap with you for <%= @availability.time_string %>.
+  <% end %>
+</p>
+
+<%= form_for(@request) do |f| %>
+
+  <%= f.hidden_field :fulfilled %>
+  <%= f.hidden_field :fulfilling_user_id %>
+  <% if @swap %>
+    <%= f.hidden_field :swapped_shift %>
+  <% end %>
+
+  <%= f.submit "Accept", class: "btn btn-large btn-primary" %>
+<% end %>
+
+

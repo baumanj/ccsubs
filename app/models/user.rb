@@ -1,6 +1,7 @@
 class User < ActiveRecord::Base
   attr_accessor :confirmation_token
   has_many :requests
+  has_many :fulfilled_requests, class_name: "Request", foreign_key: "fulfilling_user_id"
   has_many :availabilities
   validates :name, presence: true, uniqueness: { case_sensitive: false }
   VALID_EMAIL_REGEX = /\A[\w+\-.]+@([a-z\d\-]+\.)+[a-z]+\z/i

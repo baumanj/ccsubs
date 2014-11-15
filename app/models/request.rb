@@ -4,6 +4,7 @@ class Request < ActiveRecord::Base
   BRIEF_LEN = 140
 
   belongs_to :user
+  belongs_to :fulfilling_user, class_name: "User"
   validates :start, presence: true
   validates :shift, inclusion: { in: SHIFTS.values, message: "must be selected" }
   validates :user, presence: true
@@ -30,10 +31,24 @@ class Request < ActiveRecord::Base
   def time_string
     "#{start.to_s(:shift_date)}, #{SHIFT_STRINGS[shift]}"
   end
+  
+  def swapped_shift_string
+    "#{swapped_shift.to_s(:shift_date)}, #{SHIFT_STRINGS[shift]}"
+  end
 
   def shift_is_in_the_future
     if start && start < DateTime.now
       errors.add(:start, "time must be in the future")
     end
   end
+  
+  def swap_candidates
+    availabilities = Availability.where(start: self.start)
+    requests = availabilities.flat_map do |availability|
+      open_reqs = availability.user.requests.select do |req|
+        !req.fulfilled? && req.start.future?
+      end
+    end
+  end
+
 end

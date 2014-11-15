@@ -1,7 +1,10 @@
 Ccsubs::Application.routes.draw do
   resources :availabilities, only: [:index, :create, :destroy]
+  get '/availabilities/:id', to: 'availabilities#index'
   resources :users
   resources :requests
+  patch '/requests/:id/offer/sub', to: 'requests#offer_sub', as: :offer_sub
+  patch '/requests/:id/offer/swap', to: 'requests#offer_swap', as: :offer_swap
   resources :sessions, only: [:new, :create, :destroy]
   root 'static_pages#home'
   match '/signup',  to: 'users#new',        via: 'get'

@@ -10,6 +10,10 @@ class Availability < ActiveRecord::Base
   validates :user, presence: true
   validate :shift_is_in_the_future
 
+  def matching_requests
+    Request.where(fulfilled: false).where(start: self.start).order(:id)
+  end
+
   # XXX DRY all this up with Request
   def shift
     start.hour if start and SHIFTS.values.include?(start.hour)

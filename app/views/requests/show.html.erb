@@ -1,17 +1,102 @@
 <h1><%= @request.time_string %></h1>
-<p><%= @request.text %></p>
-<% if current_user_can_edit?(@request) %>
-  <p><%= link_to "Edit request", edit_request_path(@request) %></p>
-<% else %> 
-  <p><%= mail_to @request.user.email, "Offer to sub/swap",
-         subject: "Sub/swap: #{@request.time_string}",
-         body: "Regarding your request #{request_url(@request)}" %></p>
-<% end %>
-<p>Shifts this user is available to swap for</p>
-  <ul class="availabilities">
-    <% @request.user.availabilities.each do |availability| %>
-      <li><%= availability.time_string %></li>
+
+<% if @request.fulfilled? %>
+  <h2>
+    Fulfilled by <%= @request.fulfilling_user.name %>
+    <% if @request.swapped_shift %>
+      <%= "in exchange for #{@request.swapped_shift_string}" %>
+    <% else %>
+      <%= "in a selfless act of subbing (i.e., no swap)" %>
     <% end %>
-  </ul>
-<p><%= link_to "Back to request list", :back %>
+  </h2>
+<% elsif @request.fulfilling_user %>
+  <h2>
+    Pending swap offered by <%= @request.fulfilling_user.name %> for
+    <%= @request.swapped_shift_string %>
+  </h2>
+  <% if current_user == @request.user %>
+  <p>ACCEPT THE REQUEST!?</p>
+  <% end %>
+<% end %>
+
+<div class="jumbotron">
+  <p><%= @request.text %></p>
+  <% if current_user_can_edit?(@request) %>
+    <p>[<%= link_to "Edit request", edit_request_path(@request) %>]</p>
+  <% end %>
+</div>
+
+
+<% if @request.fulfilling_user.nil? %>
+  <% if current_user == @request.user %>
+
+    <% if @swap_candidates.empty? %>
+      <p>
+        Currently, nobody looking for a swap is available to take this shift.
+      </p>
+      <p>
+        Adding more shifts you are available to swap for will increase the
+        chances of finding a match.
+      </p>
+    <% else %>
+      <p>Requests whose users are available to swap with this shift:</p>
+      <ul>
+      <% @swap_candidates.each do |req| %>
+          <li><%= link_to req.time_string, request_path(req) %></li>
+      <% end %>
+      </ul>
+    <% end %>
+
+    <% if @request.user.availabilities.empty? %>
+      <p>You haven't added any swap availability. You might want to 
+        <%= link_to "add some", availabilities_path %>.</p>
+    <% else %>
+      <p>Shifts you are available to swap for
+        (<%= link_to "edit availability", availabilities_path %>):</p>
+      <ul class="availabilities">
+        <% @request.user.availabilities.each do |availability| %>
+          <li><%= availability.time_string %></li>
+          <% end %>
+      </ul>
+    <% end %>
+
+  <% else %>
+<!-- send email through the site and require an availability
+don't allow creation of requests until email is confirmed -->
+
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3">
+        <%= form_for(@request, url: offer_sub_url(@request)) do |f| %>
+
+          <%= f.hidden_field :fulfilling_user_id, value: current_user.id %>
+          <%= f.submit "Offer to sub (no swap)", 
+              class: "btn btn-large btn-primary" %>
+        <% end %>
+      </div>
+    </div>
+
+    <p>Shifts this user is available to swap for:</p>
+    <ul class="availabilities">
+      <% @request.user.availabilities.each do |availability| %>
+
+        <div class="row">
+          <div class="col-md-6 col-md-offset-3">
+            <%= form_for(@request, url: offer_swap_url(@request)) do |f| %>
+
+              <%= f.hidden_field :availability_id, value: availability.id %>
+              <%= f.hidden_field :fulfilling_user_id, value: current_user.id %>
+              
+              <%= f.submit "Offer to swap for #{availability.time_string}", 
+                  class: "btn btn-large btn-primary" %>
+            <% end %>
+          </div>
+        </div>
+
+      <% end %>
+    </ul>
+  
+  <% end %>
+<% end %>
+
+<p><%= link_to "Back to request list", requests_path %>
 
