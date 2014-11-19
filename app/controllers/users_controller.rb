@@ -1,7 +1,7 @@
 class UsersController < ApplicationController
   before_action :require_signin, except: [:new, :create]
   before_action :check_authorization
-  before_action :require_admin, except: [:new, :create, :edit, :update, :show]
+  before_action :require_admin, only: [:new, :create, :index]
 
   def new
     @user = User.new

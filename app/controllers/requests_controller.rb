@@ -1,5 +1,6 @@
 class RequestsController < ApplicationController
   before_action :require_signin
+  before_action :check_editable, only: [:edit, :update]
 
   def new
     @request = Request.new
@@ -18,11 +19,9 @@ class RequestsController < ApplicationController
   end
 
   def edit
-    @request = Request.find(params[:id])
   end
 
   def update
-    @request = Request.find(params[:id])
     Request.transaction do
       Availability.transaction do
         if @request.update_attributes(request_params)
@@ -69,17 +68,16 @@ class RequestsController < ApplicationController
         if @request.fulfilling_user.nil?
           associate_fulfilling_user
           @request.fulfilled = true
-          # attach availability if it exists
+          @request.swapped_shift = nil # just to be sure
           if @request.save
-            flash[:success] = "OK, we'll let #{@request.user.name} know."
+            UserMailer.notify_sub(@request).deliver
+            flash[:success] = "OK, we let #{@request.user.name} know the good news."
           else
-            flash[:errors] = "Something went wrong"
+            flash[:errors] = "Something went wrong."
           end
         else
-          flash[:errors] = "Sorry, #{@request.fulfilling_user.name} beat you to it"
+          flash[:errors] = "Sorry, #{@request.fulfilling_user.name} beat you to it."
         end
-        # Email the request owner
-  
       end
     end
 
@@ -98,39 +96,80 @@ class RequestsController < ApplicationController
             flash[:errors] = "Sorry, #{@request.user.name} isn't available to swap then."
           else
             associate_fulfilling_user
-            @request.swapped_shift = @availability.start if @availability
+            @request.swapped_shift = @availability.start
             # Attach the fulfilling user's availability if it exists
             if @request.save
-              flash[:success] = "OK, we'll let #{@request.user.name} know."
+              UserMailer.notify_swap_offer(@request, @availability).deliver
+              flash[:success] = "OK, we sent #{@request.user.name} an email to let them know about your offer."
             else
-              flash[:errors] = "Something went wrong"
+              flash[:errors] = "Something went wrong."
             end
           end
         else
           flash[:errors] = "Sorry, #{@request.fulfilling_user.name} beat you to it"
         end
-        # Email the request owner
-
       end
     end
     
     redirect_to @request
   end
 
-  # '/requests/:id/sub/:by'
-  # '/requests/:id/swap/:availability_id/:with'
-  def fulfill
+  def accept_swap
     @request = Request.find(params[:id])
-    @request.fulfilled = true
-    if params[:by]
-      @sub = true
-      @request.fulfilling_user = User.find(params[:by])
-    else
-      @swap = true
-      @availability = Availability.find(params[:availability_id])
-      @request.swapped_shift = @availability.start
-      @request.fulfilling_user = User.find(params[:with])
+    Request.transaction do
+      Availability.transaction do
+
+        @request.fulfilled = true
+        flash[:success] = "Marked request fulfilled."
+        # Remove availability for swapped_shift
+        @request.user.availabilities.where(start: @request.swapped_shift).each do |a|
+          a.destroy
+          flash[:success] += " Destroyed my #{a.time_string} availability."
+        end
+
+        # Remove fulfilling_user's availability for this shift if it exists
+        @request.fulfilling_user.availabilities.where(start: @request.start).each do |a|
+          a.destroy
+          flash[:success] += " Destroyed #{a.user.name}'s #{a.time_string} availability."
+        end
+    
+        # Fulfill request for swapped_shift if it exists
+        @request.fulfilling_user.requests.where(start: @request.swapped_shift).each do |r|
+          r.update_attributes(fulfilled: true, fulfilling_user: @request.user,
+                              swapped_shift: @request.start)
+          flash[:success] += " Marked #{r.user.name}'s #{r.time_string} request fulfilled"
+        end
+    
+        if @request.save
+          # XXX email crisis line staff, too
+          UserMailer.notify_swap_accept(@request).deliver
+        else
+          flash[:error] = "Something went wrong; swap not accepted."
+        end
+      end
     end
+    redirect_to @request
+  end
+
+  def decline_swap
+    @request = Request.find(params[:id])
+    Request.transaction do
+      Availability.transaction do
+        # disassociate offerer's availability
+        @request.fulfilling_user.availabilities.where(start: @request.start).each do |a|
+          a.request = nil
+          a.save!
+        end
+        @request.swapped_shift = nil
+        declinee = @request.fulfilling_user
+        @request.fulfilling_user = nil
+        if @request.save
+          UserMailer.notify_swap_decline(@request, declinee).deliver
+          flash[:success] = "The offer has been declined and the offerer notified."
+        end
+      end
+    end
+    redirect_to @request
   end
 
   def index
@@ -175,8 +214,18 @@ class RequestsController < ApplicationController
       # Create availability if it doesn't exist?
       if availability
         availability.request = @request
-        availability.save
+        availability.save!
       end
+    end
+
+    def check_editable
+      @request = Request.find(params[:id])
+      reason = if @request.fulfilled?
+          "The request can't be changed after it's been fulfilled."
+        elsif @request.pending_offer?
+          "The request can't be changed while there is a pending offer."
+        end
+      redirect_to @request, notice: reason if reason
     end
 
     def request_params

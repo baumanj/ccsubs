@@ -51,4 +51,11 @@ class Request < ActiveRecord::Base
     end
   end
 
+  def pending_offer?
+    fulfilling_user && !fulfilled?
+  end
+
+  def editable?
+    !fulfilled? && !pending_offer?
+  end
 end

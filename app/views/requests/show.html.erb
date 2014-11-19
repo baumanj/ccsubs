@@ -10,18 +10,30 @@
     <% end %>
   </h2>
 <% elsif @request.fulfilling_user %>
-  <h2>
+  <p>
     Pending swap offered by <%= @request.fulfilling_user.name %> for
     <%= @request.swapped_shift_string %>
-  </h2>
-  <% if current_user == @request.user %>
-  <p>ACCEPT THE REQUEST!?</p>
-  <% end %>
+    <% if current_user == @request.user %>
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+          <%= form_for(@request, url: accept_swap_url) do |f| %>
+            <%= f.submit "Accept", class: "btn btn-large btn-primary",
+                data: { confirm: "Do you promise to cover " +      
+                        @request.swapped_shift_string + " in return?" } %>
+          <% end %>
+          <%= form_for(@request, url: decline_swap_url) do |f| %>
+            <%= f.submit "Decline", class: "btn btn-large btn-primary",
+                data: { confirm: "You really want to decline this offer?" } %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </p>
 <% end %>
 
 <div class="jumbotron">
   <p><%= @request.text %></p>
-  <% if current_user_can_edit?(@request) %>
+  <% if current_user_can_edit?(@request) and @request.editable? %>
     <p>[<%= link_to "Edit request", edit_request_path(@request) %>]</p>
   <% end %>
 </div>
@@ -66,7 +78,7 @@ don't allow creation of requests until email is confirmed -->
 
     <div class="row">
       <div class="col-md-6 col-md-offset-3">
-        <%= form_for(@request, url: offer_sub_url(@request)) do |f| %>
+        <%= form_for(@request, url: offer_sub_url) do |f| %>
 
           <%= f.hidden_field :fulfilling_user_id, value: current_user.id %>
           <%= f.submit "Offer to sub (no swap)", 
@@ -81,7 +93,7 @@ don't allow creation of requests until email is confirmed -->
 
         <div class="row">
           <div class="col-md-6 col-md-offset-3">
-            <%= form_for(@request, url: offer_swap_url(@request)) do |f| %>
+            <%= form_for(@request, url: offer_swap_url) do |f| %>
 
               <%= f.hidden_field :availability_id, value: availability.id %>
               <%= f.hidden_field :fulfilling_user_id, value: current_user.id %>

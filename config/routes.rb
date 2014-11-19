@@ -5,6 +5,8 @@ Ccsubs::Application.routes.draw do
   resources :requests
   patch '/requests/:id/offer/sub', to: 'requests#offer_sub', as: :offer_sub
   patch '/requests/:id/offer/swap', to: 'requests#offer_swap', as: :offer_swap
+  patch '/requests/:id/accept/swap', to: 'requests#accept_swap', as: :accept_swap
+  patch '/requests/:id/decline/swap', to: 'requests#decline_swap', as: :decline_swap
   resources :sessions, only: [:new, :create, :destroy]
   root 'static_pages#home'
   match '/signup',  to: 'users#new',        via: 'get'
