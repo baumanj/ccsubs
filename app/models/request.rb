@@ -9,6 +9,7 @@ class Request < ActiveRecord::Base
   validates :shift, inclusion: { in: SHIFTS.values, message: "must be selected" }
   validates :user, presence: true
   validate :shift_is_in_the_future
+  validate :shift_is_within_a_year
 
   Time::DATE_FORMATS[:shift_date] = "%A, %B %e"
 
@@ -39,6 +40,12 @@ class Request < ActiveRecord::Base
   def shift_is_in_the_future
     if start && start < DateTime.now
       errors.add(:start, "time must be in the future")
+    end
+  end
+
+  def shift_is_within_a_year
+    if start && start > 1.year.from_now
+      errors.add(:start, "time must be within a year")
     end
   end
   

@@ -1,0 +1,17 @@
+<div class="row">
+  <div class="col-md-6 col-md-offset-3">
+    <%= form_for(@request) do |f| %>
+      <%= render 'shared/error_messages' %>
+
+      <%= f.label :start, "date" %>
+      <%= f.date_select :start, order: [:month, :day, :year],
+                        start_year: Date.today.year,
+                        end_year: Date.today.year + 1  %>
+
+      <%= f.label :shift, "time" %>
+      <%= f.select :shift, Request::SHIFTS, { prompt: 'Select shift'} %>
+
+      <%= f.submit "Create my request", class: "btn btn-large btn-primary" %>
+    <% end %>
+  </div>
+</div>

@@ -1,21 +1,5 @@
 <% provide(:title, 'Edit request') %>
+<% provide(:submit_text, 'Update my request') %>
 <h1>Edit Request</h1>
 
-<div class="row">
-  <div class="col-md-6 col-md-offset-3">
-    <%= form_for(@request) do |f| %>
-      <%= render 'shared/error_messages' %>
-
-      <%= f.label :start, "date" %>
-      <%= f.date_field :start %>
-      <%= f.label :shift, "time" %>
-      <%= f.select :shift, Request::SHIFTS %>
-
-      <%= f.label :text, "details" %>
-      <%= f.text_area :text %>
-
-      <%= f.submit "Update my request", class: "btn btn-large btn-primary" %>
-    <% end %>
-  </div>
-</div>
-
+<%= render 'requests/request' %>
