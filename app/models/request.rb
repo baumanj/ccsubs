@@ -1,25 +1,14 @@
 class Request < ActiveRecord::Base
-  SHIFTS = { '8-12:30' => 8, '12:30-5' => 12, '5-9' => 17, '9-1' => 21 }
-  SHIFT_STRINGS = SHIFTS.invert
   BRIEF_LEN = 140
 
   belongs_to :user
   belongs_to :fulfilling_user, class_name: "User"
-  validates :start, presence: true
-  validates :shift, inclusion: { in: SHIFTS.values, message: "must be selected" }
   validates :user, presence: true
-  validate :shift_is_in_the_future
-  validate :shift_is_within_a_year
+  validates :shift, presence: true
+  validate :shift_is_between_now_and_a_year_from_now, on: :create
 
-  Time::DATE_FORMATS[:shift_date] = "%A, %B %e"
-
-  def shift
-    start.hour if start and SHIFTS.values.include?(start.hour)
-  end
-
-  def shift=(val)
-    self.start = start - start.hour.hours + val.to_i.hours unless start.nil?
-  end
+  DATE_FORMAT = "%A, %B %e"
+  enum shift: [ :'8-12:30', :'12:30-5', :'5-9', :'9-1' ]
 
   def brief_text
     if text.length <= BRIEF_LEN
@@ -29,15 +18,26 @@ class Request < ActiveRecord::Base
     end
   end
 
+  def start
+    if date && shift
+      h, m = shift.split("-").first.split(":").map(&:to_i)
+      m = 0 if m.nil?
+      date + h.hours + m.minutes
+    end
+  end
+
   def time_string
-    "#{start.to_s(:shift_date)}, #{SHIFT_STRINGS[shift]}"
+    "#{date.strftime(DATE_FORMAT)}, #{shift}"
   end
   
   def swapped_shift_string
-    "#{swapped_shift.to_s(:shift_date)}, #{SHIFT_STRINGS[shift]}"
+    shift_str, _ = Request.shifts.find do |key, val|
+      swapped_shift.strftime("%l").strip == key.split("-").first.split(":").first
+    end
+    "#{swapped_shift..date.strftime(DATE_FORMAT)}, #{shift_str}"
   end
 
-  def shift_is_in_the_future
+  def shift_is_between_now_and_a_year_from_now
     if start && start < DateTime.now
       errors.add(:start, "time must be in the future")
     end

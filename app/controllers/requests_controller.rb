@@ -11,7 +11,7 @@ class RequestsController < ApplicationController
     @request.user = current_user
     if @request.save
       flash[:success] = "Request created"
-      redirect_to requests_path
+      redirect_to @request
     else
       @errors = @request.errors
       render 'new' # Try again
@@ -53,6 +53,7 @@ class RequestsController < ApplicationController
           end
           redirect_to @request
         else
+          @errors = @request.errors
           render 'edit' # Try again
         end
       end
@@ -181,12 +182,13 @@ class RequestsController < ApplicationController
       end
     elsif params[:owner]
       if current_user.admin? || params[:owner].to_i == current_user.id
-        @requests = User.find(params[:owner]).requests.order(:start)
+        @requests = User.find(params[:owner]).requests.order(:date, :shift)
       else
         redirect_to requests_path(owner: current_user)
       end
     else
-      @requests = Request.where(fulfilled: false).where("start > ?", DateTime.now).order(:start)
+      @requests = Request.where(fulfilled: false).
+        where("date > ?", DateTime.now).order(:date, :shift)
     end
   end
 
@@ -229,7 +231,7 @@ class RequestsController < ApplicationController
     end
 
     def request_params
-      params.require(:request).permit(:start, :shift, :text, :fulfilled,
+      params.require(:request).permit(:date, :shift, :text, :fulfilled,
                                       :fulfilling_user_id, :swapped_shift)
     end
 end
