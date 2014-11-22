@@ -41,7 +41,9 @@ class RequestsController < ApplicationController
             end
         
             # Fulfill request for swapped_shift if it exists
-            @request.fulfilling_user.requests.where(start: @request.swapped_shift).each do |r|
+            @request.fulfilling_user.requests
+                .where(date: @request.swapped_shift.to_date)
+                .select {|r| r.start == @request.swapped_shift }.each do |r|
               r.update_attributes(fulfilled: true, fulfilling_user: @request.user,
                                   swapped_shift: @request.start)
               flash[:success] += " Marked #{r.user.name}'s #{r.time_string} request fulfilled"
@@ -135,7 +137,9 @@ class RequestsController < ApplicationController
         end
     
         # Fulfill request for swapped_shift if it exists
-        @request.fulfilling_user.requests.where(start: @request.swapped_shift).each do |r|
+        @request.fulfilling_user.requests
+            .where(date: @request.swapped_shift.to_date)
+            .select {|r| r.start == @request.swapped_shift } .each do |r|
           r.update_attributes(fulfilled: true, fulfilling_user: @request.user,
                               swapped_shift: @request.start)
           flash[:success] += " Marked #{r.user.name}'s #{r.time_string} request fulfilled"
@@ -176,7 +180,7 @@ class RequestsController < ApplicationController
   def index
     if params[:past]
       if current_user.admin?
-        @requests = Request.order(:start)
+        @requests = Request.order(:date, :shift)
       else
         redirect_to requests_path
       end
