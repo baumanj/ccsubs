@@ -9,6 +9,7 @@ class Request < ActiveRecord::Base
 
   DATE_FORMAT = "%A, %B %e"
   enum shift: [ :'8-12:30', :'12:30-5', :'5-9', :'9-1' ]
+  enum state: [ :'seeking offers', :'offer pending', :fulfilled ]
 
   def brief_text
     if text.length <= BRIEF_LEN
@@ -58,11 +59,17 @@ class Request < ActiveRecord::Base
     end
   end
 
+  def fulfilled?
+    state == :fulfilled
+  end
+  
   def pending_offer?
-    fulfilling_user && !fulfilled?
+    state == :'offer pending'
+    # fulfilling_user && !fulfilled?
   end
 
   def editable?
-    !fulfilled? && !pending_offer?
+    state == :'seeking offers'
+    # !fulfilled? && !pending_offer?
   end
 end
