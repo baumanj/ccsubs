@@ -1,0 +1,17 @@
+<p>
+  <%= offer.user %> has offered to swap with you for
+  <%= if offer == @request
+        # We're on the other person's request page, link to ours
+        link_to offer.fulfilling_swap, offer.fulfilling_swap
+      else
+        link_to offer, offer
+      end %>.
+</p>
+
+<%= button_to "Accept", accept_swap_path(offer.fulfilling_swap),
+    class: "btn btn-large btn-primary", method: :patch,
+    data: { confirm: "Do you promise to cover #{offer} in return?" } %>
+<%= button_to "Decline", decline_swap_path(offer.fulfilling_swap),
+    class: "btn btn-large btn-primary", method: :patch,
+    data: { confirm: "You really want to decline this offer?" } %>
+</div>

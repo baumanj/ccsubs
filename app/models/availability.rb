@@ -9,6 +9,7 @@ class Availability < ActiveRecord::Base
 
   validates :user, presence: true
   validate :shift_is_in_the_future
+  validate :no_schedule_conflicts
 
   def matching_requests
     Request.where(fulfilled: false).where(start: self.start).order(:id)
@@ -20,4 +21,11 @@ class Availability < ActiveRecord::Base
     end
   end
 
+  def no_schedule_conflicts
+    if user.availabilities.find_by(date: date, shift: shift_to_i)
+      errors.add(:start, "can't be duplicated")
+    elsif user.requests.find_by(date: date, shift: shift_to_i)
+      errors.add(:availability, "can't conflict with user's own request")
+    end
+  end
 end

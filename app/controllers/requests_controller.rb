@@ -1,9 +1,10 @@
 class RequestsController < ApplicationController
   before_action :require_signin
-  before_action :find_request, only: [:edit, :offer_sub, :offer_swap]
-  before_action :check_editable, only: [:edit, :update]
+  before_action :find_request, except: [:new, :create, :index]
+  before_action :check_owner, only: [:update, :delete, :accept_swap, :decline_swap]
+  before_action :check_editable, only: [:edit, :update, :destroy]
   before_action :check_request_is_open, only: [:offer_sub, :offer_swap]
-  
+
   def new
     @request = Request.new
   end
@@ -65,10 +66,6 @@ class RequestsController < ApplicationController
     end
   end
 
-  def find_request
-    @request = Request.find(params[:id])
-  end
-
   # post '/requests/:id/offer/sub', to: 'requests#offer_sub', as: :offer_sub
   def offer_sub    
     if @request.fulfill_by_sub(current_user)
@@ -90,10 +87,21 @@ class RequestsController < ApplicationController
       UserMailer.notify_swap_offer(@request, offer_request).deliver
       flash[:success] = "OK, we sent #{@request.user} an email to let them know about your offer."
     else
-      flash[:error] = @request.errors.full_messages.join(". ")
+      flash[:error] = @request.errors.full_messages.join(" ")
     end
       
     redirect_to :back
+  end
+
+  def decline_swap
+    offer_request = @request.fulfilling_swap
+    if @request.decline_pending_swap
+      UserMailer.notify_swap_decline(@request, offer_request).deliver
+      flash[:success] = "#{offer_request.user}'s offer has been declined."
+    else
+      flash[:error] = @request.errors.full_messages.join(" ")
+    end
+    redirect_to @request
   end
 
   def accept_swap
@@ -135,27 +143,6 @@ class RequestsController < ApplicationController
     redirect_to @request
   end
 
-  def decline_swap
-    @request = Request.find(params[:id])
-    Request.transaction do
-      Availability.transaction do
-        # disassociate offerer's availability
-        @request.fulfilling_user.availabilities.where(start: @request.start).each do |a|
-          a.request = nil
-          a.save!
-        end
-        @request.swapped_shift = nil
-        declinee = @request.fulfilling_user
-        @request.fulfilling_user = nil
-        if @request.save
-          UserMailer.notify_swap_decline(@request, declinee).deliver
-          flash[:success] = "The offer has been declined and the offerer notified."
-        end
-      end
-    end
-    redirect_to @request
-  end
-
   def index
     if params[:past]
       if current_user.admin?
@@ -175,7 +162,6 @@ class RequestsController < ApplicationController
   end
 
   def show
-    @request = Request.find(params[:id])
     @swap_candidates = if current_user == @request.user
       @request.swap_candidates
     else
@@ -184,24 +170,24 @@ class RequestsController < ApplicationController
   end
 
   def destroy
-    req = Request.find(params[:id])
-    if current_user_can_edit?(req)
-      req.destroy
-      flash[:success] = "Request deleted"
-    else
-      flash[:error] = "You don't have permission to delete that"
-    end
+    @request.destroy
+    flash[:success] = "Request deleted"
     redirect_to :back
   end
 
   private
 
-    def check_request_is_open
-      unless @request.open?
-        redirect_to :back, flash: { warning: "Sorry, this request is no longer open." }
+    def find_request
+      @request = Request.find(params[:id])
+    end
+
+    def check_owner
+      unless @request.user == current_user
+        flash[:error] = "Only the request owner can do that."
+        redirect_to @request
       end
     end
-  
+
     def check_editable
       reason = if @request.start.past?
           "The request can't be changed after the shift has passed."
@@ -210,8 +196,18 @@ class RequestsController < ApplicationController
         elsif @request.received_offer? || @request.sent_offer?
           "The request can't be changed while there is a pending offer."
         end
-      redirect_to @request, alert: reason if reason
+      if reason
+        flash[:error] = reason
+        redirect_to @request
+      end
     end
+    
+    def check_request_is_open
+      unless @request.open?
+        redirect_to :back, flash: { warning: "Sorry, this request is no longer open." }
+      end
+    end
+  
 
     def request_params
       params.require(:request).permit(:date, :shift, :text)

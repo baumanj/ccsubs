@@ -67,12 +67,32 @@ class User < ActiveRecord::Base
 
   def future_availabilities
     availabilities.where("date > ?", Date.today).select do |a| 
-      a.start > Time.now && a.request.nil?
+      a.start > Time.now
+    end
+  end
+  
+  def available?(request)
+    a = availability_for(request)
+    a.nil? || a.request.nil?
+  end
+
+  def availability_for!(request)
+    if available?(request)
+      availability_for(request) || create_availability!(request)
     end
   end
 
   private
 
+    def availability_for(request)
+      availabilities.find_by(date: request.date, shift: request.shift_to_i)
+    end
+
+    def create_availability!(request)
+      Availability.create!(user: self, shift: request.shift, date: request.date, 
+                           implicitly_created: true)
+    end
+    
     def create_remember_token
       self.remember_token = User.digest(User.new_secure_token)
     end

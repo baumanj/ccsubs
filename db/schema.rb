@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141206085303) do
+ActiveRecord::Schema.define(version: 20141206194019) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -20,10 +20,12 @@ ActiveRecord::Schema.define(version: 20141206085303) do
     t.integer  "user_id"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "shift",      null: false
-    t.date     "date",       null: false
+    t.integer  "shift",                              null: false
+    t.date     "date",                               null: false
+    t.boolean  "implicitly_created", default: false, null: false
   end
 
+  add_index "availabilities", ["user_id", "shift", "date"], name: "index_availabilities_on_user_id_and_shift_and_date", unique: true, using: :btree
   add_index "availabilities", ["user_id"], name: "index_availabilities_on_user_id", using: :btree
 
   create_table "requests", force: true do |t|

@@ -20,7 +20,9 @@ class AvailabilitiesController < ApplicationController
 
   def destroy
     availability = Availability.find(params[:id])
-    if current_user_can_edit?(availability)
+    if availability.request
+      flash[:error] = "This availability is committed to #{availability.request.user}'s request, so it can't be deleted."
+    elsif current_user_can_edit?(availability)
       availability.destroy
       flash[:success] = "Availability deleted"
     else

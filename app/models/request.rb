@@ -37,9 +37,9 @@ class Request < ActiveRecord::Base
 
   def shift_is_between_now_and_a_year_from_now
     if start < DateTime.now
-      errors.add(:start, "time must be in the future")
+      errors.add(:start, "time must be in the future.")
     elsif start > 1.year.from_now
-      errors.add(:start, "time must be within a year")
+      errors.add(:start, "time must be within a year.")
     end
   end
   
@@ -71,24 +71,23 @@ class Request < ActiveRecord::Base
     
     if fulfilling_swap
       if availability.fulfilling_swap.user != self.user
-        errors.add(:user, "Availability is for #{availability.fulfilling_swap.user}; should be for #{self.user}")
+        errors.add(:user, "Availability is for #{availability.fulfilling_swap.user}; should be for #{self.user}.")
       end
       
       if fulfilling_swap.fulfilling_swap != self
-        errors.add(:fulfilling_swap, "Swapped requests are not reciprocal #{self} => #{fulfilling_swap} => #{fulfilling_swap.fulfilling_swap}")
+        errors.add(:fulfilling_swap, "Swapped requests are not reciprocal #{self} => #{fulfilling_swap} => #{fulfilling_swap.fulfilling_swap}.")
       end
     end
   end
 
   def fulfill_by_sub(subber)
+    if !subber.available?(self)
+      errors.add(:availability, "#{subber} is no longer available to swap for #{self}.")
+      return false
+    end
     transaction do
-      availability = subber.availabilities.find_by(date: date, shift: shift)
-      if availability.nil?
-        # If the user offering sub hasn't createed that availability already,
-        # just make it. We'll take their word for it.
-        availability = Availability.create!(user: subber, shift: shift, date: date)
-      end
-      update_attributes!(fulfilling_sub: availability, state: :fulfilled)
+      sub_availability = subber.availability_for!(self)
+      update_attributes!(fulfilling_sub: sub_availability, state: :fulfilled)
     end
   end
   
@@ -96,25 +95,48 @@ class Request < ActiveRecord::Base
   # self.availability will be set to the availibilty for covering this request
   def set_pending_swap(offer_request, my_availability)
     if !offer_request.open?
-      errors.add(:offer_request, "Only open requests can be offered for swap")
+      errors.add(:offer_request, "Only open requests can be offered for swap.")
       return false
     elsif my_availability.request
-      errors.add(:availability, "#{availability.user} is no longer available to swap for #{offer_request}")
+      errors.add(:availability, "#{availability.user} is no longer available to swap for #{offer_request}.")
+      return false
+    elsif !offer_request.user.available?(self)
+      errors.add(:availability, "#{offer_request.user} is no longer available to swap for #{self}.")
       return false
     end
 
-    # Find if the offerer already has an availability entry for this shift
-    offer_availability = offer_request.user.availabilities.find_by(date: date, shift: shift)
-    if offer_availability && offer_availability.request
-      errors.add(:availability, "#{offer_availability.user} is no longer available to swap for #{self}")
+    transaction do
+      offer_availability = offer_request.user.availability_for!(self)
+      update_attributes!(state: :received_offer, 
+                         availability: offer_availability, 
+                         fulfilling_swap: offer_request)
+      offer_request.update_attributes!(state: :sent_offer, 
+                                       availability: my_availability, 
+                                       fulfilling_swap: self)
+    end
+  end
+  
+  def decline_pending_swap
+    offer_request = fulfilling_swap
+    offer_availability = availability
+    my_availability = offer_request.availability
+
+    if offer_request.nil?
+      errors.add(:fulfilling_swap, "There is no swap offer pending.")
+    elsif !received_offer?
+      errors.add(:state, "Only received offers can be declined.")
       return false
     end
     
     transaction do
-      offer_availability ||= Availability.create!(user: offer_request.user, shift: shift, date: date)
-      update_attributes!(state: :received_offer, availability: offer_availability, fulfilling_swap: offer_request)
-      offer_request.update_attributes!(state: :sent_offer, availability: my_availability, fulfilling_swap: self)
+      [self, offer_request].each do |r|
+        r.update_attributes!(state: :seeking_offers, availability: nil, 
+                             fulfilling_swap: nil)
+      end
+      [my_availability, offer_availability].each do |a|
+        a.destroy! if a.implicitly_created?
+      end
     end
   end
-  
+        
 end

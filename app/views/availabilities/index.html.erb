@@ -10,7 +10,9 @@
     <% @availabilities.each do |availability| %>
       <li>
         <%= availability %>
-        <% if current_user_can_edit?(availability) %>
+        <% if availability.request %>
+           [<%= link_to "tentatively committed", availability.request%>]
+        <% elsif availability.user == current_user %>
           <%= link_to "Delete", availability, method: :delete, 
                       data: { confirm: "Really delete this availability?" } %>
         <% end %>

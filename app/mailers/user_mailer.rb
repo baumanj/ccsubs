@@ -28,10 +28,10 @@ class UserMailer < ActionMailer::Base
          subject: "Sub/Swap #{@req}: swap accepted!"
   end
 
-  def notify_swap_decline(req, declinee)
+  def notify_swap_decline(req, offer_req)
     @req = req
     @decliner = req.user
-    @declinee = declinee
+    @declinee = offer_req.user
     mail to: @declinee.email,
          subject: "Sub/Swap #{@req}: swap declined 😭"
   end

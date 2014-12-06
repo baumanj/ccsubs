@@ -43,7 +43,12 @@ don't allow creation of requests until email is confirmed -->
       is pending <%= @request.user %>'s approval.
     </div>
   <% elsif @request.sent_offer? %>
-    <p>Put accept/decline stuff here</p>
+
+    <div class="alert alert-info">
+      <%= render partial: 'offer_response',
+          locals: {offer: @request } %>
+    </div>
+
   <% end %>
 <% else %>
   <p>This request is not currently open to offers</p>
