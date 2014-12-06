@@ -2,12 +2,12 @@
 <h1>Fulfill Request</h1>
 
 <p>
-  In fulfillment of your request for coverage on <%= @request.time_string %>,
+  In fulfillment of your request for coverage on <%= @request %>,
   <%= @request.fulfilling_user.name %> would like to 
   <% if @sub %>
       sub for you.
   <% else %>
-      swap with you for <%= @availability.time_string %>.
+      swap with you for <%= @availability %>.
   <% end %>
 </p>
 

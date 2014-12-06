@@ -1,0 +1,50 @@
+<% if @request.received_offer? %>
+  <p>
+    Pending swap offered by <%= @request.fulfilling_swap.user.name %> for
+    <%= @request.fulfilling_swap %>
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3">
+        <%= form_for(@request, url: accept_swap_url) do |f| %>
+          <%= f.submit "Accept", class: "btn btn-large btn-primary",
+              data: { confirm: "Do you promise to cover " +      
+                      @request.fulfilling_swap + " in return?" } %>
+        <% end %>
+        <%= form_for(@request, url: decline_swap_url) do |f| %>
+          <%= f.submit "Decline", class: "btn btn-large btn-primary",
+              data: { confirm: "You really want to decline this offer?" } %>
+        <% end %>
+      </div>
+    </div>
+  </p>
+<% else %>
+  <% if @swap_candidates.empty? %>
+    <p>
+      Currently, nobody looking for a swap is available to take this shift.
+    </p>
+    <p>
+      Adding more shifts you are available to swap for will increase the
+      chances of finding a match.
+    </p>
+  <% else %>
+    <p>Requests whose users are available to swap with this shift:</p>
+    <ul>
+    <% @swap_candidates.each do |req| %>
+        <li><%= link_to req, request_path(req) %></li>
+    <% end %>
+    </ul>
+  <% end %>
+
+  <% if @request.user.availabilities.empty? %>
+    <p>You haven't added any swap availability. You might want to 
+      <%= link_to "add some", availabilities_path %>.</p>
+  <% else %>
+    <p>Shifts you are available to swap for
+      (<%= link_to "edit availability", availabilities_path %>):</p>
+    <ul class="availabilities">
+      <% @request.user.availabilities.each do |availability| %>
+        <li><%= availability %></li>
+        <% end %>
+    </ul>
+  <% end %>
+
+<% end %>

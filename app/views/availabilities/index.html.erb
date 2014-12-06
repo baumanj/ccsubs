@@ -13,7 +13,7 @@
     <% end %>
     <% @availabilities.each do |availability| %>
       <li>
-        <%= availability.time_string %>
+        <%= availability %>
         <% if current_user_can_edit?(availability) %>
           <%= link_to "Delete", availability, method: :delete, 
                       data: { confirm: "Really delete this availability?" } %>

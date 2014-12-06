@@ -1,114 +1,25 @@
-<h1><%= @request.time_string %></h1>
-
-<% if @request.fulfilled? %>
-  <h2>
-    Fulfilled by <%= @request.fulfilling_user.name %>
-    <% if @request.swapped_shift %>
-      <%= "in exchange for #{@request.swapped_shift_string}" %>
-    <% else %>
-      <%= "in a selfless act of subbing (i.e., no swap)" %>
-    <% end %>
-  </h2>
-<% elsif @request.fulfilling_user %>
-  <p>
-    Pending swap offered by <%= @request.fulfilling_user.name %> for
-    <%= @request.swapped_shift_string %>
-    <% if current_user == @request.user %>
-      <div class="row">
-        <div class="col-md-6 col-md-offset-3">
-          <%= form_for(@request, url: accept_swap_url) do |f| %>
-            <%= f.submit "Accept", class: "btn btn-large btn-primary",
-                data: { confirm: "Do you promise to cover " +      
-                        @request.swapped_shift_string + " in return?" } %>
-          <% end %>
-          <%= form_for(@request, url: decline_swap_url) do |f| %>
-            <%= f.submit "Decline", class: "btn btn-large btn-primary",
-                data: { confirm: "You really want to decline this offer?" } %>
-          <% end %>
-        </div>
-      </div>
-    <% end %>
-  </p>
-<% end %>
+<h1><%= @request %></h1>
 
 <div class="jumbotron">
   <p><%= @request.text %></p>
-  <% if current_user_can_edit?(@request) and @request.editable? %>
-    <p>[<%= link_to "Edit request", edit_request_path(@request) %>]</p>
-  <% end %>
 </div>
 
+<% if @request.open? %>
+  <% if current_user_can_edit?(@request) %>
+    <p>[<%= link_to "Edit request", edit_request_path(@request) %>]</p>
+  <% end %>
 
-<% if @request.fulfilling_user.nil? %>
   <% if current_user == @request.user %>
-
-    <% if @swap_candidates.empty? %>
-      <p>
-        Currently, nobody looking for a swap is available to take this shift.
-      </p>
-      <p>
-        Adding more shifts you are available to swap for will increase the
-        chances of finding a match.
-      </p>
-    <% else %>
-      <p>Requests whose users are available to swap with this shift:</p>
-      <ul>
-      <% @swap_candidates.each do |req| %>
-          <li><%= link_to req.time_string, request_path(req) %></li>
-      <% end %>
-      </ul>
-    <% end %>
-
-    <% if @request.user.availabilities.empty? %>
-      <p>You haven't added any swap availability. You might want to 
-        <%= link_to "add some", availabilities_path %>.</p>
-    <% else %>
-      <p>Shifts you are available to swap for
-        (<%= link_to "edit availability", availabilities_path %>):</p>
-      <ul class="availabilities">
-        <% @request.user.availabilities.each do |availability| %>
-          <li><%= availability.time_string %></li>
-          <% end %>
-      </ul>
-    <% end %>
-
+    <%= render 'requests/owned_request' %>
   <% else %>
-<!-- send email through the site and require an availability
-don't allow creation of requests until email is confirmed -->
+    <%= render 'requests/others_request' %>
+  <% end %>
 
-    <div class="row">
-      <div class="col-md-6 col-md-offset-3">
-        <%= form_for(@request, url: offer_sub_url) do |f| %>
-
-          <%= f.hidden_field :fulfilling_user_id, value: current_user.id %>
-          <%= f.submit "Offer to sub (no swap)", 
-              class: "btn btn-large btn-primary" %>
-        <% end %>
-      </div>
-    </div>
-
-    <p>Shifts this user is available to swap for:</p>
-    <ul class="availabilities">
-      <% @request.user.availabilities.each do |availability| %>
-
-        <div class="row">
-          <div class="col-md-6 col-md-offset-3">
-            <%= form_for(@request, url: offer_swap_url) do |f| %>
-
-              <%= f.hidden_field :availability_id, value: availability.id %>
-              <%= f.hidden_field :fulfilling_user_id, value: current_user.id %>
-              
-              <%= f.submit "Offer to swap for #{availability.time_string}", 
-                  class: "btn btn-large btn-primary" %>
-            <% end %>
-          </div>
-        </div>
-
-      <% end %>
-    </ul>
-  
+<% else%>
+  <% if @request.start.past? %>
+    <p>This request's start time has passed.</p>
+  <% elsif @request.fulfilled? %>
+    <p>This request has been fulfilled.</p>  
   <% end %>
 <% end %>
-
-<p><%= link_to "Back to request list", requests_path %>
 

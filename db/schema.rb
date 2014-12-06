@@ -11,20 +11,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141122022813) do
+ActiveRecord::Schema.define(version: 20141205221140) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "availabilities", force: true do |t|
     t.integer  "user_id"
-    t.integer  "request_id"
-    t.datetime "start"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "shift",      null: false
+    t.date     "date",       null: false
   end
 
-  add_index "availabilities", ["request_id"], name: "index_availabilities_on_request_id", using: :btree
   add_index "availabilities", ["user_id"], name: "index_availabilities_on_user_id", using: :btree
 
   create_table "requests", force: true do |t|
@@ -32,11 +31,11 @@ ActiveRecord::Schema.define(version: 20141122022813) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "text"
-    t.integer  "fulfilling_user_id"
-    t.datetime "swapped_shift"
     t.integer  "shift",              null: false
     t.date     "date",               null: false
     t.integer  "state",              null: false
+    t.integer  "fulfilling_swap_id"
+    t.integer  "fulfilling_sub_id"
   end
 
   create_table "users", force: true do |t|

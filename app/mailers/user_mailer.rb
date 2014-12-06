@@ -10,7 +10,7 @@ class UserMailer < ActionMailer::Base
     @req = req
     @user = @req.user
     @fulfilling_user = @req.fulfilling_user
-    mail to: @user.email, subject: "Sub/Swap #{@req.time_string}: sub found!"
+    mail to: @user.email, subject: "Sub/Swap #{@req}: sub found!"
   end
 
   def notify_swap_offer(req, availability)
@@ -19,7 +19,7 @@ class UserMailer < ActionMailer::Base
     @user = @req.user
     @fulfilling_user = @req.fulfilling_user
     mail to: @user.email,
-         subject: "Sub/Swap #{@req.time_string}: swap offered! [ACTION REQUIRED]"
+         subject: "Sub/Swap #{@req}: swap offered! [ACTION REQUIRED]"
   end
 
   def notify_swap_accept(req)
@@ -27,7 +27,7 @@ class UserMailer < ActionMailer::Base
     @accepter = req.user
     @acceptee = req.fulfilling_user
     mail to: @acceptee.email,
-         subject: "Sub/Swap #{@req.time_string}: swap accepted!"
+         subject: "Sub/Swap #{@req}: swap accepted!"
   end
 
   def notify_swap_decline(req, declinee)
@@ -35,7 +35,7 @@ class UserMailer < ActionMailer::Base
     @decliner = req.user
     @declinee = declinee
     mail to: @declinee.email,
-         subject: "Sub/Swap #{@req.time_string}: swap declined 😭"
+         subject: "Sub/Swap #{@req}: swap declined 😭"
   end
 
   def reset_password(user)

@@ -28,14 +28,14 @@
     <% end %>
     <% @requests.each do |req| %>
       <li>
-        <%= req.time_string %>
+        <%= req %>
         <%= link_to req.brief_text, req %>
         <% if current_user_can_edit?(req) %>
           <%= link_to "Edit", edit_request_path(req) %>
           <%= link_to "Delete", req, method: :delete, 
                       data: { confirm: "Really delete this request?" } %>
         <% end %>
-        <%= "[fulfilled]" if req.fulfilled %>
+        <%= "[fulfilled]" if req.fulfilled? %>
       </li>
     <% end %>
   </ul>

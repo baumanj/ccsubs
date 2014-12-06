@@ -1,15 +1,25 @@
 class Request < ActiveRecord::Base
+  include ShiftTime
+
   BRIEF_LEN = 140
 
   belongs_to :user
-  belongs_to :fulfilling_user, class_name: "User"
+#  belongs_to :fulfilling_user, class_name: "User"
+  belongs_to :fulfilling_swap, class_name: "Request"
+  belongs_to :fulfilling_sub, class_name: "Availability"
+
   validates :user, presence: true
   validates :shift, presence: true
   validate :shift_is_between_now_and_a_year_from_now, on: :create
+  validate :sub_availability_matches_request
 
-  DATE_FORMAT = "%A, %B %e"
-  enum shift: [ :'8-12:30', :'12:30-5', :'5-9', :'9-1' ]
-  enum state: [ :'seeking offers', :'offer pending', :fulfilled ]
+  enum shift: ShiftTime::SHIFT_NAMES
+  enum state: [ :seeking_offers, :received_offer, :sent_offer, :fulfilled ]
+
+  def self.all_seeking_offers
+    Request.seeking_offers.where("date >= ?", Date.today)
+      .order(:date, :shift).select {|r| r.start > Time.now }
+  end
 
   def brief_text
     if text.length <= BRIEF_LEN
@@ -19,18 +29,6 @@ class Request < ActiveRecord::Base
     end
   end
 
-  def start
-    if date && shift
-      h, m = shift.split("-").first.split(":").map(&:to_i)
-      m = 0 if m.nil?
-      date + h.hours + m.minutes
-    end
-  end
-
-  def time_string
-    "#{date.strftime(DATE_FORMAT)}, #{shift}"
-  end
-  
   def swapped_shift_string
     shift_str, _ = Request.shifts.find do |key, val|
       swapped_shift.strftime("%l").strip == key.split("-").first.split(":").first
@@ -39,37 +37,46 @@ class Request < ActiveRecord::Base
   end
 
   def shift_is_between_now_and_a_year_from_now
-    if start && start < DateTime.now
+    if start < DateTime.now
       errors.add(:start, "time must be in the future")
-    end
-  end
-
-  def shift_is_within_a_year
-    if start && start > 1.year.from_now
+    elsif start > 1.year.from_now
       errors.add(:start, "time must be within a year")
     end
   end
   
+  # Find the availabilities that aren't attached to requests and which belong
+  # to users with open requests
   def swap_candidates
-    availabilities = Availability.where(start: self.start)
+    availabilities = Availability.where(date: self.date, shift: self.shift)
     requests = availabilities.flat_map do |availability|
-      open_reqs = availability.user.requests.select do |req|
-        !req.fulfilled? && req.start.future?
-      end
+      availability.user.requests.select {|req| req.open? }
     end
   end
 
-  def fulfilled?
-    state == :fulfilled
+  def open?
+    seeking_offers? && start.future?
+  end
+    
+  def fulfilling_user
+    (fulfilling_swap || fulfilling_sub).user
   end
   
-  def pending_offer?
-    state == :'offer pending'
-    # fulfilling_user && !fulfilled?
+  def sub_availability_matches_request
+    if fulfilling_sub && fulfilling_sub.start != start
+      errors.add(:fulfilling_sub, "sub must be for same shift")
+    end
   end
 
-  def editable?
-    state == :'seeking offers'
-    # !fulfilled? && !pending_offer?
+  def fulfill_by_sub(user)
+    transaction do
+      availability = user.availabilities.find_by(date: date, shift: shift)
+      if availability.nil?
+        # If the user offering sub hasn't created that availability already,
+        # just make it. We'll take their word for it.
+        availability = Availability.create!(user: user, shift: shift, date: date)
+      end
+      update_attributes(fulfilling_sub: availability, state: :fulfilled)
+    end
   end
+  
 end

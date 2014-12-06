@@ -1,0 +1,40 @@
+<% if @request.seeking_offers? %>
+<!-- send email through the site and require an availability
+don't allow creation of requests until email is confirmed -->
+
+  <div class="row">
+    <div class="col-md-6 col-md-offset-3">
+      <%= form_for(@request, url: offer_sub_url) do |f| %>
+        <%= f.submit "Offer to sub (no swap)", 
+            class: "btn btn-large btn-primary" %>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @swap_candidates.empty? %>
+    <p>This user doesn't have any shifts they are available to swap for.</p>
+  <% else %>
+    <p>Shifts this user is available to swap for:</p>
+  <% end %>
+  <ul class="availabilities">
+    <% @swap_candidates.each do |availability| %>
+
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+          <%= form_for(@request, url: offer_swap_url) do |f| %>
+
+            <%= f.hidden_field :availability_id, value: availability.id %>
+            <%= f.hidden_field :fulfilling_user_id, value: current_user.id %>
+            
+            <%= f.submit "Offer to swap for #{availability}", 
+                class: "btn btn-large btn-primary" %>
+          <% end %>
+        </div>
+      </div>
+
+    <% end %>
+  </ul>
+  
+<% else %>
+  <p>This request is not currently open to offers</p>
+<% end %>

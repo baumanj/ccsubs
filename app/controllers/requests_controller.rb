@@ -1,13 +1,16 @@
 class RequestsController < ApplicationController
   before_action :require_signin
+  before_action :find_request, only: [:offer_sub]
   before_action :check_editable, only: [:edit, :update]
-
+  before_action :check_request_is_open, only: [:offer_sub, :offer_swap]
+  
   def new
     @request = Request.new
   end
 
   def create
     @request = Request.new(request_params)
+    @request.state = :seeking_offers
     @request.user = current_user
     if @request.save
       flash[:success] = "Request created"
@@ -31,13 +34,13 @@ class RequestsController < ApplicationController
             # Remove availability for swapped_shift
             @request.user.availabilities.where(start: @request.swapped_shift).each do |a|
               a.destroy
-              flash[:success] += " Destroyed my #{a.time_string} availability."
+              flash[:success] += " Destroyed my #{a} availability."
             end
 
             # Remove fulfilling_user's availability for this shift if it exists
             @request.fulfilling_user.availabilities.where(start: @request.start).each do |a|
               a.destroy
-              flash[:success] += " Destroyed #{a.user.name}'s #{a.time_string} availability."
+              flash[:success] += " Destroyed #{a.user.name}'s #{a} availability."
             end
         
             # Fulfill request for swapped_shift if it exists
@@ -46,7 +49,7 @@ class RequestsController < ApplicationController
                 .select {|r| r.start == @request.swapped_shift }.each do |r|
               r.update_attributes(fulfilled: true, fulfilling_user: @request.user,
                                   swapped_shift: @request.start)
-              flash[:success] += " Marked #{r.user.name}'s #{r.time_string} request fulfilled"
+              flash[:success] += " Marked #{r.user.name}'s #{r} request fulfilled"
             end
         
             # Email the other user, and crisis line staff
@@ -62,26 +65,24 @@ class RequestsController < ApplicationController
     end
   end
 
+  def find_request
+    @request = Request.find(params[:id])
+  end
+
+  def check_request_is_open
+    unless @request.open?
+      redirect_to :back, flash: { warning: "Sorry, this request is no longer open." }
+    end
+  end
+  
   # post '/requests/:id/offer/sub', to: 'requests#offer_sub', as: :offer_sub
-  def offer_sub
-    Request.transaction do
-      Availability.transaction do
-    
-        @request = Request.find(params[:id])
-        if @request.fulfilling_user.nil?
-          associate_fulfilling_user
-          @request.fulfilled = true
-          @request.swapped_shift = nil # just to be sure
-          if @request.save
-            UserMailer.notify_sub(@request).deliver
-            flash[:success] = "OK, we let #{@request.user.name} know the good news."
-          else
-            flash[:errors] = "Something went wrong."
-          end
-        else
-          flash[:errors] = "Sorry, #{@request.fulfilling_user.name} beat you to it."
-        end
-      end
+  def offer_sub    
+    if @request.fulfill_by_sub(current_user)
+      UserMailer.notify_sub(@request).deliver 
+      flash[:success] = "OK, we let #{@request.user.name} know the good news."
+    else
+      flash[:errors] = "Something went wrong."
+      ActiveRecord::Rollback
     end
 
     redirect_to @request
@@ -127,13 +128,13 @@ class RequestsController < ApplicationController
         # Remove availability for swapped_shift
         @request.user.availabilities.where(start: @request.swapped_shift).each do |a|
           a.destroy
-          flash[:success] += " Destroyed my #{a.time_string} availability."
+          flash[:success] += " Destroyed my #{a} availability."
         end
 
         # Remove fulfilling_user's availability for this shift if it exists
         @request.fulfilling_user.availabilities.where(start: @request.start).each do |a|
           a.destroy
-          flash[:success] += " Destroyed #{a.user.name}'s #{a.time_string} availability."
+          flash[:success] += " Destroyed #{a.user.name}'s #{a} availability."
         end
     
         # Fulfill request for swapped_shift if it exists
@@ -142,7 +143,7 @@ class RequestsController < ApplicationController
             .select {|r| r.start == @request.swapped_shift } .each do |r|
           r.update_attributes(fulfilled: true, fulfilling_user: @request.user,
                               swapped_shift: @request.start)
-          flash[:success] += " Marked #{r.user.name}'s #{r.time_string} request fulfilled"
+          flash[:success] += " Marked #{r.user.name}'s #{r} request fulfilled"
         end
     
         if @request.save
@@ -191,14 +192,17 @@ class RequestsController < ApplicationController
         redirect_to requests_path(owner: current_user)
       end
     else
-      @requests = Request.where(fulfilled: false).
-        where("date > ?", DateTime.now).order(:date, :shift)
+      @requests = Request.all_seeking_offers
     end
   end
 
   def show
     @request = Request.find(params[:id])
-    @swap_candidates = @request.swap_candidates
+    @swap_candidates = if current_user == @request.user
+      @request.swap_candidates
+    else
+      @request.user.availabilities
+    end
   end
 
   def destroy
@@ -214,16 +218,6 @@ class RequestsController < ApplicationController
 
   private
 
-    def associate_fulfilling_user
-      @request.fulfilling_user = User.find(params[:request][:fulfilling_user_id])
-      availability = @request.fulfilling_user.availabilities.find_by(start: @request.start)
-      # Create availability if it doesn't exist?
-      if availability
-        availability.request = @request
-        availability.save!
-      end
-    end
-
     def check_editable
       @request = Request.find(params[:id])
       reason = if @request.fulfilled?
@@ -235,7 +229,6 @@ class RequestsController < ApplicationController
     end
 
     def request_params
-      params.require(:request).permit(:date, :shift, :text, :fulfilled,
-                                      :fulfilling_user_id, :swapped_shift)
+      params.require(:request).permit(:date, :shift, :text)
     end
 end
