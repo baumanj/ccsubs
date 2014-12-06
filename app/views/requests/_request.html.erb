@@ -3,15 +3,7 @@
     <%= form_for(@request) do |f| %>
       <%= render 'shared/error_messages' %>
 
-      <%= f.label :start, "date" %>
-      <%= f.date_field :start if false %>
-      <%= f.date_select :date, order: [:month, :day, :year],
-                        start_year: Date.today.year,
-                        end_year: Date.today.year + 1  %>
-
-      <%= f.label :shift, "time" %>
-      <%= f.select :shift, Request.shifts.map {|k,v| [k,k] },
-                  { prompt: 'Select shift'} %>
+      <%= render partial: 'shared/shift_time', locals: {f: f} %>
 
       <%= f.label :text, "details" %>
       <%= f.text_area :text %>

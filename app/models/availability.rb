@@ -1,5 +1,6 @@
 class Availability < ActiveRecord::Base
   include ShiftTime
+  default_scope { order(:date, :shift) }
 
   belongs_to :user
   has_one :request

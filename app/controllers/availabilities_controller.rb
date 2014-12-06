@@ -1,6 +1,5 @@
 class AvailabilitiesController < ApplicationController
   before_action :require_signin
-  before_action :check_authorization, only: [:index]
 
   def create
     @availability = Availability.new(availability_params)
@@ -15,12 +14,7 @@ class AvailabilitiesController < ApplicationController
   end
 
   def index
-    @user = if params[:id]
-      User.find(params[:id])
-    else
-      current_user
-    end
-    @availabilities = @user.availabilities.where(request_id: nil).where("start > ?", DateTime.now).order(:start)
+    @availabilities = current_user.future_availabilities
     @availability = Availability.new
   end
 
@@ -38,6 +32,6 @@ class AvailabilitiesController < ApplicationController
   private
 
     def availability_params
-      params.require(:availability).permit(:start, :shift)
+      params.require(:availability).permit(:date, :shift)
     end
 end

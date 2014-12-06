@@ -13,12 +13,10 @@ class UserMailer < ActionMailer::Base
     mail to: @user.email, subject: "Sub/Swap #{@req}: sub found!"
   end
 
-  def notify_swap_offer(req, availability)
+  def notify_swap_offer(req, offer_req)
     @req = req
-    @availability = availability
-    @user = @req.user
-    @fulfilling_user = @req.fulfilling_user
-    mail to: @user.email,
+    @offer_req = offer_req
+    mail to: @req.user.email,
          subject: "Sub/Swap #{@req}: swap offered! [ACTION REQUIRED]"
   end
 

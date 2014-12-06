@@ -13,4 +13,10 @@ module ShiftTime
   def to_s
     "#{date.strftime(DATE_FORMAT)}, #{shift}"
   end
+  
+  # Enums kinda suck, we need their integer value in query contexts
+  # https://hackhands.com/ruby-on-enums-queries-and-rails-4-1/
+  def shift_to_i
+    self.class.shifts[shift]
+  end
 end

@@ -1,6 +1,6 @@
 class RequestsController < ApplicationController
   before_action :require_signin
-  before_action :find_request, only: [:offer_sub]
+  before_action :find_request, only: [:edit, :offer_sub, :offer_swap]
   before_action :check_editable, only: [:edit, :update]
   before_action :check_request_is_open, only: [:offer_sub, :offer_swap]
   
@@ -69,20 +69,13 @@ class RequestsController < ApplicationController
     @request = Request.find(params[:id])
   end
 
-  def check_request_is_open
-    unless @request.open?
-      redirect_to :back, flash: { warning: "Sorry, this request is no longer open." }
-    end
-  end
-  
   # post '/requests/:id/offer/sub', to: 'requests#offer_sub', as: :offer_sub
   def offer_sub    
     if @request.fulfill_by_sub(current_user)
       UserMailer.notify_sub(@request).deliver 
       flash[:success] = "OK, we let #{@request.user.name} know the good news."
     else
-      flash[:errors] = "Something went wrong."
-      ActiveRecord::Rollback
+      flash[:error] = @request.errors.full_messages.join(". ")
     end
 
     redirect_to @request
@@ -90,32 +83,17 @@ class RequestsController < ApplicationController
 
   # post '/requests/:id/offer/swap', to: 'requests#offer_swap', as: :offer_swap
   def offer_swap
-    Request.transaction do
-      Availability.transaction do
+    offer_request = Request.find(params[:offer_request_id])
+    availability = Availability.find(params[:availability_id])
     
-        @request = Request.find(params[:id])
-        if @request.fulfilling_user.nil?
-          @availability = @request.user.availabilities.find(params[:request][:availability_id])
-          if @availability.nil? || @availability.request
-            flash[:errors] = "Sorry, #{@request.user.name} isn't available to swap then."
-          else
-            associate_fulfilling_user
-            @request.swapped_shift = @availability.start
-            # Attach the fulfilling user's availability if it exists
-            if @request.save
-              UserMailer.notify_swap_offer(@request, @availability).deliver
-              flash[:success] = "OK, we sent #{@request.user.name} an email to let them know about your offer."
-            else
-              flash[:errors] = "Something went wrong."
-            end
-          end
-        else
-          flash[:errors] = "Sorry, #{@request.fulfilling_user.name} beat you to it"
-        end
-      end
+    if @request.set_pending_swap(offer_request, availability)
+      UserMailer.notify_swap_offer(@request, offer_request).deliver
+      flash[:success] = "OK, we sent #{@request.user} an email to let them know about your offer."
+    else
+      flash[:error] = @request.errors.full_messages.join(". ")
     end
-    
-    redirect_to @request
+      
+    redirect_to :back
   end
 
   def accept_swap
@@ -218,14 +196,21 @@ class RequestsController < ApplicationController
 
   private
 
+    def check_request_is_open
+      unless @request.open?
+        redirect_to :back, flash: { warning: "Sorry, this request is no longer open." }
+      end
+    end
+  
     def check_editable
-      @request = Request.find(params[:id])
-      reason = if @request.fulfilled?
+      reason = if @request.start.past?
+          "The request can't be changed after the shift has passed."
+        elsif @request.fulfilled?
           "The request can't be changed after it's been fulfilled."
-        elsif @request.pending_offer?
+        elsif @request.received_offer? || @request.sent_offer?
           "The request can't be changed while there is a pending offer."
         end
-      redirect_to @request, notice: reason if reason
+      redirect_to @request, alert: reason if reason
     end
 
     def request_params

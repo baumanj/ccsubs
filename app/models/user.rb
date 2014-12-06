@@ -65,6 +65,12 @@ class User < ActiveRecord::Base
     end
   end
 
+  def future_availabilities
+    availabilities.where("date > ?", Date.today).select do |a| 
+      a.start > Time.now && a.request.nil?
+    end
+  end
+
   private
 
     def create_remember_token

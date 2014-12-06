@@ -1,6 +1,2 @@
-Hi <%= @user.name %>,
-
-<%= @fulfilling_user.name %> has offered to swap with you for your
-<%= @req.swapped_shift_string %> shift. In exchange, you must take their
-<%= @availability %> shift. Please accept or decline this offer
-here: <%= request_url(@req) %>.
+Hey <%= @req.user %>,
+<%= @offer_req.user %> has offered to swap with you for your <%= @req %> shift. In exchange, you must take their <%= @offer_req %> shift. Please accept or decline this offer here: <%= request_url(@req) %>.

@@ -2,24 +2,20 @@
 
 <div class="jumbotron">
   <p><%= @request.text %></p>
+  <% if current_user_can_edit?(@request) %>
+    <%= button_to "Edit request", edit_request_path(@request),
+          method: :get, class: "btn" %>
+  <% end %>
 </div>
 
-<% if @request.open? %>
-  <% if current_user_can_edit?(@request) %>
-    <p>[<%= link_to "Edit request", edit_request_path(@request) %>]</p>
-  <% end %>
-
-  <% if current_user == @request.user %>
-    <%= render 'requests/owned_request' %>
-  <% else %>
-    <%= render 'requests/others_request' %>
-  <% end %>
-
-<% else%>
-  <% if @request.start.past? %>
-    <p>This request's start time has passed.</p>
-  <% elsif @request.fulfilled? %>
-    <p>This request has been fulfilled.</p>  
-  <% end %>
+<% if @request.start.past? %>
+  <p>This request's start time has passed.</p>
+<% elsif @request.fulfilled? %>
+  <p>This request has been fulfilled.</p>  
+<% elsif current_user == @request.user %>
+  <%= render 'requests/owned_request' %>
+<% else %>
+  <%= render 'requests/others_request' %>
 <% end %>
+
 

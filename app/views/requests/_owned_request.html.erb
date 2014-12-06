@@ -1,13 +1,15 @@
 <% if @request.received_offer? %>
-  <p>
-    Pending swap offered by <%= @request.fulfilling_swap.user.name %> for
-    <%= @request.fulfilling_swap %>
+  <div class="alert alert-info">
+    <p>
+      <%= @request.fulfilling_swap.user %> has offered to swap with you for
+      <%= link_to @request.fulfilling_swap, @request.fulfilling_swap %>.
+    </p>
     <div class="row">
       <div class="col-md-6 col-md-offset-3">
         <%= form_for(@request, url: accept_swap_url) do |f| %>
           <%= f.submit "Accept", class: "btn btn-large btn-primary",
               data: { confirm: "Do you promise to cover " +      
-                      @request.fulfilling_swap + " in return?" } %>
+                      @request.fulfilling_swap.to_s + " in return?" } %>
         <% end %>
         <%= form_for(@request, url: decline_swap_url) do |f| %>
           <%= f.submit "Decline", class: "btn btn-large btn-primary",
@@ -15,6 +17,11 @@
         <% end %>
       </div>
     </div>
+  </div>
+<% elsif @request.sent_offer? %>
+  <p>
+    Pending swap offered to <%= @request.fulfilling_swap.user %> for
+    <%= link_to @request.fulfilling_swap, @request.fulfilling_swap %>.
   </p>
 <% else %>
   <% if @swap_candidates.empty? %>
@@ -28,8 +35,17 @@
   <% else %>
     <p>Requests whose users are available to swap with this shift:</p>
     <ul>
-    <% @swap_candidates.each do |req| %>
+    <% @swap_candidates.each do |availability, reqs| %>
+      <li><%= availability.user %>:</li>
+      <ul>
+      <% reqs.each do |req| %>
+        <li><%= button_to "Offer to swap for #{req}", offer_swap_url(req),
+                class: "btn btn-primary", method: :patch,
+                params: { offer_request_id: @request.id,
+                          availability_id: availability.id } %></li>
         <li><%= link_to req, request_path(req) %></li>
+      <% end %>
+      </ul>
     <% end %>
     </ul>
   <% end %>

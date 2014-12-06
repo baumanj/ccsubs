@@ -35,6 +35,16 @@ don't allow creation of requests until email is confirmed -->
     <% end %>
   </ul>
   
+<% elsif @request.fulfilling_swap.user == current_user %>
+  <% if @request.received_offer? %>
+    <div class="alert alert-info">
+      Your offer to swap for 
+      <%= link_to @request.fulfilling_swap, @request.fulfilling_swap %>
+      is pending <%= @request.user %>'s approval.
+    </div>
+  <% elsif @request.sent_offer? %>
+    <p>Put accept/decline stuff here</p>
+  <% end %>
 <% else %>
   <p>This request is not currently open to offers</p>
 <% end %>

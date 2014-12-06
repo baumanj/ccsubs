@@ -1,10 +1,6 @@
 <% provide(:title, 'Swap availability') %>
 
-<% if @user == current_user %>
-  <h1>Shifts you are available to swap for</h1>
-<% else %>
-  <h1>Shifts <%= @user.name %> is available to swap for</h1>
-<% end %>
+<h1>Shifts you are available to swap for</h1>
 
 <div>
   <ul class="availabilities">
@@ -28,10 +24,7 @@
     <%= form_for(@availability) do |f| %>
       <%= render 'shared/error_messages' %>
 
-      <%= f.label :start, "date (MM/DD/YYYY)" %>
-      <%= f.date_field :start %>
-      <%= f.label :shift, "time" %>
-      <%= f.select :shift, Request::SHIFTS, { prompt: 'Select shift'} %>
+      <%= render partial: 'shared/shift_time', locals: {f: f} %>
 
       <%= f.submit "Add available shift", class: "btn btn-large btn-primary" %>
     <% end %>
