@@ -28,4 +28,13 @@ class Availability < ActiveRecord::Base
       errors.add(:availability, "can't conflict with user's own request")
     end
   end
+  
+  def tentative?
+    request && request.pending?
+  end
+  
+  def request
+    r = read_attribute(:request)
+    r if r && r.future?
+  end
 end

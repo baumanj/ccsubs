@@ -1,6 +1,7 @@
 class RequestsController < ApplicationController
   before_action :require_signin
-  before_action :find_request, except: [:new, :create, :index]
+  before_action :require_confirmed_email
+  before_action :find_request, except: [:new, :create, :index, :pending]
   before_action :check_owner, only: [:update, :delete, :accept_swap, :decline_swap]
   before_action :check_editable, only: [:edit, :update, :destroy]
   before_action :check_request_is_open, only: [:offer_sub, :offer_swap]
@@ -105,40 +106,13 @@ class RequestsController < ApplicationController
   end
 
   def accept_swap
-    @request = Request.find(params[:id])
-    Request.transaction do
-      Availability.transaction do
-
-        @request.fulfilled = true
-        flash[:success] = "Marked request fulfilled."
-        # Remove availability for swapped_shift
-        @request.user.availabilities.where(start: @request.swapped_shift).each do |a|
-          a.destroy
-          flash[:success] += " Destroyed my #{a} availability."
-        end
-
-        # Remove fulfilling_user's availability for this shift if it exists
-        @request.fulfilling_user.availabilities.where(start: @request.start).each do |a|
-          a.destroy
-          flash[:success] += " Destroyed #{a.user.name}'s #{a} availability."
-        end
-    
-        # Fulfill request for swapped_shift if it exists
-        @request.fulfilling_user.requests
-            .where(date: @request.swapped_shift.to_date)
-            .select {|r| r.start == @request.swapped_shift } .each do |r|
-          r.update_attributes(fulfilled: true, fulfilling_user: @request.user,
-                              swapped_shift: @request.start)
-          flash[:success] += " Marked #{r.user.name}'s #{r} request fulfilled"
-        end
-    
-        if @request.save
-          # XXX email crisis line staff, too
-          UserMailer.notify_swap_accept(@request).deliver
-        else
-          flash[:error] = "Something went wrong; swap not accepted."
-        end
-      end
+    # HERE: try accepting some swaps!
+    if @request.accept_pending_swap
+      # TODO email crisis line staff, too
+      UserMailer.notify_swap_accept(@request).deliver
+      flash[:success] = "#{offer_request.user}'s offer has been accepted!"
+    else
+      flash[:error] = @request.errors.full_messages.join(" ")
     end
     redirect_to @request
   end
@@ -161,11 +135,16 @@ class RequestsController < ApplicationController
     end
   end
 
+  def pending
+    @requests = Request.pending_requests(params[:user_id])
+    render 'index'
+  end
+
   def show
     @swap_candidates = if current_user == @request.user
       @request.swap_candidates
     else
-      @request.user.availabilities
+      @request.user.open_availabilities
     end
   end
 

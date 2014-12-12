@@ -43,6 +43,14 @@ module SessionsHelper
       redirect_to signin_path, notice: "You must sign in to do that."
     end
   end
+  
+  def require_confirmed_email
+    if !signed_in?
+      require_signin
+    elsif !current_user.confirmed?
+      redirect_to current_user, notice: "You must confirm your email first"
+    end
+  end
 
   def check_authorization
     if params.include?(:id) && params[:id].to_i != current_user.id &&

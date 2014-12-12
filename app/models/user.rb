@@ -71,6 +71,10 @@ class User < ActiveRecord::Base
     end
   end
   
+  def open_availabilities
+    future_availabilities.select {|a| a.request.nil? }
+  end
+  
   def available?(request)
     a = availability_for(request)
     a.nil? || a.request.nil?
@@ -80,6 +84,10 @@ class User < ActiveRecord::Base
     if available?(request)
       availability_for(request) || create_availability!(request)
     end
+  end
+  
+  def pending_offers?
+    Request.pending_requests(id).any?
   end
 
   private

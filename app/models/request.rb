@@ -4,7 +4,6 @@ class Request < ActiveRecord::Base
   BRIEF_LEN = 140
 
   belongs_to :user
-#  belongs_to :fulfilling_user, class_name: "User"
   belongs_to :fulfilling_swap, class_name: "Request"
   belongs_to :availability # The availability that is fulfilling this request
 
@@ -116,6 +115,35 @@ class Request < ActiveRecord::Base
     end
   end
   
+  def self.pending_requests(user_id)
+    Request.where(user_id: user_id).select {|r| r.pending? }
+  end
+  
+  def pending?
+    received_offer? && start.future?
+  end
+  
+  def future?
+    start.future?
+  end
+  
+  def accept_pending_swap
+    if fulfilling_swap.nil?
+      errors.add(:fulfilling_swap, "is missing.")
+      return false
+    elsif !received_offer?
+      errors.add(:state, "should be received offer, but is #{state}")
+      return false
+    end
+    
+    transaction do
+      availability.destroy!
+      fulfilling_swap.availability.destroy!
+      update_attributes!(state: :fulfilled, availability: nil)
+      fulfilling_swap.update_attributes!(state: :fulfilled, availability: nil)
+    end
+  end
+
   def decline_pending_swap
     offer_request = fulfilling_swap
     offer_availability = availability

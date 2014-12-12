@@ -3,6 +3,7 @@ Ccsubs::Application.routes.draw do
   get '/availabilities/:id', to: 'availabilities#index'
   resources :users
   resources :requests
+  get '/requests/:user_id/pending', to: 'requests#pending', as: :pending_requests
   patch '/requests/:id/offer/sub', to: 'requests#offer_sub', as: :offer_sub
   patch '/requests/:id/offer/swap', to: 'requests#offer_swap', as: :offer_swap
   patch '/requests/:id/accept/swap', to: 'requests#accept_swap', as: :accept_swap
