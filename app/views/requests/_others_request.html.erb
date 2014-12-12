@@ -12,7 +12,20 @@ don't allow creation of requests until email is confirmed -->
   </div>
 
   <% if @swap_candidates.empty? %>
-    <p>This user doesn't have any shifts they are available to swap for.</p>
+    <p>
+      This user doesn't have any shifts they are available to swap for that
+      match your requests.
+      <% unless @request.user.open_availabilities.empty? %>
+        They are available to swap for the following shifts. If you need
+        coverage for one of these, you should create a request.
+        <% @request.user.open_availabilities.each do |availability| %>
+          <%= button_to "New request for #{availability}", new_request_path,
+                        class: "btn", method: :get,
+                        params: { date: availability.date,
+                                  shift: availability.shift } %>
+        <% end %>
+      <% end %>
+    </p>
   <% else %>
     <p>Shifts this user is available to swap for:</p>
   <% end %>

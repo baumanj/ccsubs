@@ -45,12 +45,19 @@ class Request < ActiveRecord::Base
   # Find the availabilities that aren't attached to requests and which belong
   # to users with open requests
   # We want the list of requests that the other users have, paired with their availability for THIS request
-  def swap_candidates
-    availabilities = Availability.where(date: date, shift: shift_to_i).reject {|a| a.request }
-    requests = availabilities.map do |availability|
-      availability.user.requests.select {|req| req.open? }
+  def swap_candidates(user=nil)
+    if user
+      # find user's requests that match this request's user's availabilities
+      user.requests.select do |r| 
+        user.availabilities.find_by(date: r.date, shift: r.shift_to_i)
+      end
+    else
+      availabilities = Availability.where(date: date, shift: shift_to_i).reject {|a| a.request }
+      requests = availabilities.map do |availability|
+        availability.user.requests.select {|req| req.open? }
+      end
+      availabilities.zip(requests)
     end
-    availabilities.zip(requests)
   end
 
   def open?

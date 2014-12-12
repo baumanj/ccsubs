@@ -7,7 +7,7 @@ class RequestsController < ApplicationController
   before_action :check_request_is_open, only: [:offer_sub, :offer_swap]
 
   def new
-    @request = Request.new
+    @request = Request.new(params.permit(:date, :shift, :text))
   end
 
   def create
@@ -144,7 +144,8 @@ class RequestsController < ApplicationController
     @swap_candidates = if current_user == @request.user
       @request.swap_candidates
     else
-      @request.user.open_availabilities
+      # @request.user.open_availabilities(current_user)
+      @request.swap_candidates(current_user)
     end
   end
 
