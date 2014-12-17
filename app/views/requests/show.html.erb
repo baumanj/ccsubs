@@ -1,3 +1,5 @@
+<% provide(:title, @request) %>
+
 <h2><%= @request.user %> humbly requests coverage for</h2>
 <h1><%= @request %></h1>
 
@@ -12,11 +14,11 @@
 <% if @request.start.past? %>
   <p>This request's start time has passed.</p>
 <% elsif @request.fulfilled? %>
-  <p>This request has been fulfilled.</p>  
+  <%= render 'fulfilled_request' %>
 <% elsif current_user == @request.user %>
-  <%= render 'requests/owned_request' %>
+  <%= render 'owned_request' %>
 <% else %>
-  <%= render 'requests/others_request' %>
+  <%= render 'others_request' %>
 <% end %>
 
 

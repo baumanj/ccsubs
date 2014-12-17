@@ -5,12 +5,20 @@ class Request < ActiveRecord::Base
 
   belongs_to :user
   belongs_to :fulfilling_swap, class_name: "Request"
-  belongs_to :availability # The availability that is fulfilling this request
+  belongs_to :availability
 
   validates :user, presence: true
   validates :shift, presence: true
   validate :shift_is_between_now_and_a_year_from_now, on: :create
-  validate :availability_matches_request
+  validate :request_is_unique
+  
+  before_destroy do
+    if !seeking_offers?
+      errors.add(:state, "cannot be #{state}")
+    elsif !future?
+      errors.add(:start, "must be in the future")
+    end
+  end
 
   enum shift: ShiftTime::SHIFT_NAMES
   enum state: [ :seeking_offers, :received_offer, :sent_offer, :fulfilled ]
@@ -27,13 +35,6 @@ class Request < ActiveRecord::Base
     end
   end
 
-  def swapped_shift_string
-    shift_str, _ = Request.shifts.find do |key, val|
-      swapped_shift.strftime("%l").strip == key.split("-").first.split(":").first
-    end
-    "#{swapped_shift..date.strftime(DATE_FORMAT)}, #{shift_str}"
-  end
-
   def shift_is_between_now_and_a_year_from_now
     if start < DateTime.now
       errors.add(:start, "time must be in the future.")
@@ -42,21 +43,27 @@ class Request < ActiveRecord::Base
     end
   end
   
+  def request_is_unique
+    r = Request.find_by(user: user, date: date, shift: shift_to_i)
+    if r && r != self
+      errors.add(:request, "must be unique. You already have one for #{self}")
+    end
+  end
+
   # Find the availabilities that aren't attached to requests and which belong
   # to users with open requests
   # We want the list of requests that the other users have, paired with their availability for THIS request
-  def swap_candidates(user=nil)
-    if user
-      # find user's requests that match this request's user's availabilities
-      user.requests.select do |r| 
-        user.availabilities.find_by(date: r.date, shift: r.shift_to_i)
+  def swap_candidates(other_user=nil)
+    if other_user
+      # find other user's requests that match this request's user's availabilities
+      other_user.requests.select do |r| 
+        self.user.open_availabilities.find {|a| a.start == r.start }
       end
     else
-      availabilities = Availability.where(date: date, shift: shift_to_i).reject {|a| a.request }
-      requests = availabilities.map do |availability|
-        availability.user.requests.select {|req| req.open? }
-      end
-      availabilities.zip(requests)
+      users = Availability.where(date: date, shift: shift_to_i)
+        .reject {|a| a.request }.map(&:user)
+      requests = users.map(&:open_requests)
+      users.zip(requests)
     end
   end
 
@@ -65,25 +72,7 @@ class Request < ActiveRecord::Base
   end
     
   def fulfilling_user
-    availability.user if fulfilled?
-  end
-  
-  def availability_matches_request
-    return unless fulfilled?
-    
-    if availability.start != start
-      errors.add(:availability, "sub must be for same shift")
-    end
-    
-    if fulfilling_swap
-      if availability.fulfilling_swap.user != self.user
-        errors.add(:user, "Availability is for #{availability.fulfilling_swap.user}; should be for #{self.user}.")
-      end
-      
-      if fulfilling_swap.fulfilling_swap != self
-        errors.add(:fulfilling_swap, "Swapped requests are not reciprocal #{self} => #{fulfilling_swap} => #{fulfilling_swap.fulfilling_swap}.")
-      end
-    end
+    (availability || fulfilling_swap).user if fulfilled?
   end
 
   def fulfill_by_sub(subber)
@@ -99,8 +88,12 @@ class Request < ActiveRecord::Base
   
   # my_availability is the self.user's availability to cover offer_request
   # self.availability will be set to the availibilty for covering this request
-  def set_pending_swap(offer_request, my_availability)
-    if !offer_request.open?
+  def set_pending_swap(offer_request)
+    my_availability = user.open_availability(offer_request)
+    if my_availability.nil?
+      errors.add("#{user}", " is not available to swap for #{offer_request}.")
+      return false
+    elsif !offer_request.open?
       errors.add(:offer_request, "Only open requests can be offered for swap.")
       return false
     elsif my_availability.request
@@ -141,8 +134,14 @@ class Request < ActiveRecord::Base
     elsif !received_offer?
       errors.add(:state, "should be received offer, but is #{state}")
       return false
+    elsif availability.start != start
+      errors.add(:availability, "must be for same shift")
+    elsif fulfilling_swap.availability.user != self.user
+      errors.add(:user, "Availability is for #{fulfilling_swap.availability.user}; should be for #{self.user}.")
+    elsif fulfilling_swap.fulfilling_swap != self
+        errors.add(:fulfilling_swap, "Swapped requests are not reciprocal #{self} => #{fulfilling_swap} => #{fulfilling_swap.fulfilling_swap}.")
     end
-    
+
     transaction do
       availability.destroy!
       fulfilling_swap.availability.destroy!

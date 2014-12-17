@@ -29,8 +29,12 @@ don't allow creation of requests until email is confirmed -->
   <% else %>
     <p>Shifts this user is available to swap for:</p>
   <% end %>
-  <ul class="availabilities">
+  <ul>
     <% @swap_candidates.each do |availability| %>
+
+      <li><%= button_to "Offer to swap for #{req}", offer_swap_url(req),
+              class: "btn btn-primary", method: :patch,
+              params: { offer_request_id: @request.id } %></li>
 
       <div class="row">
         <div class="col-md-6 col-md-offset-3">

@@ -1,0 +1,17 @@
+<% provide(:title, 'Pending Offers') %>
+
+<h1>Pending Offers</h1>
+
+<div>
+  <ul class="requests">
+    <% if @requests.empty? %>
+      <p>You don't have any pending offers. Sorry.</p>
+    <% end %>
+    <% @requests.each do |req| %>
+      <li>
+        <%= req %>
+        <%= link_to req.brief_text, req %>
+      </li>
+    <% end %>
+  </ul>
+</div>

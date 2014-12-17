@@ -22,7 +22,8 @@
         <% end%>
         <% if current_user.pending_offers? %>
           <div class="alert alert-info">
-            <%= link_to "Please respond to your pending offers",
+            <%= link_to "Please respond to your pending " +
+                "offer".pluralize(current_user.pending_offers.size),
                 pending_requests_path(current_user) %>
           </div>
         <% end%>

@@ -11,14 +11,6 @@ $gray-medium-light: #eaeaea;
   box-sizing:         border-box;
 }
 
-.foo {
-  background-image: image-url("cclogo5.png");
-}
-
-.bar {
-  background-image: url(asset-path("cclogo5.png"));
-}
-
 /* universal */
 
 html {

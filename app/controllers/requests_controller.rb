@@ -82,9 +82,8 @@ class RequestsController < ApplicationController
   # post '/requests/:id/offer/swap', to: 'requests#offer_swap', as: :offer_swap
   def offer_swap
     offer_request = Request.find(params[:offer_request_id])
-    availability = Availability.find(params[:availability_id])
-    
-    if @request.set_pending_swap(offer_request, availability)
+
+    if @request.set_pending_swap(offer_request)
       UserMailer.notify_swap_offer(@request, offer_request).deliver
       flash[:success] = "OK, we sent #{@request.user} an email to let them know about your offer."
     else
@@ -110,7 +109,7 @@ class RequestsController < ApplicationController
     if @request.accept_pending_swap
       # TODO email crisis line staff, too
       UserMailer.notify_swap_accept(@request).deliver
-      flash[:success] = "#{offer_request.user}'s offer has been accepted!"
+      flash[:success] = "#{@request.fulfilling_swap.user}'s offer has been accepted!"
     else
       flash[:error] = @request.errors.full_messages.join(" ")
     end
@@ -137,14 +136,15 @@ class RequestsController < ApplicationController
 
   def pending
     @requests = Request.pending_requests(params[:user_id])
-    render 'index'
+    if @requests.count == 1
+      redirect_to @requests.first
+    end
   end
 
   def show
     @swap_candidates = if current_user == @request.user
       @request.swap_candidates
     else
-      # @request.user.open_availabilities(current_user)
       @request.swap_candidates(current_user)
     end
   end

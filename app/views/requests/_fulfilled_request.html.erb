@@ -1,7 +1,8 @@
 <h2>
   Fulfilled by <%= @request.fulfilling_user.name %>
   <% if @request.fulfilling_swap %>
-    <%= "in exchange for #{@request.fulfilling_swap}" %>
+    in exchange for 
+    <%= link_to @request.fulfilling_swap, @request.fulfilling_swap  %>
   <% else %>
     <%= "in a selfless act of subbing (i.e., no swap)" %>
   <% end %>

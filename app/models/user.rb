@@ -65,16 +65,31 @@ class User < ActiveRecord::Base
     end
   end
 
-  def future_availabilities
-    availabilities.where("date > ?", Date.today).select do |a| 
+  def open_requests
+    future(:requests).select {|r| r.seeking_offers? }
+  end
+  
+  def future(attribute)
+    self.send(attribute).where("date > ?", Date.today).select do |a| 
       a.start > Time.now
     end
+  end
+
+  def future_availabilities
+    future(:availabilities)
   end
   
   def open_availabilities
     future_availabilities.select {|a| a.request.nil? }
   end
   
+  def open_availability(matching_request)
+      # We can't be available for our own requests
+      unless self == matching_request.user
+        open_availabilities.find {|a| a.start == matching_request.start }
+      end
+  end
+
   def available?(request)
     a = availability_for(request)
     a.nil? || a.request.nil?
@@ -86,8 +101,12 @@ class User < ActiveRecord::Base
     end
   end
   
+  def pending_offers
+    Request.pending_requests(id)
+  end
+
   def pending_offers?
-    Request.pending_requests(id).any?
+    pending_offers.any?
   end
 
   private

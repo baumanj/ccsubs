@@ -22,14 +22,13 @@
   <% else %>
     <p>Requests whose users are available to swap with this shift:</p>
     <ul>
-    <% @swap_candidates.each do |availability, reqs| %>
-      <li><%= availability.user %>:</li>
+    <% @swap_candidates.each do |user, reqs| %>
+      <li><%= user %>:</li>
       <ul>
       <% reqs.each do |req| %>
         <li><%= button_to "Offer to swap for #{req}", offer_swap_url(req),
                 class: "btn btn-primary", method: :patch,
-                params: { offer_request_id: @request.id,
-                          availability_id: availability.id } %></li>
+                params: { offer_request_id: @request.id } %></li>
         <li><%= link_to req, request_path(req) %></li>
       <% end %>
       </ul>

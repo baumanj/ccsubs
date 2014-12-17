@@ -9,7 +9,7 @@ module ShiftTime
       date + h.hours + (m.nil? ? 0 : m.minutes)
     end
   end
-  
+
   def to_s
     "#{date.strftime(DATE_FORMAT)}, #{shift}"
   end
