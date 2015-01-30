@@ -30,26 +30,11 @@ don't allow creation of requests until email is confirmed -->
     <p>Shifts this user is available to swap for:</p>
   <% end %>
   <ul>
-    <% @swap_candidates.each do |availability| %>
-
-      <li><%= button_to "Offer to swap for #{@request}",
+    <% @swap_candidates.each do |req| %>
+      <li><%= button_to "Offer to swap for #{req}",
               offer_swap_url(@request),
               class: "btn btn-primary", method: :patch,
-              params: { offer_request_id: @request.id } %></li>
-
-      <div class="row">
-        <div class="col-md-6 col-md-offset-3">
-          <%= form_for(@request, url: offer_swap_url) do |f| %>
-
-            <%= f.hidden_field :availability_id, value: availability.id %>
-            <%= f.hidden_field :fulfilling_user_id, value: current_user.id %>
-            
-            <%= f.submit "Offer to swap for #{availability}", 
-                class: "btn btn-large btn-primary" %>
-          <% end %>
-        </div>
-      </div>
-
+              params: { offer_request_id: req.id } %></li>
     <% end %>
   </ul>
   

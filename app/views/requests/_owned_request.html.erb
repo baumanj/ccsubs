@@ -36,14 +36,14 @@
     </ul>
   <% end %>
 
-  <% if @request.user.availabilities.empty? %>
+  <% if @request.user.open_availabilities.empty? %>
     <p>You haven't added any swap availability. You might want to 
       <%= link_to "add some", availabilities_path %>.</p>
   <% else %>
     <p>Shifts you are available to swap for
       (<%= link_to "edit availability", availabilities_path %>):</p>
     <ul class="availabilities">
-      <% @request.user.availabilities.each do |availability| %>
+      <% @request.user.open_availabilities.each do |availability| %>
         <li><%= availability %></li>
         <% end %>
     </ul>
