@@ -60,7 +60,7 @@ module SessionsHelper
   end
 
   def require_admin
-    unless current_user.admin?
+    unless signed_in? && current_user.admin?
       redirect_to root_url, notice: "You don't have the rights to do that."
     end
   end

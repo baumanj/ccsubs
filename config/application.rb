@@ -24,5 +24,17 @@ module Ccsubs
     # The default locale is :en and all translations from config/locales/*.rb,yml are auto loaded.
     # config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}').to_s]
     # config.i18n.default_locale = :de
+
+    # From http://everydayrails.com/2012/03/12/testing-series-rspec-setup.html
+    # config.generators do |g|
+    #   g.test_framework :rspec,
+    #     :fixtures => true,
+    #     :view_specs => false,
+    #     :helper_specs => false,
+    #     :routing_specs => false,
+    #     :controller_specs => true,
+    #     :request_specs => true
+    #   g.fixture_replacement :factory_girl, :dir => "spec/factories"
+    # end
   end
 end
