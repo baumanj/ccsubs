@@ -8,5 +8,8 @@ TODO:
 
 Tryna's feedback:
 * Be consisent: "create a request" vs "new request"
-* Be clear about whether a request is sub-only on willing to swap
+* Be clear about whether a request is sub-only or willing to swap
 * Go to "add availability" after creating request if not sub-only
+* Two sections: open and pending sub/swap requests
+* Make accept/decline more prominent
+* Send both people emails on request acceptance

@@ -109,6 +109,7 @@ class RequestsController < ApplicationController
     if @request.accept_pending_swap
       # TODO email crisis line staff, too
       UserMailer.notify_swap_accept(@request).deliver
+      UserMailer.remind_swap_accept(@request).deliver
       flash[:success] = "#{@request.fulfilling_swap.user}'s offer has been accepted!"
     else
       flash[:error] = @request.errors.full_messages.join(" ")
