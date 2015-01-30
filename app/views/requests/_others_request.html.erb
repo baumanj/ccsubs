@@ -32,7 +32,8 @@ don't allow creation of requests until email is confirmed -->
   <ul>
     <% @swap_candidates.each do |availability| %>
 
-      <li><%= button_to "Offer to swap for #{req}", offer_swap_url(req),
+      <li><%= button_to "Offer to swap for #{@request}",
+              offer_swap_url(@request),
               class: "btn btn-primary", method: :patch,
               params: { offer_request_id: @request.id } %></li>
 
