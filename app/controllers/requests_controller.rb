@@ -16,7 +16,12 @@ class RequestsController < ApplicationController
     @request.user = current_user
     if @request.save
       flash[:success] = "Request created"
-      redirect_to @request
+      if params['commit'] =~ /swap/i
+        flash[:success] += ". Please add the shifts you are available to swap for!"
+        redirect_to availabilities_path
+      else
+        redirect_to @request
+      end
     else
       @errors = @request.errors
       render 'new' # Try again

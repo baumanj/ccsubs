@@ -36,7 +36,9 @@ class Request < ActiveRecord::Base
   end
 
   def shift_is_between_now_and_a_year_from_now
-    if start < DateTime.now
+    if start.nil?
+      errors.add(:start, "time must be specified.")
+    elsif start < DateTime.now
       errors.add(:start, "time must be in the future.")
     elsif start > 1.year.from_now
       errors.add(:start, "time must be within a year.")

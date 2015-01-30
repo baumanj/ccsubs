@@ -7,9 +7,9 @@ TODO:
 * There seems to be a pretty fast timeout on the site (I typically was re-logging every couple of minutes).  Not sure if this is the site itself, or if it only allows one instance of me, and I was logging in from different browsers/devices, which signed me out of my previous instance.
 
 Tryna's feedback:
-* Be consisent: "create a request" vs "new request"
-* Be clear about whether a request is sub-only or willing to swap
-* Go to "add availability" after creating request if not sub-only
-* Two sections: open and pending sub/swap requests
-* Make accept/decline more prominent
-* Send both people emails on request acceptance
+☑︎ Be consisent: "create a request" vs "new request"
+☑︎ Be clear about whether a request is sub-only or willing to swap
+☑︎ Go to "add availability" after creating request if not sub-only
+☐ Two sections: open and pending sub/swap requests
+☐ Make accept/decline more prominent
+☑︎ Send both people emails on request acceptance

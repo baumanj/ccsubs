@@ -1,5 +1,10 @@
 <% provide(:title, 'New request') %>
-<% provide(:submit_text, 'Create my request') %>
 <h1>New Request</h1>
 
-<%= render 'requests/request' %>
+<%= render partial: 'requests/request',
+    locals: { submit_buttons: [
+    submit_tag('Create swap request', class: "btn btn-large btn-primary"),
+    submit_tag('Create sub-only request', class: "btn btn-large btn-primary",
+               data: { confirm: "Your chances of getting coverage are much better if you can swap. Are you sure you want to create a sub-only request?", subonly: true })
+    ]}
+%>
