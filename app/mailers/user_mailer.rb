@@ -32,7 +32,7 @@ class UserMailer < ActionMailer::Base
     @req = req
     @accepter = req.user
     @acceptee = req.fulfilling_swap.user
-    mail to: accepter.email,
+    mail to: @accepter.email,
          subject: "Sub/Swap #{@req}: swap accepted!"
   end
 
