@@ -1,26 +1,5 @@
 <% provide(:title, 'Requests') %>
 
-<div class="jumbotron">
-  <p><%= link_to "Create new request", new_request_path,
-    class: "btn btn-lg btn-primary" %></p>
-
-  <% if params[:owner] %>
-    <p><%= link_to "View everyone's requests" %></p>
-  <% else %>
-    <p><%= link_to "View my requests", owner: current_user %></p>
-  <% end %>
-
-  <% if current_user.admin? %>
-    <% unless params[:past] %>
-      <h1>Current requests</h1>
-      <%= link_to "Show past requests", past: true %>
-    <% else %>
-      <h1>Past requests</h1>
-      <%= link_to "Show current requests" %>
-    <% end%>
-  <% end %>
-</div>
-
 <div>
   <ul class="requests">
     <% if @requests.empty? %>
