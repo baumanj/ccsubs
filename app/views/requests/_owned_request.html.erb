@@ -1,9 +1,7 @@
 <% if @request.received_offer? %>
 
-  <div class="alert alert-info">
-    <%= render partial: 'offer_response',
-        locals: {offer: @request.fulfilling_swap } %>
-  </div>
+  <%= render partial: 'offer_response',
+      locals: {offer: @request.fulfilling_swap } %>
   
 <% elsif @request.sent_offer? %>
   <p>

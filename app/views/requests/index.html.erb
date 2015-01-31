@@ -16,11 +16,27 @@
   <% end%>
 <% end %>
 
+
 <div>
+
+  <% if @requests.empty? && @offers.empty?%>
+    <p>There don't appear to be any matching requests</p>
+  <% end %>
+
+  <% if params[:owner] && @offers.any? %>
+    <h2>Requests with pending offers</h2>
+    <ul class="requests">
+      <% @offers.each do |req| %>
+        <li>
+          <%= req %>
+          <%= link_to req.brief_text, req %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <h2>Requests in want of an offer</h2>
   <ul class="requests">
-    <% if @requests.empty? %>
-      <p>There don't appear to be any matching requests</p>
-    <% end %>
     <% @requests.each do |req| %>
       <li>
         <%= req %>

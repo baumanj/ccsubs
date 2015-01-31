@@ -47,10 +47,8 @@ don't allow creation of requests until email is confirmed -->
     </div>
   <% elsif @request.sent_offer? %>
 
-    <div class="alert alert-info">
-      <%= render partial: 'offer_response',
-          locals: {offer: @request } %>
-    </div>
+    <%= render partial: 'offer_response',
+        locals: {offer: @request } %>
 
   <% end %>
 <% else %>

@@ -20,9 +20,10 @@
                 send_confirmation_path(current_user) %>
           </div>
         <% end%>
-        <% if current_user.pending_offers? %>
+        <% if current_user.pending_offers? && 
+            !(@request && (@request.sent_offer? || @request.received_offer?)) %>
           <div class="alert alert-info">
-            <%= link_to "Please respond to your pending " +
+            <%= link_to "Please click here respond to your pending " +
                 "offer".pluralize(current_user.pending_offers.size),
                 pending_requests_path(current_user) %>
           </div>
@@ -31,10 +32,10 @@
       <% flash.each do |key, value| %>
         <div class="alert alert-<%= flash_class(key) %>"><%= value %></div>
       <% end %>
-      <%= yield %>
+      <!-- pre-yield --><%= yield %><!-- post-yield -->
       <%= render 'layouts/footer' %>
       <%= debug(current_user) if Rails.env.development? %>
       <%= debug(params) if Rails.env.development? %>
-    </div>
+    </div><!-- end of container -->
 </body>
 </html>

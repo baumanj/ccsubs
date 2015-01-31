@@ -3,14 +3,6 @@
 <h2><%= @request.user %> humbly requests coverage for</h2>
 <h1><%= @request %></h1>
 
-<div class="jumbotron">
-  <p><%= @request.text %></p>
-  <% if current_user_can_edit?(@request) %>
-    <%= button_to "Edit request", edit_request_path(@request),
-          method: :get, class: "btn" %>
-  <% end %>
-</div>
-
 <% if @request.start.past? %>
   <p>This request's start time has passed.</p>
 <% elsif @request.fulfilled? %>
@@ -21,4 +13,10 @@
   <%= render 'others_request' %>
 <% end %>
 
-
+<div class="jumbotron">
+  <p><%= @request.text %></p>
+  <% if current_user_can_edit?(@request) %>
+    <%= button_to "Edit request", edit_request_path(@request),
+          method: :get, class: "btn" %>
+  <% end %>
+</div>

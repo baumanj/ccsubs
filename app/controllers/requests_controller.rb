@@ -132,6 +132,7 @@ class RequestsController < ApplicationController
     elsif params[:owner]
       if current_user.admin? || params[:owner].to_i == current_user.id
         @requests = User.find(params[:owner]).requests.order(:date, :shift)
+        @offers, @requests = @requests.partition {|r| r.received_offer? }
       else
         redirect_to requests_path(owner: current_user)
       end
