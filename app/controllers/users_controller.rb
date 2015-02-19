@@ -21,7 +21,7 @@ class UsersController < ApplicationController
 
   def send_confirmation
     @user = User.find(params[:id])
-    @user.create_confirmation_token
+    @user.update_confirmation_token
     flash[:success] = "Confirmation email sent to #{@user.email}"
     UserMailer.confirm_email(@user).deliver
     redirect_to @user
@@ -54,7 +54,7 @@ class UsersController < ApplicationController
       if @user.disabled?
         sign_out(@user)
       elsif resend_confirmation
-        @user.create_confirmation_token
+        @user.update_confirmation_token
         flash[:success] += ". Confirmation email sent to #{@user.email}"
         UserMailer.confirm_email(@user).deliver
       end

@@ -17,7 +17,7 @@ class User < ActiveRecord::Base
 
   before_save do
     self.email.downcase!
-    if email_changed? && email != User.find(id).email
+    if new_record? || email_changed? && email != User.find(id).email
       self.confirmed = false
     end
     true
@@ -56,7 +56,12 @@ class User < ActiveRecord::Base
 
   def create_confirmation_token
     self.confirmation_token = User.new_secure_token
-    update_attribute(:confirmation_digest, User.digest(self.confirmation_token))
+    self.confirmation_digest = User.digest(self.confirmation_token)
+  end
+
+  def update_confirmation_token
+    create_confirmation_token
+    save!
   end
 
   def confirm(token)
