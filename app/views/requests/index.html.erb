@@ -19,11 +19,7 @@
 
 <div>
 
-  <% if @requests.empty? && @offers.empty?%>
-    <p>There don't appear to be any matching requests</p>
-  <% end %>
-
-  <% if params[:owner] && @offers.any? %>
+  <% if @offers.any? %>
     <h2>Requests with pending offers</h2>
     <ul class="requests">
       <% @offers.each do |req| %>
@@ -33,21 +29,23 @@
         </li>
       <% end %>
     </ul>
+  <% elsif @requests.any? %>
+    <h2>Requests in want of an offer</h2>
+    <ul class="requests">
+      <% @requests.each do |req| %>
+        <li>
+          <%= req %>
+          <%= link_to req.brief_text, req %>
+          <% if current_user_can_edit?(req) %>
+            <%= link_to "Edit", edit_request_path(req) %>
+            <%= link_to "Delete", req, method: :delete, 
+                        data: { confirm: "Really delete this request?" } %>
+          <% end %>
+          <%= "[fulfilled]" if req.fulfilled? %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p>There don't appear to be any matching requests</p>
   <% end %>
-
-  <h2>Requests in want of an offer</h2>
-  <ul class="requests">
-    <% @requests.each do |req| %>
-      <li>
-        <%= req %>
-        <%= link_to req.brief_text, req %>
-        <% if current_user_can_edit?(req) %>
-          <%= link_to "Edit", edit_request_path(req) %>
-          <%= link_to "Delete", req, method: :delete, 
-                      data: { confirm: "Really delete this request?" } %>
-        <% end %>
-        <%= "[fulfilled]" if req.fulfilled? %>
-      </li>
-    <% end %>
-  </ul>
 </div>

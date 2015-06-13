@@ -9,9 +9,10 @@ class UsersController < ApplicationController
   
   def create
     @user = User.new(user_params)
+    @user.password = @user.vic # TODO: email users for initial pass?
     if @user.save
       # sign_in @user # If we want to sign in upon sign-up
-      flash[:success] = "Welcome, #{@user.name}"
+      flash[:success] = "User #{@user.name} created"
       redirect_to @user
     else
       @errors = @user.errors
@@ -77,6 +78,6 @@ class UsersController < ApplicationController
 
     def user_params
       params.require(:user).permit(:name, :email, :password,
-                     :password_confirmation, :disabled)
+                     :password_confirmation, :disabled, :vic)
     end
 end

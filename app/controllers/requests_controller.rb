@@ -137,6 +137,7 @@ class RequestsController < ApplicationController
         redirect_to requests_path(owner: current_user)
       end
     else
+      @offers = []
       @requests = Request.all_seeking_offers
     end
   end
