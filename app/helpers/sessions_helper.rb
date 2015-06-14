@@ -37,6 +37,10 @@ module SessionsHelper
     current_user_owns?(obj) || current_user.admin?
   end
 
+  def current_user_admin?
+    signed_in? && current_user.admin?
+  end
+
   def require_signin
     unless signed_in?
       session[:pre_signin_url] = request.url
@@ -53,9 +57,19 @@ module SessionsHelper
   end
 
   def check_authorization
-    if params.include?(:id) && params[:id].to_i != current_user.id &&
-      !current_user.admin?
-      redirect_to root_url, notice: "You don't have the rights to do that."
+    if params.include?(:id)
+      user = current_user
+      if user.nil?
+        token = params[:user][:confirmation_token]
+        requested_user = User.find(params[:id])
+        if requested_user && requested_user.confirmation_token_valid?(token)
+          user = requested_user
+        end
+      end
+
+      if params[:id].to_i != user.id && !current_user_admin?
+        redirect_to root_url, notice: "You don't have the rights to do that."
+      end
     end
   end
 

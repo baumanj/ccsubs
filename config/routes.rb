@@ -16,6 +16,8 @@ Ccsubs::Application.routes.draw do
 
   get '/users/confirm/:id', to: 'users#send_confirmation', as: :send_confirmation
   get '/users/confirm/:id/:confirmation_token', to: 'users#confirm', as: :confirm_user
+  get '/users/reset/password/:id/:confirmation_token', to: 'users#reset_password', as: :reset_password
+  patch '/users/update/password/:id', to: 'users#update_password', as: :update_password
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 

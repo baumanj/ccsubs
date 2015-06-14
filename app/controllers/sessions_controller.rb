@@ -5,12 +5,26 @@ class SessionsController < ApplicationController
 
   def create
     user = User.find_by_email(params[:session][:email].downcase)
-    if sign_in(user, params[:session][:password])
-      url = session.delete(:pre_signin_url)
-      redirect_to url || requests_path
-    else
-      flash.now[:error] = 'Wrong password or email'
+    if user.nil?
+      flash.now[:error] = 'No account matching that email'
       render 'new'
+    else
+      if params[:commit] == 'Reset password'
+        if user.confirmed?
+          user.update_confirmation_token
+          UserMailer.reset_password(user).deliver
+          flash.now[:success] = "Sent reset email to #{user.email}"
+        else
+          flash.now[:error] = 'Cannot send reset email to unconfirmed email address'
+        end
+        render 'forgot'
+      elsif sign_in(user, params[:session][:password])
+        url = session.delete(:pre_signin_url)
+        redirect_to url || requests_path
+      else
+        flash.now[:error] = 'Wrong password or email'
+        render 'new'
+      end
     end
   end
 

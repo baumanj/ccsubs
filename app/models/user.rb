@@ -64,8 +64,12 @@ class User < ActiveRecord::Base
     save!
   end
 
+  def confirmation_token_valid?(token)
+    User.digest(token) == confirmation_digest
+  end
+
   def confirm(token)
-    if User.digest(token) == confirmation_digest
+    if confirmation_token_valid?(token)
       update_attribute(:confirmed, true)
     end
   end

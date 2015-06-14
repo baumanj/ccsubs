@@ -1,6 +1,6 @@
 class UsersController < ApplicationController
-  before_action :require_signin, except: [:new, :create]
-  before_action :check_authorization
+  before_action :require_signin, except: [:new, :create, :reset_password, :update_password]
+  before_action :check_authorization, except: [:reset_password]
   before_action :require_admin, only: [:new, :create, :index]
 
   def new
@@ -36,6 +36,30 @@ class UsersController < ApplicationController
       flash[:error] = "Confirmation failed"
     end
     redirect_to @user
+  end
+
+  def reset_password
+    @user = User.find(params[:id])
+    if @user.confirmation_token_valid?(params[:confirmation_token])
+      # Each link can only be used once
+      @user.update_confirmation_token
+    else
+      flash[:error] = "This password reset link is invalid"
+      redirect_to signin_url
+    end
+  end
+
+  def update_password
+    @user = User.find(params[:id])
+    if @user.update_attributes(user_params)
+      # Each link can only be used once
+      @user.update_confirmation_token
+      flash[:success] = "Update successful"
+      redirect_to signin_url
+    else
+      @errors = @user.errors
+      render 'reset_password' # Try again
+    end
   end
 
   def edit
@@ -78,6 +102,6 @@ class UsersController < ApplicationController
 
     def user_params
       params.require(:user).permit(:name, :email, :password,
-                     :password_confirmation, :disabled, :vic)
+                     :password_confirmation, :disabled, :vic, :confirmation_token)
     end
 end
