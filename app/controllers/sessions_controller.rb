@@ -20,7 +20,7 @@ class SessionsController < ApplicationController
         render 'forgot'
       elsif sign_in(user, params[:session][:password])
         url = session.delete(:pre_signin_url)
-        redirect_to url || requests_path
+        redirect_to url || root_url
       else
         flash.now[:error] = 'Wrong password or email'
         render 'new'

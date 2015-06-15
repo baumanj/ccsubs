@@ -27,7 +27,6 @@
         <li><%= button_to "Offer to swap for #{req}", offer_swap_url(req),
                 class: "btn btn-primary", method: :patch,
                 params: { offer_request_id: @request.id } %></li>
-        <li><%= link_to req, request_path(req) %></li>
       <% end %>
       </ul>
     <% end %>

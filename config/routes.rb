@@ -10,6 +10,7 @@ Ccsubs::Application.routes.draw do
   patch '/requests/:id/decline/swap', to: 'requests#decline_swap', as: :decline_swap
   resources :sessions, only: [:new, :create, :destroy]
   root 'static_pages#home'
+  get '/help', to: 'static_pages#help', as: :help
   match '/signup',  to: 'users#new',        via: 'get'
   match '/signin',  to: 'sessions#new',     via: 'get'
   match '/signout', to: 'sessions#destroy', via: 'delete'

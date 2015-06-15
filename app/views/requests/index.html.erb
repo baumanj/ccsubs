@@ -34,12 +34,12 @@
     <ul class="requests">
       <% @requests.each do |req| %>
         <li>
-          <%= req %>
-          <%= link_to req.brief_text, req %>
+          <%= link_to req, req %>
+          <%= req.brief_text %>
           <% if current_user_can_edit?(req) %>
-            <%= link_to "Edit", edit_request_path(req) %>
-            <%= link_to "Delete", req, method: :delete, 
-                        data: { confirm: "Really delete this request?" } %>
+            [<%= link_to "Edit", edit_request_path(req) %>]
+            [<%= link_to "Delete", req, method: :delete, 
+                        data: { confirm: "Really delete this request?" } %>]
           <% end %>
           <%= "[fulfilled]" if req.fulfilled? %>
         </li>
