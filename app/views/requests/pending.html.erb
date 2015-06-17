@@ -9,8 +9,7 @@
     <% end %>
     <% @requests.each do |req| %>
       <li>
-        <%= req %>
-        <%= link_to req.brief_text, req %>
+        <%= link_to req, req %> <%= req.brief_text %>
       </li>
     <% end %>
   </ul>
