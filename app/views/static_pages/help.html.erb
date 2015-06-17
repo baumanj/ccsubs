@@ -11,3 +11,20 @@
 </ol>
 
 <h2>Editing requests</h2>
+<p>If you made a mistake and need to change the details of a request or delete it altogether, it is simple to do so.</p>
+<ol>
+	<li>Find the request you need to change under "Account" > "<%= link_to "My requests" %> in the menu bar. If the "Account" menu isn't present, it means you need to <%= link_to "sign in", signin_path %>.</li>
+	<li>To delete a request, click the "Delete" link next to the request in the list. To change the details of a request, click the "Edit" link.</li>
+	<li>Make the desired changes and then click the "Update my request" button.</li>
+</ol>
+
+<h2>Offering coverage</h2>
+<ol>
+	<li>Click "Sub/Swap requests" in the menu bar to view open requests for coverage. If "Sub/Swap requests" isn't present, it means you need to <%= link_to "sign in", signin_path %>.</li>
+	<li>Find a request you'd like to sub or swap for in the list by clicking on the date and time of the request.</li>
+	<li>If the volunteer who made the request has availability to swap with any of the shifts you've requested coverage for, you can click a button to propose a swap for that shift. If the volunteer isn't available to swap, you can still sub for the shift by clicking the "Offer to sub (no swap)" button.</li>
+	<li>In the case of a sub, your offer will be accepted immediately since everyone loves a free sub and the volunteer who made the request will receive an email notification. In the case of a swap, the volunteer who made the request will receive an email notification but will have to accept the swap (confirming their availability for the offered shift) before it is finalized. You will receive an email notification once the other volunteer has responded to your offer.</li>
+</ol>
+
+<h2>Responding to swap offers</h2>
+<p>When another volunteer offers to swap shifts with you, you will receive an email notifying you of the offer, including a link which can be followed to respond. Also, whenever you have pending offers, there will be an indication at the top of any page that reads, "Please click here respond to your pending offer". Follow either link to view the request and then click "Accept" or "Decline". The volunteer who made the offer will receive an email notifying them of your response.</p>
