@@ -79,12 +79,12 @@ class Request < ActiveRecord::Base
 
   def fulfill_by_sub(subber)
     if !subber.available?(self)
-      errors.add(:availability, "#{subber} is no longer available to swap for #{self}.")
+      errors.add(:availability, "#{subber} is not available to swap for #{self}.")
       return false
     end
     transaction do
       sub_availability = subber.availability_for!(self)
-      update_attributes!(fulfilling_sub: sub_availability, state: :fulfilled)
+      update_attributes!(availability: sub_availability, state: :fulfilled)
     end
   end
   
