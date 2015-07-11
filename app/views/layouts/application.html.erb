@@ -37,5 +37,13 @@
       <%= debug(current_user) if Rails.env.development? %>
       <%= debug(params) if Rails.env.development? %>
     </div><!-- end of container -->
+  <script type="text/javascript">
+  $('.datepicker').datepicker({
+      format: "yyyy-mm-dd",
+      startDate: "+0d",
+      autoclose: true,
+      todayHighlight: true
+  });
+  </script>
 </body>
 </html>
