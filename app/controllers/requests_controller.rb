@@ -74,8 +74,8 @@ class RequestsController < ApplicationController
 
   # post '/requests/:id/offer/sub', to: 'requests#offer_sub', as: :offer_sub
   def offer_sub
-    emails = [UserMailer.notify_subee(@request, current_user),
-              UserMailer.notify_subber(@request, current_user)]
+    emails = [UserMailer.notify_sub(@request, current_user),
+              UserMailer.remind_sub(@request, current_user)]
     if @request.fulfill_by_sub(current_user)
       emails.each &:deliver
       flash[:success] = "OK, we let #{@request.user.name} know the good news."
@@ -89,9 +89,9 @@ class RequestsController < ApplicationController
   # post '/requests/:id/offer/swap', to: 'requests#offer_swap', as: :offer_swap
   def offer_swap
     offer_request = Request.find(params[:offer_request_id])
-
+    email = UserMailer.notify_swap_offer(@request, offer_request)
     if @request.set_pending_swap(offer_request)
-      UserMailer.notify_swap_offer(@request, offer_request).deliver
+      email.deliver
       flash[:success] = "OK, we sent #{@request.user} an email to let them know about your offer."
     else
       flash[:error] = @request.errors.full_messages.join(" ")
@@ -102,8 +102,9 @@ class RequestsController < ApplicationController
 
   def decline_swap
     offer_request = @request.fulfilling_swap
+    email = UserMailer.notify_swap_decline(@request, offer_request)
     if @request.decline_pending_swap
-      UserMailer.notify_swap_decline(@request, offer_request).deliver
+      email.deliver
       flash[:success] = "#{offer_request.user}'s offer has been declined."
     else
       flash[:error] = @request.errors.full_messages.join(" ")
@@ -112,11 +113,10 @@ class RequestsController < ApplicationController
   end
 
   def accept_swap
-    # HERE: try accepting some swaps!
+    emails = [UserMailer.notify_swap_accept(@request),
+              UserMailer.remind_swap_accept(@request)]
     if @request.accept_pending_swap
-      # TODO email crisis line staff, too
-      UserMailer.notify_swap_accept(@request).deliver
-      UserMailer.remind_swap_accept(@request).deliver
+      emails.each &:deliver
       flash[:success] = "#{@request.fulfilling_swap.user}'s offer has been accepted!"
     else
       flash[:error] = @request.errors.full_messages.join(" ")
