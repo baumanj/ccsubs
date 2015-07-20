@@ -73,9 +73,11 @@ class RequestsController < ApplicationController
   end
 
   # post '/requests/:id/offer/sub', to: 'requests#offer_sub', as: :offer_sub
-  def offer_sub    
+  def offer_sub
+    emails = [UserMailer.notify_subee(@request, current_user),
+              UserMailer.notify_subber(@request, current_user)]
     if @request.fulfill_by_sub(current_user)
-      UserMailer.notify_sub(@request).deliver 
+      emails.each &:deliver
       flash[:success] = "OK, we let #{@request.user.name} know the good news."
     else
       flash[:error] = @request.errors.full_messages.join(". ")

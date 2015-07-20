@@ -6,7 +6,7 @@ don't allow creation of requests until email is confirmed -->
     <div class="col-md-6 col-md-offset-3">
       <%= form_for(@request, url: offer_sub_url) do |f| %>
         <%= f.submit "Offer to sub (no swap)", 
-            class: "btn btn-large btn-primary" %>
+            class: "btn btn-large btn-primary", data: { confirm: "You're so generous! To confirm: you agree to sub without anything in return?" } %>
       <% end %>
     </div>
   </div>

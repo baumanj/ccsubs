@@ -1,16 +1,26 @@
 class UserMailer < ActionMailer::Base
-  default from: "jonccsubs@shumi.org"
+  default from: "ccsubs <jonccsubs@shumi.org>"
+  VOLUNTEER_SERVICES = "baumanj+volunteerservices@gmail.com"
 
   def confirm_email(user)
     @user = user
     mail to: user.email, subject: "Confirm your ccsubs email"
   end
 
-  def notify_sub(req)
+  def notify_subee(req, fulfilling_user)
     @req = req
     @user = @req.user
-    @fulfilling_user = @req.fulfilling_user
-    mail to: @user.email, subject: "Sub/Swap #{@req}: sub found!"
+    @fulfilling_user = fulfilling_user
+    mail to: @user.email,
+         subject: "Sub/Swap #{@req}: #{@fulfilling_user.name} subbing for #{@user.name}",
+         cc: VOLUNTEER_SERVICES
+  end
+
+  def notify_subber(req, fulfilling_user)
+    @req = req
+    @user = @req.user
+    @fulfilling_user = fulfilling_user
+    mail to: @fulfilling_user.email, subject: "Sub/Swap #{@req}: you have agreed to sub"
   end
 
   def notify_swap_offer(req, offer_req)
