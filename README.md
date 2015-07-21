@@ -11,9 +11,9 @@ TODO:
 
 Before beta:
 ☑ Add volunteerservices@crisisclinic.org to the CC on emails that confirm changes to the volunteer calendar.
-* Create a special shared staff account that will allow viewing the list of upcoming confirmed subs and swaps.
 ☑ Update the language for accepting subs to remind volunteers that the accepted shift is now their responsibility and if they can't do it themselves, they need to find someone else to cover. Also know as "no backsies".
 ☑ Make sure notification emails are being sent as intended and clearly document when emails should be sent and to whom.
+* Create a special shared staff account that will allow viewing the list of upcoming confirmed subs and swaps.
 * Add a feature to create new volunteer accounts by uploading a CSV file.
 
 Future:
