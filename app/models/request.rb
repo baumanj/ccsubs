@@ -27,6 +27,14 @@ class Request < ActiveRecord::Base
     Request.seeking_offers.where("date >= ?", Date.today).select {|r| r.start > Time.now }
   end
 
+  def self.future_fulfilled(start_date=Date.today)
+    Request.where(state: states[:fulfilled]).where("date >= ?", start_date)
+  end
+
+  def self.fulfilled(date_specifier)
+    Request.where(state: states[:fulfilled]).where(date: date_specifier)
+  end
+
   def brief_text
     if text.length <= BRIEF_LEN
       text

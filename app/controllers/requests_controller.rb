@@ -1,7 +1,7 @@
 class RequestsController < ApplicationController
   before_action :require_signin
   before_action :require_confirmed_email
-  before_action :find_request, except: [:new, :create, :index, :pending]
+  before_action :find_request, except: [:new, :create, :index, :fulfilled, :pending]
   before_action :check_owner, only: [:update, :delete, :accept_swap, :decline_swap]
   before_action :check_editable, only: [:edit, :update, :destroy]
   before_action :check_request_is_open, only: [:offer_sub, :offer_swap]
@@ -142,6 +142,13 @@ class RequestsController < ApplicationController
       @offers = []
       @requests = Request.all_seeking_offers
     end
+  end
+
+  def fulfilled
+    @requests = Request.future_fulfilled
+    @today = Request.fulfilled(Date.today)
+    @this_week = Request.fulfilled((Date.today + 1)..(Date.today + 7))
+    @later = Request.fulfilled((Date.today + 8)..(Date.today + 1000))
   end
 
   def pending

@@ -1,0 +1,24 @@
+<% provide(:title, 'Fulfilled Requests') %>
+
+<h1>Upcoming shift changes</h1>
+
+<% if @requests.empty? %>
+  <p>There don't appear to be any upcoming shift changes</p>
+<% end %>
+
+<div>
+  <% [['Today', @today], ['This week', @this_week], ['Later', @later]].each do |range, requests| %>
+    <% if requests.any? %>
+      <h2><%= range %></h2>
+      <ul class="requests">
+        <% requests.each do |req| %>
+          <li>
+            <%= link_to req, req %>
+            <%= req.fulfilling_user %> covering for <%= req.user %>
+          </li>
+      <% end %>
+      </ul>
+    <% end %>
+  <% end %>
+
+</div>
