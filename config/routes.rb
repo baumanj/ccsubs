@@ -1,6 +1,8 @@
 Ccsubs::Application.routes.draw do
   resources :availabilities, only: [:index, :create, :destroy]
   get '/availabilities/:id', to: 'availabilities#index'
+  post '/users/upload_csv', to: 'users#upload_csv', as: :upload_csv
+  get '/users/new_list', to: 'users#new_list', as: :new_user_list
   resources :users
   get '/requests/fulfilled', to: 'requests#fulfilled', as: :fulfilled_requests
   resources :requests

@@ -20,6 +20,32 @@ class UsersController < ApplicationController
     end
   end
 
+  def new_list
+  end
+
+  def upload_csv
+    if params[:csv].nil?
+      flash[:error] = "Please specify a CSV file"
+      render 'new_list'
+    else
+      user_array = CSV.parse(params[:csv].read)
+      user_array.shift # discard header row
+      @new_users = []
+      User.transaction do
+        user_array.each do |name, vic, email|
+          user = User.new(name: name, email: email, vic: vic, password: vic)
+          @new_users << user if user.save
+        end
+        if @new_users.any?
+          flash[:success] = "Added #{@new_users.size} users: #{@new_users.map(&:name).join(', ')}"
+        else
+          flash[:notice] = "No new users added"
+        end
+      end
+      redirect_to users_path
+    end
+  end
+
   def send_confirmation
     @user = User.find(params[:id])
     @user.update_confirmation_token

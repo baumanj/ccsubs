@@ -15,7 +15,7 @@ Before beta:
 ☑ Make sure notification emails are being sent as intended and clearly document when emails should be sent and to whom.
 ☑ Create a view for the list of upcoming confirmed subs and swaps.
 * Improve user's view of their own requests (see past, fulfilled, etc)
-* Add a feature to create new volunteer accounts by uploading a CSV file.
+☑ Add a feature to create new volunteer accounts by uploading a CSV file.
 
 Future:
 * If, upon request creation, there's a good match, go straight there rather than availability add.

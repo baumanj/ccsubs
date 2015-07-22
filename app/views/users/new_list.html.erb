@@ -1,0 +1,6 @@
+<% provide(:title, 'Upload user list') %>
+<h1>Upload user list</h1>
+<%= form_tag({action: :upload_csv}, multipart: true) do %>
+  <%= file_field_tag 'csv' %>
+  <%= submit_tag "Upload CSV", class: "btn btn-large btn-primary" %>
+<% end %>
