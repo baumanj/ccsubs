@@ -25,7 +25,7 @@
       <% @offers.each do |req| %>
         <li>
           <%= req %>
-          <%= link_to req.brief_text, req %>
+          <%= link_to req, req %>
         </li>
       <% end %>
     </ul>
@@ -35,7 +35,6 @@
       <% @requests.each do |req| %>
         <li>
           <%= link_to req, req %>
-          <%= req.brief_text %>
           <% if current_user_can_edit?(req) %>
             [<%= link_to "Edit", edit_request_path(req) %>]
             [<%= link_to "Delete", req, method: :delete, 

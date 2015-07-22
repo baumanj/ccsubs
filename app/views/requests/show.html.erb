@@ -14,7 +14,7 @@
 <% end %>
 
 <div class="jumbotron">
-  <p><%= @request.text %></p>
+  <p><%= @request %></p>
   <% if current_user_can_edit?(@request) %>
     <%= button_to "Edit request", edit_request_path(@request),
           method: :get, class: "btn" %>
