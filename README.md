@@ -14,9 +14,11 @@ Before beta:
 ☑ Update the language for accepting subs to remind volunteers that the accepted shift is now their responsibility and if they can't do it themselves, they need to find someone else to cover. Also know as "no backsies".
 ☑ Make sure notification emails are being sent as intended and clearly document when emails should be sent and to whom.
 ☑ Create a view for the list of upcoming confirmed subs and swaps.
+* Improve user's view of their own requests (see past, fulfilled, etc)
 * Add a feature to create new volunteer accounts by uploading a CSV file.
 
 Future:
+* If, upon request creation, there's a good match, go straight there rather than availability add.
 * Calendar output (iCal, Google Calendar, etc.) to remind people of their swap obligations
 * Mass emails for upcoming shifts that are understaffed
 * Notification to volunteer services for sub/swap requests that haven't been fulfilled when the shift is only one or two days away.
