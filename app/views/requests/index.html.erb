@@ -1,10 +1,6 @@
 <% provide(:title, 'Requests') %>
 
-<% if params[:owner] %>
-  <h1>Your requests</h1>
-<% else %>
-  <h1>Open requests</h1>
-<% end %>
+<h1>Open requests</h1>
 
 <% if current_user.admin? %>
   <% unless params[:past] %>
@@ -18,18 +14,7 @@
 
 
 <div>
-
-  <% if @offers.any? %>
-    <h2>Requests with pending offers</h2>
-    <ul class="requests">
-      <% @offers.each do |req| %>
-        <li>
-          <%= req %>
-          <%= link_to req, req %>
-        </li>
-      <% end %>
-    </ul>
-  <% elsif @requests.any? %>
+  <% if @requests.any? %>
     <h2>Requests in want of an offer</h2>
     <ul class="requests">
       <% @requests.each do |req| %>

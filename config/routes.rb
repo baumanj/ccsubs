@@ -5,6 +5,8 @@ Ccsubs::Application.routes.draw do
   get '/users/new_list', to: 'users#new_list', as: :new_user_list
   resources :users
   get '/requests/fulfilled', to: 'requests#fulfilled', as: :fulfilled_requests
+  get '/requests/owned', to: 'requests#owned_index', as: :current_user_owned_requests
+  get '/requests/owned/:user_id', to: 'requests#owned_index', as: :owned_requests
   resources :requests
   get '/requests/:user_id/pending', to: 'requests#pending', as: :pending_requests
   patch '/requests/:id/offer/sub', to: 'requests#offer_sub', as: :offer_sub

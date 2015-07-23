@@ -1,7 +1,7 @@
 class RequestsController < ApplicationController
   before_action :require_signin
   before_action :require_confirmed_email
-  before_action :find_request, except: [:new, :create, :index, :fulfilled, :pending]
+  before_action :find_request, except: [:new, :create, :index, :owned_index, :fulfilled, :pending]
   before_action :check_owner, only: [:update, :delete, :accept_swap, :decline_swap]
   before_action :check_editable, only: [:edit, :update, :destroy]
   before_action :check_request_is_open, only: [:offer_sub, :offer_swap]
@@ -131,24 +131,27 @@ class RequestsController < ApplicationController
       else
         redirect_to requests_path
       end
-    elsif params[:owner]
-      if current_user.admin? || params[:owner].to_i == current_user.id
-        @requests = User.find(params[:owner]).requests.order(:date, :shift)
-        @offers, @requests = @requests.partition {|r| r.received_offer? }
-      else
-        redirect_to requests_path(owner: current_user)
-      end
     else
       @offers = []
       @requests = Request.all_seeking_offers
     end
   end
 
+  def owned_index
+    user_id = params[:user_id] || current_user.id
+    if current_user.admin? || user_id == current_user.id
+      @owner = User.find(user_id)
+      @requests = @owner.requests.on_or_after(Date.today)
+    else
+      redirect_to requests_path(owner: current_user)
+    end
+  end
+
   def fulfilled
-    @requests = Request.future_fulfilled
-    @today = Request.fulfilled(Date.today)
-    @this_week = Request.fulfilled((Date.today + 1)..(Date.today + 7))
-    @later = Request.fulfilled((Date.today + 8)..(Date.today + 1000))
+    @requests = Request.on_or_after(Date.today).fulfilled
+    @today = @requests.where(date: Date.today)
+    @this_week = @requests.where(date: (Date.today + 1)..(Date.today + 7))
+    @later = @requests.where(date: (Date.today + 8)..(Date.today + 1000))
   end
 
   def pending

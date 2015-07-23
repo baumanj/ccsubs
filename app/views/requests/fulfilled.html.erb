@@ -7,18 +7,9 @@
 <% end %>
 
 <div>
+
   <% [['Today', @today], ['This week', @this_week], ['Later', @later]].each do |range, requests| %>
-    <% if requests.any? %>
-      <h2><%= range %></h2>
-      <ul class="requests">
-        <% requests.each do |req| %>
-          <li>
-            <%= link_to req, req %>
-            <%= req.fulfilling_user %> covering for <%= req.user %>
-          </li>
-      <% end %>
-      </ul>
-    <% end %>
+    <%= render partial: 'request_list', locals: {title: range, requests: requests} %>
   <% end %>
 
 </div>

@@ -23,16 +23,12 @@ class Request < ActiveRecord::Base
   enum shift: ShiftTime::SHIFT_NAMES
   enum state: [ :seeking_offers, :received_offer, :sent_offer, :fulfilled ]
 
+  def self.on_or_after(date)
+    Request.where("date >= ?", date)
+  end
+
   def self.all_seeking_offers
     Request.seeking_offers.where("date >= ?", Date.today).select {|r| r.start > Time.now }
-  end
-
-  def self.future_fulfilled(start_date=Date.today)
-    Request.where(state: states[:fulfilled]).where("date >= ?", start_date)
-  end
-
-  def self.fulfilled(date_specifier)
-    Request.where(state: states[:fulfilled]).where(date: date_specifier)
   end
 
   def brief_text

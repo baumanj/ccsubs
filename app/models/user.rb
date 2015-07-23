@@ -35,6 +35,10 @@ class User < ActiveRecord::Base
     Digest::SHA1.hexdigest(token.to_s)
   end
 
+  def upcoming_coverage
+    Request.on_or_after(Date.today).fulfilled.select {|r| r.fulfilling_user == self}
+  end
+
   # Set the user signed in and return the remember token for the cookie
   def try_sign_in(password)
     if !disabled? && authenticate(password)

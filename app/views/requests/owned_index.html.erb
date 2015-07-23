@@ -1,0 +1,26 @@
+<% provide(:title, 'Requests') %>
+
+<% if @owner == current_user %>
+  <h1>Your requests</h1>
+<% else %>
+  <h1><%= @owner.name %>'s requests</h1>
+<% end %>
+
+<div>
+
+  <%= render partial: 'request_list',
+      locals: {title: 'Seeking offers', requests: @requests.seeking_offers} %>
+
+  <%= render partial: 'request_list',
+      locals: {title: 'With pending offers', requests: @requests.received_offer} %>
+
+  <%= render partial: 'request_list',
+      locals: {title: 'Awaiting offer response', requests: @requests.sent_offer} %>
+
+  <%= render partial: 'request_list',
+      locals: {title: 'Fulfilled', requests: @requests.fulfilled} %>
+
+  <%= render partial: 'request_list',
+      locals: {title: 'Shifts to cover', requests: @owner.upcoming_coverage} %>
+
+</div>

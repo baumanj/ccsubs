@@ -14,7 +14,7 @@ Before beta:
 ☑ Update the language for accepting subs to remind volunteers that the accepted shift is now their responsibility and if they can't do it themselves, they need to find someone else to cover. Also know as "no backsies".
 ☑ Make sure notification emails are being sent as intended and clearly document when emails should be sent and to whom.
 ☑ Create a view for the list of upcoming confirmed subs and swaps.
-* Improve user's view of their own requests (see past, fulfilled, etc)
+☑ Improve user's view of their own requests (see past, fulfilled, etc)
 ☑ Add a feature to create new volunteer accounts by uploading a CSV file.
 
 Future:
