@@ -22,6 +22,7 @@ Future:
 * Calendar output (iCal, Google Calendar, etc.) to remind people of their swap obligations
 * Mass emails for upcoming shifts that are understaffed
 * Notification to volunteer services for sub/swap requests that haven't been fulfilled when the shift is only one or two days away.
+* See if I can replace User#upcoming_coverage with a proper relation
 
 Tryna's feedback:
 ☑︎ Be consisent: "create a request" vs "new request"
