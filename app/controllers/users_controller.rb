@@ -1,3 +1,5 @@
+require 'csv'
+
 class UsersController < ApplicationController
   before_action :require_signin, except: [:new, :create, :reset_password, :update_password]
   before_action :check_authorization, except: [:reset_password]
@@ -24,7 +26,6 @@ class UsersController < ApplicationController
   end
 
   def upload_csv
-    require 'csv'
     if params[:csv].nil?
       flash[:error] = "Please specify a CSV file"
       render 'new_list'
