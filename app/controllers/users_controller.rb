@@ -24,6 +24,7 @@ class UsersController < ApplicationController
   end
 
   def upload_csv
+    require 'csv'
     if params[:csv].nil?
       flash[:error] = "Please specify a CSV file"
       render 'new_list'
