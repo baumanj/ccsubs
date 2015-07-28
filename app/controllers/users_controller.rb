@@ -1,5 +1,4 @@
 require 'csv'
-require 'benchmark'
 
 class UsersController < ApplicationController
   before_action :require_signin, except: [:new, :create, :reset_password, :update_password]
@@ -31,12 +30,8 @@ class UsersController < ApplicationController
       flash[:error] = "Please specify a CSV file"
       render 'new_list'
     else
-      user_array = nil
-      eachtime = nil
-      parsetime = Benchmark.realtime do
-        user_array = CSV.parse(params[:csv].read)
-        user_array.shift # discard header row
-      end
+      user_array = CSV.parse(params[:csv].read)
+      user_array.shift # discard header row
       vics = User.pluck(:vic)
       new_users = []
       user_array.each do |name, vic, email|
@@ -44,12 +39,9 @@ class UsersController < ApplicationController
           new_users << { name: name, email: email, vic: vic, password: vic }
         end
       end
-      errors = nil
       User.transaction do
         begin
-          createtime = Benchmark.realtime do
-            new_users = User.create!(new_users)
-          end
+          new_users = User.create!(new_users)
           if new_users.any?
             flash[:success] = "Added #{new_users.size} users: #{new_users.map(&:name).join(', ')}"
             if flash[:success].size > (ActionDispatch::Cookies::MAX_COOKIE_SIZE / 4)
@@ -59,7 +51,6 @@ class UsersController < ApplicationController
           else
             flash[:notice] = "No new users added"
           end
-          flash[:notice] = "parse: #{parsetime}s\ncreate: #{createtime}s"
           redirect_to users_path
         rescue ActiveRecord::RecordInvalid => invalid
           flash[:error] = "Upload failed because not all new users could be created!"
