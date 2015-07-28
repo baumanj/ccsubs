@@ -38,6 +38,10 @@ class UsersController < ApplicationController
         end
         if @new_users.any?
           flash[:success] = "Added #{@new_users.size} users: #{@new_users.map(&:name).join(', ')}"
+          if flash[:success].size > (ActionDispatch::Cookies::MAX_COOKIE_SIZE / 4)
+            size = flash[:success].size
+            flash[:success] = "Added #{@new_users.size} users"
+          end
         else
           flash[:notice] = "No new users added"
         end
