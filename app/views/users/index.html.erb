@@ -10,6 +10,7 @@
     <li>
       <%= link_to user.name, user %>
       <%= "ADMIN" if user.admin?%>
+      <%= "✨" if user.created_at > 1.day.ago %>
     </li>
   <% end %>
 </ul>
