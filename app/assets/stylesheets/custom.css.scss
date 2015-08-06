@@ -18,7 +18,8 @@ html {
 }
 
 body {
-  padding-top: 60px;
+  /* Changed from 60 when changing header from navbar-static-top to navbar-fixed-top */
+  padding-top: 0px;
 }
 
 section {
