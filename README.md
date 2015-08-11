@@ -23,6 +23,12 @@ Future:
 * Mass emails for upcoming shifts that are understaffed
 * Notification to volunteer services for sub/swap requests that haven't been fulfilled when the shift is only one or two days away.
 * See if I can replace User#upcoming_coverage with a proper relation
+* Change "reset password" language
+* Remove superfluous "details box" on request view
+* Add some stats: (how many requests open, etc.)
+* Add explicit check for potential matches
+* Mobile optimized layout
+* From an admin view of a user, links to their requests and availability pages.
 
 Tryna's feedback:
 ☑︎ Be consisent: "create a request" vs "new request"
