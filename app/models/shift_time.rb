@@ -5,8 +5,16 @@ module ShiftTime
   
   def start
     if date && shift
-      h, m = shift.split("-").first.split(":").map(&:to_i)
-      date + h.hours + (m.nil? ? 0 : m.minutes)
+      case shift
+      when '8-12:30'
+        date + 8.hours
+      when'12:30-5'
+        date + 12.hours + 30.minutes
+      when '5-9'
+        date + (12 + 5).hours
+      when '9-1'
+        date + (12 + 9).hours
+      end
     end
   end
 
