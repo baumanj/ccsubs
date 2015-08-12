@@ -1,5 +1,5 @@
 class UserMailer < ActionMailer::Base
-  default from: "ccsubs <jonccsubs@shumi.org>"
+  default from: "ccsubs <volunteerservices@crisisclinic.org>"
   VOLUNTEER_SERVICES = if Rails.env.production?
     "volunteerservices@crisisclinic.org"
   else
