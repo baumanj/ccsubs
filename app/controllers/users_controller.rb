@@ -132,6 +132,17 @@ class UsersController < ApplicationController
     end
   end
 
+  def update_availability
+    @user = User.find(params[:id])
+    params[:user][:availabilities_attributes].select! {|_, v| v[:create] }
+    if @user.update_attributes(user_params)
+      flash[:success] = "Added #{params[:user][:availabilities_attributes].count} availabilities"
+    else
+      @errors = @user.errors
+    end
+    redirect_to availabilities_path
+  end
+
   def index
     @users = User.all
   end
@@ -144,6 +155,7 @@ class UsersController < ApplicationController
 
     def user_params
       params.require(:user).permit(:name, :email, :password,
-                     :password_confirmation, :disabled, :vic, :confirmation_token)
+                     :password_confirmation, :disabled, :vic, :confirmation_token,
+                     availabilities_attributes: [:date, :shift])
     end
 end
