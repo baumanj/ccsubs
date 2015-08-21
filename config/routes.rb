@@ -3,6 +3,7 @@ Ccsubs::Application.routes.draw do
   get '/availabilities/:id', to: 'availabilities#index'
   post '/users/upload_csv', to: 'users#upload_csv', as: :upload_csv
   get '/users/new_list', to: 'users#new_list', as: :new_user_list
+  patch '/users/update/availability/:id', to: 'users#update_availability', as: :update_availability
   resources :users
   get '/requests/fulfilled', to: 'requests#fulfilled', as: :fulfilled_requests
   get '/requests/owned', to: 'requests#owned_index', as: :current_user_owned_requests
