@@ -31,6 +31,11 @@ Future:
 * From an admin view of a user, links to their requests and availability pages.
 * Automatically decline a request when the date of the earlier shift has passed; only consider a request pending when both shifts are in the future.
 * Add tracking of when an swap offer was made. Nag the recipient if they don't respond in a couple days.
+* Add an error for entering redundant availability
+* Enter multiple availabilities faster
+* Suggest adding availabilities corresponding to outstanding requests
+* Notify when other users add availabilities matching your requests
+* Remove availability upon offer decline (and notify user)
 
 Tryna's feedback:
 ☑︎ Be consisent: "create a request" vs "new request"
