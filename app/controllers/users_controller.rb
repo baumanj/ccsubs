@@ -136,7 +136,8 @@ class UsersController < ApplicationController
     @user = User.find(params[:id])
     params[:user][:availabilities_attributes].select! {|_, v| v[:create] }
     if @user.update_attributes(user_params)
-      flash[:success] = "Added #{params[:user][:availabilities_attributes].count} availabilities"
+      count = params[:user][:availabilities_attributes].count
+      flash[:success] = "Added #{count} #{'availability'.pluralize(count)}"
     else
       @errors = @user.errors
     end
