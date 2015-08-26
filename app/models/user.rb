@@ -83,7 +83,7 @@ class User < ActiveRecord::Base
   end
   
   def future(attribute)
-    self.send(attribute).where("date > ?", Date.today).select do |a| 
+    self.send(attribute).where("date >= ?", Date.today).select do |a| 
       a.start > Time.now
     end
   end
