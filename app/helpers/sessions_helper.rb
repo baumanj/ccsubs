@@ -34,7 +34,8 @@ module SessionsHelper
   end
 
   def current_user_can_edit?(obj)
-    current_user_owns?(obj) || current_user.admin?
+    locked = obj.respond_to?(:locked?) ? obj.locked? : false
+    !locked && (current_user_owns?(obj) || current_user.admin?)
   end
 
   def current_user_admin?

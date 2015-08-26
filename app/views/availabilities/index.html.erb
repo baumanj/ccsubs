@@ -11,10 +11,17 @@
       <li>
         <%= availability %>
         <% if availability.tentative? %>
-           [<%= link_to "tentatively committed", availability.request%>]
-        <% elsif availability.user == current_user %>
-          [<%= link_to "Delete", availability, method: :delete, 
-                      data: { confirm: "Really delete this availability?" } %>]
+           <%= link_to availability.request do %>
+            <button type="button" class="btn btn-default btn-xs" aria-label="Left Align" title="Tentatively committed">
+              <span class="glyphicon glyphicon-transfer" aria-hidden="true"></span>
+            </button>
+           <% end %>
+        <% elsif current_user_can_edit?(availability) %>
+          <%= link_to availability, method: :delete, data: { confirm: "Really delete this availability?" } do %>
+            <button type="button" class="btn btn-default btn-xs" aria-label="Left Align" title="Delete">
+              <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+            </button>
+          <% end %>
         <% end %>
       </li>
     <% end %>

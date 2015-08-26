@@ -30,6 +30,10 @@ class Availability < ActiveRecord::Base
   end
   
   def tentative?
-    request && request.pending?
+    request && !request.fulfilled?
+  end
+
+  def locked?
+    request != nil
   end
 end

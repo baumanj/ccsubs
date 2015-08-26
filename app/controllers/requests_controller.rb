@@ -3,7 +3,7 @@ class RequestsController < ApplicationController
   before_action :require_confirmed_email
   before_action :find_request, except: [:new, :create, :index, :owned_index, :fulfilled, :pending]
   before_action :check_owner, only: [:update, :delete, :accept_swap, :decline_swap]
-  before_action :check_editable, only: [:edit, :update, :destroy]
+  before_action :check_editable, only: [:update, :destroy]
   before_action :check_request_is_open, only: [:offer_sub, :offer_swap]
 
   def new
@@ -186,15 +186,9 @@ class RequestsController < ApplicationController
     end
 
     def check_editable
-      reason = if @request.start.past?
-          "The request can't be changed after the shift has passed."
-        elsif @request.fulfilled?
-          "The request can't be changed after it's been fulfilled."
-        elsif @request.received_offer? || @request.sent_offer?
-          "The request can't be changed while there is a pending offer."
-        end
-      if reason
-        flash[:error] = reason
+      locked_reason = @request.locked?
+      if @request.locked?
+        flash[:error] = @request.locked_reason
         redirect_to @request
       end
     end

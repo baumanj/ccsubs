@@ -76,6 +76,20 @@ class Request < ActiveRecord::Base
   def open?
     seeking_offers? && start.future?
   end
+
+  def locked?
+    return locked_reason != nil
+  end
+
+  def locked_reason
+    if start.past?
+      "The request can't be changed after the shift has passed."
+    elsif fulfilled?
+      "The request can't be changed after it's been fulfilled."
+    elsif received_offer? || sent_offer?
+      "The request can't be changed while there is a pending offer."
+    end
+  end
     
   def fulfilling_user
     (availability || fulfilling_swap).user if fulfilled?
