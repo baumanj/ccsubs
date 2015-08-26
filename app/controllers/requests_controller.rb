@@ -28,9 +28,6 @@ class RequestsController < ApplicationController
     end
   end
 
-  def edit
-  end
-
   def update
     Request.transaction do
       Availability.transaction do

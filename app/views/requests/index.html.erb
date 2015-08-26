@@ -14,22 +14,6 @@
 
 
 <div>
-  <% if @requests.any? %>
-    <h2>Requests in want of an offer</h2>
-    <ul class="requests">
-      <% @requests.each do |req| %>
-        <li>
-          <%= link_to req, req %>
-          <% if current_user_can_edit?(req) %>
-            [<%= link_to "Edit", edit_request_path(req) %>]
-            [<%= link_to "Delete", req, method: :delete, 
-                        data: { confirm: "Really delete this request?" } %>]
-          <% end %>
-          <%= "[fulfilled]" if req.fulfilled? %>
-        </li>
-      <% end %>
-    </ul>
-  <% else %>
-    <p>There don't appear to be any matching requests</p>
-  <% end %>
+  <%= render partial: 'request_list',
+      locals: {title: 'Requests in want of an offer', requests: @requests} %>
 </div>

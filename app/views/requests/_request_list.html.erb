@@ -14,6 +14,15 @@
 	      <% elsif req.received_offer? %>
 	      	pending offer from <%= req.fulfilling_swap.user %>
 	      <% end %>
+
+        <% if current_user_can_edit?(req) %>
+          <%= link_to(req, method: :delete, data: { confirm: "Really delete this request?" }) do %>
+            <button type="button" class="btn btn-default btn-xs" aria-label="Left Align" title="Delete">
+              <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+            </button>
+          <% end %>
+        <% end %>
+
 	    </li>
 	  <% end %>
 	</ul>

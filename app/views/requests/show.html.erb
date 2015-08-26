@@ -13,10 +13,10 @@
   <%= render 'others_request' %>
 <% end %>
 
-<div class="jumbotron">
-  <p><%= @request %></p>
-  <% if current_user_can_edit?(@request) %>
-    <%= button_to "Edit request", edit_request_path(@request),
-          method: :get, class: "btn" %>
+<% if current_user_can_edit?(@request) %>
+  <%= link_to(@request, method: :delete, data: { confirm: "Really delete this request?" }) do %>
+    <button type="button" class="btn btn-default btn-danger" aria-label="Left Align" title="Delete">
+      Delete request
+    </button>
   <% end %>
-</div>
+<% end %>
