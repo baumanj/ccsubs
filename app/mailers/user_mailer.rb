@@ -6,6 +6,12 @@ class UserMailer < ActionMailer::Base
     "baumanj+volunteerservices@gmail.com" 
   end
 
+  # Never send email to real addresses unless running in production
+  def mail(headers)
+    headers[:to] = "jon.#{headers[:to].sub('@', '.at.')}@shumi.org" unless Rails.env.production?
+    super
+  end
+
   def confirm_email(user)
     @user = user
     mail to: user.email, subject: "Confirm your ccsubs email"
