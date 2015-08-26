@@ -17,6 +17,19 @@ class UserMailer < ActionMailer::Base
     mail to: user.email, subject: "Confirm your ccsubs email"
   end
 
+  def notify_matching_avilability(req, matching_avail_requests)
+    @req = req
+    @user = req.user
+    @available_user = matching_avail_requests.first.user
+    @potential_swaps = if matching_avail_requests.size == 1
+      matching_avail_requests.first.to_s
+    else
+      matching_avail_requests[0...-1].map(&:to_s).join(', ') + " and " + matching_avail_requests[-1].to_s
+    end
+    mail to: @user.email,
+         subject: "Sub/Swap #{@req}: #{@available_user} may be able to swap with you"
+  end
+
   def notify_sub(req, fulfilling_user)
     @req = req
     @user = @req.user
