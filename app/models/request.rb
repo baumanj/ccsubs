@@ -67,7 +67,7 @@ class Request < ActiveRecord::Base
       end
     else
       users = Availability.where(date: date, shift: shift_to_i)
-        .reject {|a| a.request }.map(&:user)
+        .reject {|a| a.request }.map(&:user).reject {|u| u.open_requests.empty? }
       requests = users.map(&:open_requests)
       users.zip(requests)
     end
