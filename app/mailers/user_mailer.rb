@@ -1,10 +1,10 @@
 class UserMailer < ActionMailer::Base
-  default from: "ccsubs <volunteerservices@crisisclinic.org>"
   VOLUNTEER_SERVICES = if Rails.env.production?
     "volunteerservices@crisisclinic.org"
   else
     "baumanj+volunteerservices@gmail.com" 
   end
+  default from: "ccsubs <#{VOLUNTEER_SERVICES}>"
 
   # Never send email to real addresses unless running in production
   def mail(headers)
