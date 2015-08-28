@@ -8,8 +8,12 @@ class UserMailer < ActionMailer::Base
 
   # Never send email to real addresses unless running in production
   def mail(headers)
-    headers[:to] = "jon.#{headers[:to].sub('@', '.at.')}@shumi.org" #unless Rails.env.production?
-    headers[:subject] = "#{ENV['APP_NAME']} #{headers[:subject]}"
+    if Rails.env.production?
+      headers[:subject] = "[#{ENV['APP_NAME']}] #{headers[:subject]}"
+      headers[:to] = "#{current_user.name} <#{headers[:to]}>" unless ENV['APP_NAME'] == 'ccsubs'
+    else
+      headers[:to] = "jon.#{headers[:to].sub('@', '.at.')}@shumi.org"
+    end
     super
   end
 
