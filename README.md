@@ -36,6 +36,7 @@ Future:
 * Suggest adding availabilities corresponding to outstanding requests
 * Notify when other users add availabilities matching your requests
 * Remove availability upon offer decline (and notify user)
+* Make it clearer how to see who's available to swap with you (docs); improve workflow
 
 Tryna's feedback:
 ☑︎ Be consisent: "create a request" vs "new request"

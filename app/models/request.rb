@@ -9,9 +9,8 @@ class Request < ActiveRecord::Base
 
   validates :user, presence: true
   validates :shift, presence: true
-  validate :shift_is_between_now_and_a_year_from_now, on: :create
-  validate :request_is_unique
-  
+  validates_with ShiftTimeValidator
+
   before_destroy do
     if !seeking_offers?
       errors.add(:state, "cannot be #{state}")
@@ -38,24 +37,7 @@ class Request < ActiveRecord::Base
       text[0, BRIEF_LEN] + "…"
     end
   end
-
-  def shift_is_between_now_and_a_year_from_now
-    if start.nil?
-      errors.add(:start, "time must be specified.")
-    elsif start < DateTime.now
-      errors.add(:start, "time must be in the future.")
-    elsif start > 1.year.from_now
-      errors.add(:start, "time must be within a year.")
-    end
-  end
   
-  def request_is_unique
-    r = Request.find_by(user: user, date: date, shift: shift_to_i)
-    if r && r != self
-      errors.add(:request, "must be unique. You already have one for #{self}")
-    end
-  end
-
   # Find the availabilities that aren't attached to requests and which belong
   # to users with open requests
   # We want the list of requests that the other users have, paired with their availability for THIS request

@@ -2,5 +2,5 @@
 <%= f.label :start, "date" %>
 <%= f.text_field :date, data: { provide: 'datepicker' }, class: 'datepicker' %>
 <%= f.label :shift, "time" %>
-<%= f.select :shift, Request.shifts.map {|k,v| [k,k] },
+<%= f.select :shift, ShiftTime::SHIFT_NAMES,
             { prompt: 'Select shift'} %>

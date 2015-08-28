@@ -9,7 +9,7 @@ class AvailabilitiesController < ApplicationController
       redirect_to availabilities_path
     else
       @errors = @availability.errors
-      render 'new' # Try again
+      render '_new' # Try again
     end
   end
 
