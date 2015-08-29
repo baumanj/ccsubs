@@ -8,7 +8,7 @@ module ApplicationHelper
   end
 
   def mailer
-    mailer.current_user = current_user
+    UserMailer.active_user = current_user
     UserMailer
   end
 end
