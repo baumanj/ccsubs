@@ -6,4 +6,9 @@ module ApplicationHelper
   def flash_class(key)
     FLASH_KEY_TO_BOOTSTRAP_CLASS[key]
   end
+
+  def mailer
+    mailer.current_user = current_user
+    UserMailer
+  end
 end
