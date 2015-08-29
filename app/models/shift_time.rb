@@ -49,7 +49,9 @@ end
 
 class ShiftTimeValidator < ActiveModel::Validator
   def validate(record)
-      record.no_schedule_conflicts
-      record.shift_is_between_now_and_a_year_from_now
+      if record.new_record?
+        record.no_schedule_conflicts
+        record.shift_is_between_now_and_a_year_from_now
+      end
   end
 end
