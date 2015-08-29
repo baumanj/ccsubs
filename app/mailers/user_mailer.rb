@@ -6,8 +6,8 @@ class UserMailer < ActionMailer::Base
   end
   default from: "ccsubs <#{VOLUNTEER_SERVICES}>"
 
-  def self.current_user=(user)
-    @@current_user = user
+  def self.active_user=(user)
+    @@active_user = user
   end
 
   # Never send email to real addresses unless running in production
@@ -18,7 +18,7 @@ class UserMailer < ActionMailer::Base
     name = to_user.name
     if Rails.env.production?
       headers[:subject] = "[#{ENV['APP_NAME']}] #{headers[:subject]}"
-      email = ENV['APP_NAME'] == 'ccsubs' ? to_user.email : @@current_user.email
+      email = ENV['APP_NAME'] == 'ccsubs' ? to_user.email : @@active_user.email
     else
       email = "jon.#{to_user.email.sub('@', '.at.')}@shumi.org"
     end
