@@ -11,10 +11,9 @@ class Availability < ActiveRecord::Base
   validates_with ShiftTimeValidator
 
   after_create do
-    availability_user_open_requests = user.open_requests
-    if availability_user_open_requests.any?
+    if user.open_requests.any?
       Request.seeking_offers.where(date: self.date, shift: self.shift_to_i).each do |req|
-        UserMailer.notify_matching_avilability(req, availability_user_open_requests).deliver
+        mailer.notify_matching_avilability(req, user.open_requests).deliver
       end
     end
     # find the users with outstanding requests matching this and notify them
