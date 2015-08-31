@@ -17,6 +17,17 @@ class Availability < ActiveRecord::Base
     super
   end
 
+  after_create do
+    if user.open_requests.any?
+      Request.seeking_offers.where(date: self.date, shift: self.shift_to_i).each do |req|
+        mailer.notify_matching_avilability(req, user.open_requests).deliver
+      end
+    end
+    # find the users with outstanding requests matching this and notify them
+    # v2: only send a notification email if there have been new matching availabilities
+    # added since the last time the user visited the site (or maybe 1/day)
+  end
+
   def tentative?
     request && !request.fulfilled?
   end
