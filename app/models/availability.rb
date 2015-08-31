@@ -19,8 +19,9 @@ class Availability < ActiveRecord::Base
 
   after_create do
     if user.open_requests.any?
+      UserMailer.active_user = user # For preview mode
       Request.seeking_offers.where(date: self.date, shift: self.shift_to_i).each do |req|
-        mailer.notify_matching_avilability(req, user.open_requests).deliver
+        UserMailer.notify_matching_avilability(req, user.open_requests).deliver
       end
     end
     # find the users with outstanding requests matching this and notify them
