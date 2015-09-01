@@ -2,14 +2,20 @@ class AvailabilitiesController < ApplicationController
   before_action :require_signin
 
   def create
-    @availability = Availability.new(availability_params)
-    @availability.user = current_user
-    if @availability.save
-      flash[:success] = "Availability added"
-      redirect_to availabilities_path
+    if params['commit'] == "Yes"
+      @availability = Availability.new(availability_params)
+      @availability.user = current_user
+      if @availability.save
+        flash[:success] = "Availability for #{@availability} added"
+        redirect_to availabilities_path
+      else
+        @errors = @availability.errors
+        render '_new' # Try again
+      end
+    elsif params['commit'] == "No"
+      raise
     else
-      @errors = @availability.errors
-      render '_new' # Try again
+      raise
     end
   end
 
