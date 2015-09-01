@@ -11,13 +11,13 @@ class Availability < ActiveRecord::Base
   validates_with ShiftTimeValidator
 
   after_create do
+    # notify users with requests matching the availability this user just added
     if user.open_requests.any?
       UserMailer.active_user = user # For preview mode
       Request.seeking_offers.where(date: self.date, shift: self.shift_to_i).each do |req|
         UserMailer.notify_matching_avilability(req, user.open_requests).deliver
       end
     end
-    # find the users with outstanding requests matching this and notify them
     # v2: only send a notification email if there have been new matching availabilities
     # added since the last time the user visited the site (or maybe 1/day)
   end

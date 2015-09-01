@@ -30,7 +30,7 @@ class User < ActiveRecord::Base
   end
 
   def to_s
-    name
+    Rails.env.development? ? "#{name} [#{id}]" : name
   end
 
   def User.digest(token)
