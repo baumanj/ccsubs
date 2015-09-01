@@ -42,7 +42,7 @@ class UserMailer < ActionMailer::Base
       matching_avail_requests[0...-1].map(&:to_s).join(', ') + " and " + matching_avail_requests[-1].to_s
     end
     mail to: @user,
-         subject: "Sub/Swap #{@req}: #{@available_user} may be able to swap with you"
+         subject: "Sub/Swap #{@req}: someone may be able to swap with you"
   end
 
   def notify_sub(req, fulfilling_user)
