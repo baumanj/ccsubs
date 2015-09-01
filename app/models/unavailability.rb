@@ -8,4 +8,8 @@ class Unavailability < ActiveRecord::Base
 
   validates :user, presence: true
   validates_with ShiftTimeValidator
+
+  def tentative?
+    false
+  end
 end

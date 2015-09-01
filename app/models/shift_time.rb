@@ -1,6 +1,6 @@
 module ShiftTime
   
-  SHIFT_NAMES = [ :'8-12:30', :'12:30-5', :'5-9', :'9-1' ]
+  SHIFT_NAMES = [ '8-12:30', '12:30-5', '5-9', '9-1' ]
   DATE_FORMAT = "%A, %B %e"
   
   def start
@@ -31,6 +31,8 @@ module ShiftTime
   def no_schedule_conflicts
     if user.availabilities.find_by(date: date, shift: shift_to_i)
       errors.add(:shift, "can't be the same as your own existing availability")
+    elsif user.unavailabilities.find_by(date: date, shift: shift_to_i)
+      errors.add(:shift, "can't be the same as your own existing unavailability")
     elsif user.requests.find_by(date: date, shift: shift_to_i)
       errors.add(:shift, "can't be the same as your own existing request")
     end

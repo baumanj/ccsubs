@@ -1,6 +1,6 @@
 <% provide(:title, 'Swap availability') %>
 
-<h1>Shifts you are available to swap for</h1>
+<h1>Your swap availabilty</h1>
 
 <div>
   <ul class="availabilities">
@@ -42,4 +42,15 @@
   <% end %>
 <% else %>
   <p>Congratulations! You've added availability for <strong>all</strong> the open requests.</p>
+<% end %>
+
+<% if @unavailabilities.any? %>
+  <h1>Shifts you have expressed unavailabitity for</h1>
+  <div>
+    <ul class="availabilities">
+      <% @unavailabilities.each do |unavailability| %>
+        <li><%= unavailability %></li>
+      <% end %>
+    </ul>
+  </div>
 <% end %>
