@@ -2,25 +2,32 @@ class AvailabilitiesController < ApplicationController
   before_action :require_signin
 
   def create
-    if params['commit'] == "Yes"
-      @availability = Availability.new(availability_params)
-      @availability.user = current_user
-      if @availability.save
-        flash[:success] = "Availability for #{@availability} added"
-        redirect_to availabilities_path
+    if params['commit'] == "No"
+      @unavailability = Unavailability.new(availability_params)
+      if @unavailability.save
+        flash[:success] = "Unavailability for #{@unavailability} added"
+        redirect_to :back
       else
-        @errors = @availability.errors
-        render '_new' # Try again
+        flash[:error] = "Something went awry adding unavailability"
       end
-    elsif params['commit'] == "No"
-      raise
     else
-      raise
+      @availability = Availability.new(availability_params)
+      Availability.transaction do
+        destroyed = Unavailability.destroy_all(availability_params)
+        if @availability.save
+          flash[:success] = "Availability for #{@availability} added"
+          redirect_to (params['commit'] == "Yes") ? :back : availabilities_path
+        else
+          @errors = @availability.errors
+          render '_new' # Try again
+        end
+      end
     end
   end
 
   def index
-    @availabilities = current_user.future_availabilities
+    @availabilities = current_user.future(:availabilities)
+    @unavailabilities = current_user.future(:unavailabilities)
     @availability = Availability.new
     @user = current_user
     unique_shift_requests = Request.all_seeking_offers.uniq {|r| r.start }
@@ -47,6 +54,8 @@ class AvailabilitiesController < ApplicationController
   private
 
     def availability_params
-      params.require(:availability).permit(:date, :shift)
+      p = params.require(:availability).permit(:date, :shift)
+      p.update(shift: ShiftTime::SHIFT_NAMES.find_index(p[:shift]) || p[:shift],
+        user_id: current_user.id)
     end
 end

@@ -3,6 +3,7 @@ class User < ActiveRecord::Base
   has_many :requests
   has_many :fulfilled_requests, class_name: "Request", foreign_key: "fulfilling_user_id"
   has_many :availabilities
+  has_many :unavailabilities
   accepts_nested_attributes_for :availabilities
   validates :name, presence: true, uniqueness: { case_sensitive: false }
   VALID_EMAIL_REGEX = /\A[\w+\-.]+@([a-z\d\-]+\.)+[a-z]+\z/i
@@ -136,8 +137,9 @@ class User < ActiveRecord::Base
   end
 
   def availability_known?(shift)
-    availabilities.find_index {|a| a.start == shift.start } != nil
-    # Update when we add an Unavailability model
+    [availabilities, unavailabilities, requests].reduce(false) do |found, x|
+      found || x.exists?(date: shift.date, shift: shift.shift_to_i)
+    end
   end
 
   def pending_offers
