@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141212231758) do
+ActiveRecord::Schema.define(version: 20150901003750) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -41,6 +41,17 @@ ActiveRecord::Schema.define(version: 20141212231758) do
   end
 
   add_index "requests", ["user_id", "shift", "date"], name: "index_requests_on_user_id_and_shift_and_date", unique: true, using: :btree
+
+  create_table "unavailabilities", force: true do |t|
+    t.integer  "user_id",    null: false
+    t.integer  "shift",      null: false
+    t.date     "date",       null: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "unavailabilities", ["user_id", "shift", "date"], name: "index_unavailabilities_on_user_id_and_shift_and_date", unique: true, using: :btree
+  add_index "unavailabilities", ["user_id"], name: "index_unavailabilities_on_user_id", using: :btree
 
   create_table "users", force: true do |t|
     t.string   "name"
