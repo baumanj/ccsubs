@@ -30,6 +30,16 @@ class Request < ActiveRecord::Base
     Request.seeking_offers.where("date >= ?", Date.today).select {|r| r.start > Time.now }
   end
 
+  # Find a reqest matching availability where the owner has availabilty to swap with one of
+  # availability's owner's requests
+  def self.swappable_with(availability)
+    Request.where_shifttime(availability).find do |r|
+      r.user.open_availabilities.find do |a|
+        availability.user.open_requests {|r2| r2.start == a.start }
+      end
+    end
+  end
+
   def brief_text
     if text.length <= BRIEF_LEN
       text

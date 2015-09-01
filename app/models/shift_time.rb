@@ -1,4 +1,14 @@
 module ShiftTime
+
+  def self.included(base)
+    base.extend(ClassMethods)
+  end
+
+  module ClassMethods
+    def where_shifttime(shift)
+      self.where(date: shift.date, shift: shift.shift_to_i)
+    end
+  end
   
   SHIFT_NAMES = [ '8-12:30', '12:30-5', '5-9', '9-1' ]
   DATE_FORMAT = "%A, %B %e"

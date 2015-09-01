@@ -16,7 +16,7 @@ class AvailabilitiesController < ApplicationController
         destroyed = Unavailability.destroy_all(availability_params)
         if @availability.save
           flash[:success] = "Availability for #{@availability} added"
-          redirect_to (params['commit'] == "Yes") ? :back : availabilities_path
+          redirect_to Request.swappable_with(@availability) || availabilities_path
         else
           @errors = @availability.errors
           render '_new' # Try again
