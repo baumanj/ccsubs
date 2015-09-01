@@ -114,7 +114,27 @@ class User < ActiveRecord::Base
       availability_for(request) || create_availability!(request)
     end
   end
+
+  def swap_candidates
+    open_requests.map do |r|
+      [r, r.swap_candidates.flat_map {|user, reqs| reqs }]
+    end
+  end
   
+  # Return the array of requests whose owners have availability matching the user's requests
+  # but for whose requests the user's availability is unknown. That is, potential matches.
+  def unknown_availability
+    users_with_open_requests = Request.all_seeking_offers.map &:user
+    users_with_availability_matching_my_requests = users_with_open_requests.select do |u|
+      u.open_availabilities.find_index do |a|
+        open_requests.find_index {|r| r.start == a.start }
+      end
+    end
+    users_with_availability_matching_my_requests.flat_map do |u|
+      u.open_requests.reject {|r| availability_known?(r) }
+    end.map {|r| Availability.new(date: r.date, shift: r.shift) }.uniq {|a| a.start }
+  end
+
   def availability_known?(shift)
     availabilities.find_index {|a| a.start == shift.start } != nil
     # Update when we add an Unavailability model

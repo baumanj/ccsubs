@@ -136,6 +136,15 @@ input {
   }
 }
 
+.inline-form {
+  display: inline;
+}
+
+.inline-form * {
+  display: inline;
+  width: auto;
+}
+
 /* miscellaneous */
 
 .debug_dump {

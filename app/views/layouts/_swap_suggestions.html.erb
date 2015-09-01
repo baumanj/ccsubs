@@ -1,0 +1,10 @@
+<% if current_user.suggested_swaps.any? %>
+  <div class="alert alert-info">
+    <h2>Suggested swaps</h2>
+    <% current_user.suggested_swaps.each do |req, other_reqs| %>
+      <% other_reqs.each |other_req| %>
+        <p>Why not swap for <%= req %> for <%= link_to other_req, other_req %>?</p>
+      <% end %>
+    <% end %>
+  </div>
+<% end%>
