@@ -37,6 +37,8 @@ Future:
 * Notify when other users add availabilities matching your requests
 * Remove availability upon offer decline (and notify user)
 * Make it clearer how to see who's available to swap with you (docs); improve workflow
+* Put suggested availabilities on the request creation page!
+* Add stats on % of requests actually getting filled
 
 Tryna's feedback:
 ☑︎ Be consisent: "create a request" vs "new request"
