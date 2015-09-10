@@ -14,7 +14,8 @@
 <% end %>
 
 <% if current_user_can_edit?(@request) %>
-  <%= link_to(@request, method: :delete, data: { confirm: "Really delete this request?" }) do %>
+  <%= link_to(request_path(@request, redirect_to: owned_requests_path(@request.user)),
+      method: :delete, data: { confirm: "Really delete this request?" }) do %>
     <button type="button" class="btn btn-default btn-danger" aria-label="Left Align" title="Delete">
       Delete request
     </button>

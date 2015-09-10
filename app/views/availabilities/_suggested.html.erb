@@ -1,0 +1,8 @@
+<%= f.fields_for :availabilities, availabilities do |availability_fields| %>
+    <%= availability_fields.label availability_fields.object, { class: "checkbox" } do %>
+      <%= availability_fields.check_box :create %>
+      <%= availability_fields.object %>
+      <%= availability_fields.hidden_field :date %>
+      <%= availability_fields.hidden_field :shift %>
+    <% end %>
+<% end %>

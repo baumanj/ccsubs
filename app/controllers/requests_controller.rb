@@ -7,25 +7,9 @@ class RequestsController < ApplicationController
   before_action :check_request_is_open, only: [:offer_sub, :offer_swap]
 
   def new
+    @user = current_user
     @request = Request.new(params.permit(:date, :shift, :text))
-  end
-
-  def create
-    @request = Request.new(request_params)
-    @request.state = :seeking_offers
-    @request.user = current_user
-    if @request.save
-      flash[:success] = "Request created"
-      if params['commit'] =~ /swap/i
-        flash[:success] += ". Please add the shifts you are available to swap for!"
-        redirect_to availabilities_path
-      else
-        redirect_to @request
-      end
-    else
-      @errors = @request.errors
-      render 'new' # Try again
-    end
+    @suggested_availabilities = current_user.suggested_availabilities
   end
 
   def update
@@ -136,7 +120,7 @@ class RequestsController < ApplicationController
 
   def owned_index
     user_id = params[:user_id] || current_user.id
-    if current_user.admin? || user_id == current_user.id
+    if current_user.admin? || user_id.to_i == current_user.id
       @owner = User.find(user_id)
       @requests = @owner.requests.on_or_after(Date.today)
     else
@@ -169,7 +153,7 @@ class RequestsController < ApplicationController
   def destroy
     @request.destroy
     flash[:success] = "Request deleted"
-    redirect_to :back
+    redirect_to params[:redirect_to] || :back
   end
 
   private

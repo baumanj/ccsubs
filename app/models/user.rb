@@ -104,20 +104,39 @@ class User < ActiveRecord::Base
       end
   end
 
+  def unavailable?(request)
+    a = availability_for(request)
+    a && a.request != nil
+  end
+
   def available?(request)
     a = availability_for(request)
-    a.nil? || a.request.nil?
+    a && a.request.nil?
   end
 
   def availability_for!(request)
-    if available?(request)
+    unless unavailable?(request)
       availability_for(request) || create_availability!(request)
     end
   end
+
+  def open_requests_matching_availability
+    Request.all_seeking_offers.select {|r| available?(r) }
+  end
   
   def availability_known?(shift)
-    availabilities.find_index {|a| a.start == shift.start } != nil
+    availabilities.find_index {|a| a.start == shift.start } != nil ||
+      requests.find_index {|r| r.start == shift.start } != nil
     # Update when we add an Unavailability model
+  end
+
+  def suggested_availabilities
+    unique_shift_requests = Request.all_seeking_offers.uniq {|r| r.start }
+    unique_shift_requests.map do |r|
+      unless r.user == self || availability_known?(r)
+        Availability.new(date: r.date, shift: r.shift)
+      end
+    end.compact
   end
 
   def pending_offers

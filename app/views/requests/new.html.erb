@@ -1,10 +1,37 @@
 <% provide(:title, 'New request') %>
 <h1>New Request</h1>
 
-<%= render partial: 'requests/request',
-    locals: { submit_buttons: [
-    submit_tag('Create swap request', class: "btn btn-large btn-primary"),
-    submit_tag('Create sub-only request', class: "btn btn-large btn-primary",
-               data: { confirm: "Your chances of getting coverage are much better if you can swap. Are you sure you want to create a sub-only request?", subonly: true })
-    ]}
-%>
+<div class="row">
+  <div class="col-md-6 col-md-offset-3">
+
+    <%= render 'shared/error_messages' %>
+
+    <%= form_for(@user, url: create_user_request_url(@user), html: {onsubmit: "return validateForm()"}) do |f| %>
+      <%= f.fields_for :request, @request do |request_fields| %>
+          <%= render partial: 'shared/shift_time', locals: {f: request_fields} %>
+      <% end %>
+
+      <% if @suggested_availabilities.any? %>
+        <h2>These shifts are currently seeking swaps. Check all that you are available to cover.</h2>
+        <%= render partial: 'availabilities/suggested',
+                   locals: {f: f, availabilities: @suggested_availabilities} %>
+      <% end %>
+
+      <%= f.submit "Create request", class: "btn btn-large btn-primary" %>
+    <% end %>
+
+  </div>
+</div>
+
+<script type="text/javascript">
+function validateForm() {
+  no_existing_availability = <%= @user.open_requests_matching_availability.empty? %>;
+  no_boxes_checked = $("input[type=checkbox]:checked").length == 0;
+  if (no_existing_availability && no_boxes_checked) {
+    return confirm("You haven't checked any boxes. If you can't swap at all, click 'OK'. Otherwise, please click 'Cancel' and check the shifts you can swap for.");
+  } else {
+    return true;
+  }
+}
+</script>
+

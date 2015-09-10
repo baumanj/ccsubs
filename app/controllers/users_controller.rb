@@ -132,12 +132,30 @@ class UsersController < ApplicationController
     end
   end
 
+  def create_request
+    @user = User.find(params[:id])
+    @request = Request.new(request_params.merge(state: :seeking_offers, user: @user))
+    @suggested_availabilities = availabilities_params_values.map do |attributes|
+      Availability.new(attributes)
+    end
+
+    User.transaction do
+      if @user.update_attributes(user_params) && @request.save
+        flash[:success] = "Created request and added #{added_availability_string}"
+        redirect_to @request
+      else
+        @errors = @user.errors
+        @request.errors.each {|a,e| @errors[a] = e }
+        render 'requests/new' # try again
+        raise ActiveRecord::Rollback
+      end
+    end
+  end
+
   def update_availability
     @user = User.find(params[:id])
-    params[:user][:availabilities_attributes].select! {|_, v| v[:create] }
     if @user.update_attributes(user_params)
-      count = params[:user][:availabilities_attributes].count
-      flash[:success] = "Added #{count} #{'availability'.pluralize(count)}"
+      flash[:success] = "Added #{added_availability_string}"
     else
       @errors = @user.errors
     end
@@ -154,9 +172,26 @@ class UsersController < ApplicationController
 
   private
 
+    def added_availability_string
+      count = user_params[:availabilities_attributes].count
+      "#{count} #{'availability'.pluralize(count)}"
+    end
+
     def user_params
-      params.require(:user).permit(:name, :email, :password,
-                     :password_confirmation, :disabled, :vic, :confirmation_token,
-                     availabilities_attributes: [:date, :shift])
+      u = params.require(:user)
+      if u.include? :availabilities_attributes
+        u = u.deep_dup
+        u[:availabilities_attributes].select! {|_, v| v[:create] == "1" }
+      end
+      u.permit(:name, :email, :password, :password_confirmation, :disabled, :vic,
+               :confirmation_token, availabilities_attributes: [:date, :shift])
+    end
+
+    def availabilities_params_values
+      params.require(:user).permit(availabilities_attributes: [:date, :shift, :create])[:availabilities_attributes].values
+    end
+
+    def request_params
+      params.require(:user).require(:request).permit(:date, :shift, :text)
     end
 end

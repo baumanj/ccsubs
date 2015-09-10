@@ -78,7 +78,7 @@ class Request < ActiveRecord::Base
   end
 
   def fulfill_by_sub(subber)
-    if !subber.available?(self)
+    if subber.unavailable?(self)
       errors.add(:availability, "#{subber} is not available to swap for #{self}.")
       return false
     end
@@ -101,7 +101,7 @@ class Request < ActiveRecord::Base
     elsif my_availability.request
       errors.add(:availability, "#{availability.user} is no longer available to swap for #{offer_request}.")
       return false
-    elsif !offer_request.user.available?(self)
+    elsif offer_request.user.unavailable?(self)
       errors.add(:availability, "#{offer_request.user} is no longer available to swap for #{self}.")
       return false
     end

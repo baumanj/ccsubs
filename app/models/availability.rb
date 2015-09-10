@@ -10,6 +10,13 @@ class Availability < ActiveRecord::Base
   validates :user, presence: true
   validates_with ShiftTimeValidator
 
+  attr_reader :create # for the checkbox tag
+
+  def initialize(attributes = nil, options = {})
+    @create = attributes.delete(:create) == "1" if attributes
+    super
+  end
+
   def tentative?
     request && !request.fulfilled?
   end

@@ -18,11 +18,7 @@ class AvailabilitiesController < ApplicationController
     @availability = Availability.new
     @user = current_user
     unique_shift_requests = Request.all_seeking_offers.uniq {|r| r.start }
-    @suggested_availabilities = unique_shift_requests.map do |r|
-      unless r.user == current_user || current_user.availability_known?(r)
-        Availability.new(date: r.date, shift: r.shift)
-      end
-    end.compact
+    @suggested_availabilities = @user.suggested_availabilities
   end
 
   def destroy

@@ -31,17 +31,15 @@
 <%= render partial: 'availabilities/new', locals: {availability: @availability} %>
 
 <h1>Suggested availability</h1>
+<% if @suggested_availabilities.any? %>
 
-<p>These shifts need swaps. Check all the ones you're available for, then click the "Add suggested" button.</p>
+  <p>These shifts need swaps. Check all the ones you're available for, then click the "Add suggested" button.</p>
 
-<%= form_for(@user, url: update_availability_url(@user)) do |f| %>
-  <%= f.fields_for :availabilities, @suggested_availabilities do |availability_fields| %>
-      <%= availability_fields.label availability_fields.object, { class: "checkbox" } do %>
-        <%= check_box_tag availability_fields.object_name + "[create]" %>
-        <%= availability_fields.object %>
-        <%= availability_fields.hidden_field :date %>
-        <%= availability_fields.hidden_field :shift %>
-      <% end %>
+  <%= form_for(@user, url: update_availability_url(@user)) do |f| %>
+    <%= render partial: 'availabilities/suggested',
+               locals: {f: f, availabilities: @suggested_availabilities} %>
+    <%= f.submit "Add suggested" %>
   <% end %>
-  <%= f.submit "Add suggested" %>
+<% else %>
+  <p>Congratulations! You've added availability for <strong>all</strong> the open requests.</p>
 <% end %>
