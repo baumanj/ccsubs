@@ -14,7 +14,7 @@ class UsersController < ApplicationController
     @user.password = @user.vic # TODO: email users for initial pass?
     if @user.save
       # sign_in @user # If we want to sign in upon sign-up
-      flash[:success] = "User #{@user.name} created"
+      flash[:success] = "User #{@user} created"
       redirect_to @user
     else
       @errors = @user.errors

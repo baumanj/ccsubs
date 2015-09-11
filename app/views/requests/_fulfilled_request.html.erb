@@ -1,5 +1,5 @@
 <h2>
-  Fulfilled by <%= @request.fulfilling_user.name %>
+  Fulfilled by <%= @request.fulfilling_user %>
   <% if @request.fulfilling_swap %>
     in exchange for 
     <%= link_to @request.fulfilling_swap, @request.fulfilling_swap  %>

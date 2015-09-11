@@ -28,7 +28,7 @@ class RequestsController < ApplicationController
             # Remove fulfilling_user's availability for this shift if it exists
             @request.fulfilling_user.availabilities.where(start: @request.start).each do |a|
               a.destroy
-              flash[:success] += " Destroyed #{a.user.name}'s #{a} availability."
+              flash[:success] += " Destroyed #{a.user}'s #{a} availability."
             end
         
             # Fulfill request for swapped_shift if it exists
@@ -37,7 +37,7 @@ class RequestsController < ApplicationController
                 .select {|r| r.start == @request.swapped_shift }.each do |r|
               r.update_attributes(fulfilled: true, fulfilling_user: @request.user,
                                   swapped_shift: @request.start)
-              flash[:success] += " Marked #{r.user.name}'s #{r} request fulfilled"
+              flash[:success] += " Marked #{r.user}'s #{r} request fulfilled"
             end
         
             # Email the other user, and crisis line staff
@@ -59,7 +59,7 @@ class RequestsController < ApplicationController
               mailer.remind_sub(@request, current_user)]
     if @request.fulfill_by_sub(current_user)
       emails.each &:deliver
-      flash[:success] = "OK, we let #{@request.user.name} know the good news."
+      flash[:success] = "OK, we let #{@request.user} know the good news."
     else
       flash[:error] = @request.errors.full_messages.join(". ")
     end

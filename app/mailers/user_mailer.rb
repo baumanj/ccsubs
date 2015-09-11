@@ -52,7 +52,7 @@ class UserMailer < ActionMailer::Base
     @req = req
     @fulfilling_user = fulfilling_user
     mail to: @req.user,
-         subject: "Sub/Swap #{@req}: #{@fulfilling_user.name} subbing for #{@user.name}",
+         subject: "Sub/Swap #{@req}: #{@fulfilling_user} subbing for #{@user}",
          cc: VOLUNTEER_SERVICES
   end
 
@@ -74,7 +74,7 @@ class UserMailer < ActionMailer::Base
     @accepter = req.user
     @acceptee = req.fulfilling_swap.user
     mail to: @acceptee,
-         subject: "Sub/Swap #{@req}: #{@acceptee.name} swapping for #{@accepter.name} covering #{@req.fulfilling_swap}",
+         subject: "Sub/Swap #{@req}: #{@acceptee} swapping for #{@accepter} covering #{@req.fulfilling_swap}",
          cc: VOLUNTEER_SERVICES
   end
 
@@ -91,7 +91,7 @@ class UserMailer < ActionMailer::Base
     @decliner = req.user
     @declinee = offer_req.user
     mail to: @declinee,
-         subject: "Sub/Swap #{@req}: swap with #{@decliner.name} declined 😭"
+         subject: "Sub/Swap #{@req}: swap with #{@decliner} declined 😭"
   end
 
   def reset_password(user)
