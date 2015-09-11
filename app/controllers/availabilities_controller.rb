@@ -16,7 +16,7 @@ class AvailabilitiesController < ApplicationController
         destroyed = Unavailability.destroy_all(availability_params)
         if @availability.save
           flash[:success] = "Availability for #{@availability} added"
-          flash[:success] += " (and corresponding unavailability removed)" if destroyed
+          flash[:success] += " (and corresponding unavailability removed)" if destroyed.any?
           redirect_to :back
         else
           @errors = @availability.errors
