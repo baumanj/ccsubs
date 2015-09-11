@@ -22,7 +22,13 @@ class Availability < ActiveRecord::Base
     if user.open_requests.any?
       UserMailer.active_user = user # For preview mode
       Request.seeking_offers.where(date: self.date, shift: self.shift_to_i).each do |req|
-        UserMailer.notify_matching_avilability(req, user.open_requests).deliver
+        full_matches, half_matches = user.open_requests.partition {|r| req.user.available?(r) }
+        if full_matches.any?
+          # Just let the other user know; this user will be notified on their dashboard
+          UserMailer.notify_match(req, full_matches).deliver
+        else
+          UserMailer.notify_partial_match(req, half_matches).deliver
+        end
       end
     end
     # v2: only send a notification email if there have been new matching availabilities
@@ -31,6 +37,10 @@ class Availability < ActiveRecord::Base
 
   def tentative?
     request && !request.fulfilled?
+  end
+
+  def open?
+    start.future? && request.nil? && user.open_requests.any?
   end
 
   def locked?

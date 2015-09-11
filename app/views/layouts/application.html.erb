@@ -29,6 +29,7 @@
           </div>
         <% end%>
         <%= render 'layouts/availability_questions' %>
+        <%= render 'layouts/swap_suggestions' %>
       <% end %>
       <% flash.each do |key, value| %>
         <div class="alert alert-<%= flash_class(key) %>"><%= value %></div>

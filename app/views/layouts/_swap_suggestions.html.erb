@@ -1,10 +1,9 @@
-<% if current_user.suggested_swaps.any? %>
-  <div class="alert alert-info">
-    <h2>Suggested swaps</h2>
-    <% current_user.suggested_swaps.each do |req, other_reqs| %>
-      <% other_reqs.each |other_req| %>
-        <p>Why not swap for <%= req %> for <%= link_to other_req, other_req %>?</p>
-      <% end %>
+<% if current_user.swap_candidates.any? %>
+  <div class="alert alert-warning">
+    <h2>You have swapportunities! Click on your
+      <%= "request".pluralize(current_user.swap_candidates.length) %> below.</h2>
+    <% current_user.swap_candidates.each do |req| %>
+      <p><%= link_to req, req %></p>
     <% end %>
   </div>
-<% end%>
+<% end %>

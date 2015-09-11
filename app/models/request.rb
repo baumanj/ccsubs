@@ -58,10 +58,11 @@ class Request < ActiveRecord::Base
         self.user.open_availabilities.find {|a| a.start == r.start }
       end
     else
-      users = Availability.where(date: date, shift: shift_to_i)
-        .reject {|a| a.request }.map(&:user).reject {|u| u.open_requests.empty? }
-      requests = users.map(&:open_requests)
-      users.zip(requests)
+      # Return a list of users paired with their open requests so this request's user can
+      # offer swaps, but exclude shifts this request's user is explicitly unavailable for
+      others = Availability.where_shifttime(self).select(&:open?).map(&:user)
+      others_requests = others.map {|o| o.open_requests.reject {|r| user.unavailable?(r) } }
+      others.zip(others_requests)
     end
   end
 

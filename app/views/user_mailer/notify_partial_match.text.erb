@@ -1,0 +1,2 @@
+Hey <%= @req.user %>,
+<%= @available_user.name %> has indicated they have availability matching your request for coverage on <%= @req %>. They are looking for coverage on <%= @potential_swaps.to_sentence %>. If you are available to swap, you can make your offer here: <%= request_url(@req) %>.

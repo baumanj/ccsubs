@@ -32,19 +32,23 @@ class UserMailer < ActionMailer::Base
     mail to: user, subject: "Confirm your ccsubs email"
   end
 
-  def notify_matching_avilability(req, matching_avail_requests)
+  def notify_partial_match(req, half_matching_requests)
     @req = req
-    @user = req.user
-    @available_user = matching_avail_requests.first.user
-    @potential_swaps = if matching_avail_requests.size == 1
-      matching_avail_requests.first.to_s
-    else
-      matching_avail_requests[0...-1].map(&:to_s).join(', ') + " and " + matching_avail_requests[-1].to_s
-    end
-    mail to: @user,
-         subject: "Sub/Swap #{@req}: someone may be able to swap with you"
+    @available_user = half_matching_requests.first.user
+    @potential_swaps = half_matching_requests
+    mail to: @req.user,
+         subject: "Sub/Swap #{@req}: possible match"
   end
 
+  def notify_match(req, matching_requests)
+    @req = req
+    @available_user = matching_requests.first.user
+    @suggested_swaps = matching_requests
+    mail to: @req.user,
+         subject: "Sub/Swap #{@req}: match found! [ACTION REQUIRED]"
+  end
+
+  # Do cleanup, remove @user
   def notify_sub(req, fulfilling_user)
     @req = req
     @user = @req.user
@@ -64,7 +68,7 @@ class UserMailer < ActionMailer::Base
   def notify_swap_offer(req, offer_req)
     @req = req
     @offer_req = offer_req
-    mail to: @req.user.email,
+    mail to: @req.user,
          subject: "Sub/Swap #{@req}: swap offered! [ACTION REQUIRED]"
   end
 

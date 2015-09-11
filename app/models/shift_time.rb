@@ -8,6 +8,10 @@ module ShiftTime
     def where_shifttime(shift)
       self.where(date: shift.date, shift: shift.shift_to_i)
     end
+
+    def find_by_shifttime(shift)
+      self.find_by(date: shift.date, shift: shift.shift_to_i)
+    end
   end
   
   SHIFT_NAMES = [ '8-12:30', '12:30-5', '5-9', '9-1' ]

@@ -106,18 +106,18 @@ class User < ActiveRecord::Base
   end
 
   def unavailable?(request)
-    a = availability_for(request)
-    a && a.request != nil
+    a = availabilities.find_by_shifttime(request)
+    (a && a.request != nil) || unavailabilities.find_by_shifttime(request)
   end
 
   def available?(request)
-    a = availability_for(request)
+    a = availabilities.find_by_shifttime(request)
     a && a.request.nil?
   end
 
   def availability_for!(request)
     unless unavailable?(request)
-      availability_for(request) || create_availability!(request)
+      availabilities.find_by_shifttime(request) || create_availability!(request)
     end
   end
 
@@ -126,9 +126,7 @@ class User < ActiveRecord::Base
   end
 
   def swap_candidates
-    open_requests.map do |r|
-      [r, r.swap_candidates.flat_map {|user, reqs| reqs }]
-    end
+    open_requests.select {|r| r.swap_candidates.any? }
   end
   
   # Return the array of requests whose owners have availability matching the user's requests
@@ -169,10 +167,6 @@ class User < ActiveRecord::Base
   end
 
   private
-
-    def availability_for(request)
-      availabilities.find_by(date: request.date, shift: request.shift_to_i)
-    end
 
     def create_availability!(request)
       Availability.create!(user: self, shift: request.shift, date: request.date, 
