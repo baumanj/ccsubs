@@ -17,8 +17,8 @@ Ccsubs::Application.configure do
   host = 'localhost:3000'
   config.action_mailer.default_url_options = { host: host }
   config.action_mailer.delivery_method = :smtp
-  user_name = Bundler.with_clean_env { `heroku config:get MANDRILL_USERNAME`.strip }
-  password = Bundler.with_clean_env { `heroku config:get MANDRILL_APIKEY`.strip }
+  user_name = Bundler.with_clean_env { `heroku config:get MANDRILL_USERNAME --app ccsubs`.strip }
+  password = Bundler.with_clean_env { `heroku config:get MANDRILL_APIKEY --app ccsubs`.strip }
   config.action_mailer.smtp_settings = {
     address: 'smtp.mandrillapp.com',
     port: '587',
