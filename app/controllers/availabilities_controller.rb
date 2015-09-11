@@ -17,7 +17,7 @@ class AvailabilitiesController < ApplicationController
         if @availability.save
           flash[:success] = "Availability for #{@availability} added"
           flash[:success] += " (and corresponding unavailability removed)" if destroyed
-          redirect_to availabilities_path
+          redirect_to :back
         else
           @errors = @availability.errors
           render '_new' # Try again
@@ -45,7 +45,7 @@ class AvailabilitiesController < ApplicationController
     else
       flash[:error] = "You don't have permission to delete that"
     end
-    redirect_to availabilities_path
+    redirect_to :back
   end
 
   private

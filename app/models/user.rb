@@ -126,7 +126,10 @@ class User < ActiveRecord::Base
   end
 
   def swap_candidates
-    open_requests.select {|r| r.swap_candidates.any? }
+    open_requests.select do |my_req|
+      others_reqs = my_req.swap_candidates.flat_map {|_, reqs| reqs }
+      others_reqs.any? {|r| available?(r) }
+    end
   end
   
   # Return the array of requests whose owners have availability matching the user's requests
