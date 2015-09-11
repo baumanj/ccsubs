@@ -48,19 +48,16 @@ class UserMailer < ActionMailer::Base
          subject: "Sub/Swap #{@req}: match found! [ACTION REQUIRED]"
   end
 
-  # Do cleanup, remove @user
   def notify_sub(req, fulfilling_user)
     @req = req
-    @user = @req.user
     @fulfilling_user = fulfilling_user
-    mail to: @user,
+    mail to: @req.user,
          subject: "Sub/Swap #{@req}: #{@fulfilling_user.name} subbing for #{@user.name}",
          cc: VOLUNTEER_SERVICES
   end
 
   def remind_sub(req, fulfilling_user)
     @req = req
-    @user = @req.user
     @fulfilling_user = fulfilling_user
     mail to: @fulfilling_user, subject: "Sub/Swap #{@req}: you have agreed to sub"
   end
