@@ -10,11 +10,11 @@ class User < ActiveRecord::Base
     uniqueness: { case_sensitive: false }
   validates :vic, presence: true, uniqueness: true, on: :create
   validate on: :update do
-    # if availabilities.any? &:changed?
+    if availabilities.any? &:changed?
       if suggested_availabilities(include_known: false).any?
         errors.add(:suggested_availabilities, "must all be indicated 'Yes' or 'No'")
       end
-    # end
+    end
 
     requests.find_all(&:new_record?).each do |r|
       r.no_availabilities_conflicts(availabilities)
@@ -58,10 +58,8 @@ class User < ActiveRecord::Base
 
   # Set the user signed in and return the remember token for the cookie
   def try_sign_in(password)
-    puts "******* in User#try_sign_in"    
     if !disabled? && authenticate(password)
       remember_token = User.new_secure_token
-      puts "******* in User#try_sign_in, remember_token = #{remember_token}"    
       self.remember_token = User.digest(remember_token)
       self.failed_login_attempts = 0
     else
@@ -70,7 +68,6 @@ class User < ActiveRecord::Base
       self.disabled = true if self.failed_login_attempts > MAX_LOGIN_ATTEMPTS
     end
     save!
-    puts "******* in User#try_sign_in after save!"    
     remember_token
   end
 
