@@ -51,7 +51,7 @@ Tryna's feedback:
 
 Notes:
 * To copy DB from production to demo app:
-    heroku pg:backups public-url --app ccsubs
+    heroku pg:backups capture --app ccsubs
     heroku pg:backups restore `heroku pg:backups public-url --app ccsubs` DATABASE_URL --app ccsubs-preview
 * And to local environment:
     curl -o latest.dump `heroku pg:backups public-url --app ccsubs`
