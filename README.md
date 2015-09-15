@@ -48,3 +48,12 @@ Tryna's feedback:
 ☑︎ Two sections: open and pending sub/swap requests
 ☑︎ Make accept/decline more prominent
 ☑︎ Send both people emails on request acceptance
+
+Notes:
+* To copy DB from production to demo app:
+    heroku pg:backups public-url --app ccsubs
+    heroku pg:backups restore `heroku pg:backups public-url --app ccsubs` DATABASE_URL --app ccsubs-preview
+* And to local environment:
+    curl -o latest.dump `heroku pg:backups public-url --app ccsubs`
+    pg_restore --verbose --clean --no-acl --no-owner -h localhost -d ccsubs_development latest.dump
+* Don't forget that you may need to then `rake db:migrate`
