@@ -17,6 +17,10 @@ module ShiftTime
   SHIFT_NAMES = [ '8-12:30', '12:30-5', '5-9', '9-1' ]
   DATE_FORMAT = "%A, %B %e"
   
+  def self.fix_attrs_for_find!(attrs)
+    attrs.merge!(shift: ShiftTime::SHIFT_NAMES.find_index(attrs[:shift] || attrs[:shift]))
+  end
+
   def start
     if date && shift
       case shift
@@ -33,7 +37,8 @@ module ShiftTime
   end
 
   def to_s
-    "#{date.strftime(DATE_FORMAT)}, #{shift}"
+    s = "#{date.strftime(DATE_FORMAT)}, #{shift}"
+    Rails.env.development? ? "#{s} [#{id}]" : s
   end
   
   # Enums kinda suck, we need their integer value in query contexts
@@ -43,12 +48,8 @@ module ShiftTime
   end
 
   def no_schedule_conflicts
-    if user.availabilities.find_by(date: date, shift: shift_to_i)
-      errors.add(:shift, "can't be the same as your own existing availability")
-    elsif user.unavailabilities.find_by(date: date, shift: shift_to_i)
-      errors.add(:shift, "can't be the same as your own existing unavailability")
-    elsif user.requests.find_by(date: date, shift: shift_to_i)
-      errors.add(:shift, "can't be the same as your own existing request")
+    if self.class.find_by(user: user, date: date, shift: shift_to_i)
+      errors.add(:shift, "can't be the same as your own existing #{self.class.name.downcase}")
     end
   end
 

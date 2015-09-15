@@ -21,7 +21,8 @@ Future:
 * If, upon request creation, there's a good match, go straight there rather than availability add.
 * Calendar output (iCal, Google Calendar, etc.) to remind people of their swap obligations
 * Mass emails for upcoming shifts that are understaffed
-* Notification to volunteer services for sub/swap requests that haven't been fulfilled when the shift is only one or two days away.
+*! Notification to volunteer services for sub/swap requests that haven't been fulfilled when the shift is only one or two days away.
+*! Know when shifts are low (get shift information)
 * See if I can replace User#upcoming_coverage with a proper relation
 * Change "reset password" language
 ☑ Remove superfluous "details box" on request view
@@ -33,11 +34,11 @@ Future:
 * Add tracking of when an swap offer was made. Nag the recipient if they don't respond in a couple days.
 * Add an error for entering redundant availability
 * Enter multiple availabilities faster
-* Suggest adding availabilities corresponding to outstanding requests
-* Notify when other users add availabilities matching your requests
+☑ Suggest adding availabilities corresponding to outstanding requests
+☑ Notify when other users add availabilities matching your requests
 * Remove availability upon offer decline (and notify user)
 * Make it clearer how to see who's available to swap with you (docs); improve workflow
-* Put suggested availabilities on the request creation page!
+☑ Put suggested availabilities on the request creation page!
 * Add stats on % of requests actually getting filled
 
 Tryna's feedback:

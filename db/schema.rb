@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150901003750) do
+ActiveRecord::Schema.define(version: 20150913220338) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -23,6 +23,7 @@ ActiveRecord::Schema.define(version: 20150901003750) do
     t.integer  "shift",                              null: false
     t.date     "date",                               null: false
     t.boolean  "implicitly_created", default: false, null: false
+    t.boolean  "free",                               null: false
   end
 
   add_index "availabilities", ["user_id", "shift", "date"], name: "index_availabilities_on_user_id_and_shift_and_date", unique: true, using: :btree
@@ -33,25 +34,14 @@ ActiveRecord::Schema.define(version: 20150901003750) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "text"
-    t.integer  "shift",              null: false
-    t.date     "date",               null: false
-    t.integer  "state",              null: false
+    t.integer  "shift",                          null: false
+    t.date     "date",                           null: false
+    t.integer  "state",              default: 0, null: false
     t.integer  "fulfilling_swap_id"
     t.integer  "availability_id"
   end
 
   add_index "requests", ["user_id", "shift", "date"], name: "index_requests_on_user_id_and_shift_and_date", unique: true, using: :btree
-
-  create_table "unavailabilities", force: true do |t|
-    t.integer  "user_id",    null: false
-    t.integer  "shift",      null: false
-    t.date     "date",       null: false
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
-
-  add_index "unavailabilities", ["user_id", "shift", "date"], name: "index_unavailabilities_on_user_id_and_shift_and_date", unique: true, using: :btree
-  add_index "unavailabilities", ["user_id"], name: "index_unavailabilities_on_user_id", using: :btree
 
   create_table "users", force: true do |t|
     t.string   "name"

@@ -1,17 +1,20 @@
 <% if current_user.unknown_availability.any? %>
   <div class="alert alert-info">
     <% current_user.unknown_availability.each do |a| %>
-      <p>
-        <div>
+      <div class="row">
+        <div class="col-md-4">
           Are you available <%= a %>?
+        </div>
+        <div>
           <%= form_for(a, html: {class: "inline-form"}) do |f| %>
+            <%= f.hidden_field :user_id %>
             <%= f.hidden_field :date %>
             <%= f.hidden_field :shift %>
-            <%= f.submit "Yes", class: "btn btn-default btn-xs" %>
-            <%= f.submit "No", class: "btn btn-default btn-xs" %>
+            <%= f.button(name: 'availability[free]', value: true, class: "btn btn-default btn-xs") { 'Yes' } %>
+            <%= f.button(name: 'availability[free]', value: false, class: "btn btn-default btn-xs") { 'No' } %>
           <% end %>
         </div>
-      </p>
+      </div>
     <% end %>
   </div>
 <% end%>

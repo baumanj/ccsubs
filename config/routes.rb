@@ -1,5 +1,5 @@
 Ccsubs::Application.routes.draw do
-  resources :availabilities, only: [:index, :create, :destroy]
+  resources :availabilities, only: [:create, :index]
   get '/availabilities/:id', to: 'availabilities#index'
   post '/users/upload_csv', to: 'users#upload_csv', as: :upload_csv
   get '/users/new_list', to: 'users#new_list', as: :new_user_list
@@ -9,7 +9,7 @@ Ccsubs::Application.routes.draw do
   get '/requests/fulfilled', to: 'requests#fulfilled', as: :fulfilled_requests
   get '/requests/owned', to: 'requests#owned_index', as: :current_user_owned_requests
   get '/requests/owned/:user_id', to: 'requests#owned_index', as: :owned_requests
-  resources :requests, except: [:edit, :create]
+  resources :requests, except: [:edit, :update, :create]
   get '/requests/:user_id/pending', to: 'requests#pending', as: :pending_requests
   patch '/requests/:id/offer/sub', to: 'requests#offer_sub', as: :offer_sub
   patch '/requests/:id/offer/swap', to: 'requests#offer_swap', as: :offer_swap

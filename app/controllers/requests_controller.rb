@@ -9,48 +9,7 @@ class RequestsController < ApplicationController
   def new
     @user = current_user
     @request = Request.new(params.permit(:date, :shift, :text))
-    @suggested_availabilities = current_user.suggested_availabilities
-  end
-
-  def update
-    Request.transaction do
-      Availability.transaction do
-        if @request.update_attributes(request_params)
-          if @request.fulfilled?
-        
-            flash[:success] = "Marked request fulfilled."
-            # Remove availability for swapped_shift
-            @request.user.availabilities.where(start: @request.swapped_shift).each do |a|
-              a.destroy
-              flash[:success] += " Destroyed my #{a} availability."
-            end
-
-            # Remove fulfilling_user's availability for this shift if it exists
-            @request.fulfilling_user.availabilities.where(start: @request.start).each do |a|
-              a.destroy
-              flash[:success] += " Destroyed #{a.user}'s #{a} availability."
-            end
-        
-            # Fulfill request for swapped_shift if it exists
-            @request.fulfilling_user.requests
-                .where(date: @request.swapped_shift.to_date)
-                .select {|r| r.start == @request.swapped_shift }.each do |r|
-              r.update_attributes(fulfilled: true, fulfilling_user: @request.user,
-                                  swapped_shift: @request.start)
-              flash[:success] += " Marked #{r.user}'s #{r} request fulfilled"
-            end
-        
-            # Email the other user, and crisis line staff
-          else
-            flash[:success] = "Update successful"
-          end
-          redirect_to @request
-        else
-          @errors = @request.errors
-          render 'edit' # Try again
-        end
-      end
-    end
+    @suggested_availabilities = current_user.suggested_availabilities(include_known: false)
   end
 
   # post '/requests/:id/offer/sub', to: 'requests#offer_sub', as: :offer_sub
@@ -113,7 +72,6 @@ class RequestsController < ApplicationController
         redirect_to requests_path
       end
     else
-      @offers = []
       @requests = Request.all_seeking_offers
     end
   end
@@ -148,6 +106,7 @@ class RequestsController < ApplicationController
     else
       @request.swap_candidates(current_user)
     end
+    @conflict = current_user.conflict_for(@request)
   end
 
   def destroy
@@ -181,10 +140,5 @@ class RequestsController < ApplicationController
       unless @request.open?
         redirect_to :back, flash: { warning: "Sorry, this request is no longer open." }
       end
-    end
-  
-
-    def request_params
-      params.require(:request).permit(:date, :shift, :text)
     end
 end

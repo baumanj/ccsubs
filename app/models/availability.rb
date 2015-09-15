@@ -8,13 +8,16 @@ class Availability < ActiveRecord::Base
   enum shift: ShiftTime::SHIFT_NAMES
 
   validates :user, presence: true
+  validates :free, :inclusion => [true, false]
   validates_with ShiftTimeValidator
+  validate do
+    if free? && request != nil
+      errors.add(:request, "Must be nil if free? is true")
+    end
 
-  attr_reader :create # for the checkbox tag
-
-  def initialize(attributes = nil, options = {})
-    @create = attributes.delete(:create) == "1" if attributes
-    super
+    if free? && user.requests.find {|r| r.start == self.start }
+      errors.add(:shift, "can't be the same as your own existing request")
+    end
   end
 
   after_create do
@@ -35,15 +38,22 @@ class Availability < ActiveRecord::Base
     # added since the last time the user visited the site (or maybe 1/day)
   end
 
+  before_destroy do
+    if locked?
+      errors.add(:availability, "Can not be deleted while tied to a pending offer")
+      return false
+    end
+  end
+
   def tentative?
-    request && !request.fulfilled?
+    !request.nil? && !request.fulfilled?
   end
 
   def open?
-    start.future? && request.nil? && user.open_requests.any?
+    start.future? && free? && user.open_requests.any?
   end
 
   def locked?
-    request != nil
+    !request.nil?
   end
 end

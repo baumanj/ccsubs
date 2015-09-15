@@ -37,6 +37,10 @@ textarea {
   }
 }
 
+.row {
+  margin-bottom: 15px;
+}
+
 /* typography */
 
 h1, h2, h3, h4, h5, h6 {
@@ -119,6 +123,12 @@ input, textarea, select, .uneditable-input {
 
 input {
   height: auto !important;
+}
+
+label input[type="radio"] {
+  margin-right: 5px;
+  margin-left: 10px;
+  width: auto;
 }
 
 #error_explanation {

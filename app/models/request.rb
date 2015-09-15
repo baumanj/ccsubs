@@ -1,7 +1,6 @@
 class Request < ActiveRecord::Base
   include ShiftTime
   default_scope { order(:date, :shift) }
-  BRIEF_LEN = 140
 
   belongs_to :user
   belongs_to :fulfilling_swap, class_name: "Request"
@@ -10,14 +9,44 @@ class Request < ActiveRecord::Base
   validates :user, presence: true
   validates :shift, presence: true
   validates_with ShiftTimeValidator
+  validate :no_availabilities_conflicts
+
+  def no_availabilities_conflicts(availabilities=user.availabilities)
+    if availabilities.find {|a| a.start == self.start && a.free? }
+      errors.add(:shift, "can't be the same as your own existing availability")
+    end
+  end
 
   before_destroy do
     if !seeking_offers?
       errors.add(:state, "cannot be #{state}")
+      return false
     elsif !future?
       errors.add(:start, "must be in the future")
+      return false
     end
   end
+
+  # When one request changes state, there are a number of related changes to make to
+  # other linked requests and availabilities. Handle them in one place.
+  after_update do
+    # Just accepted an offer
+    if state_changed? && fulfilled?      
+        fulfilling_swap.update!(state: :fulfilled) unless fulfilling_swap.fulfilled?
+        availability.update!(free: false)
+    end
+
+    # Just declined an offer
+    if state_changed? && seeking_offers? && availability != nil
+      a = availability
+      a.update!(request: nil)
+      a.destroy! if a.implicitly_created?
+      unless fulfilling_swap.nil?
+        fulfilling_swap.update_attributes!(state: :seeking_offers, fulfilling_swap: nil)
+        update!(fulfilling_swap: nil)
+      end
+    end
+  end    
 
   enum shift: ShiftTime::SHIFT_NAMES
   enum state: [ :seeking_offers, :received_offer, :sent_offer, :fulfilled ]
@@ -39,14 +68,6 @@ class Request < ActiveRecord::Base
       end
     end
   end
-
-  def brief_text
-    if text.length <= BRIEF_LEN
-      text
-    else
-      text[0, BRIEF_LEN] + "…"
-    end
-  end
   
   # Find the availabilities that aren't attached to requests and which belong
   # to users with open requests
@@ -62,7 +83,7 @@ class Request < ActiveRecord::Base
       # offer swaps, but exclude shifts this request's user is explicitly unavailable for
       others = Availability.where_shifttime(self).select(&:open?).map(&:user)
       others_requests = others.map {|o| o.open_requests.reject {|r| user.unavailable?(r) } }
-      others.zip(others_requests)
+      others.zip(others_requests).reject {|o, swappable_reqs| swappable_reqs.none? }
     end
   end
 
@@ -71,7 +92,7 @@ class Request < ActiveRecord::Base
   end
 
   def locked?
-    return locked_reason != nil
+    return !locked_reason.nil?
   end
 
   def locked_reason
@@ -90,7 +111,7 @@ class Request < ActiveRecord::Base
 
   def fulfill_by_sub(subber)
     if subber.unavailable?(self)
-      errors.add(:availability, "#{subber} is not available to swap for #{self}.")
+      errors.add(:base, "#{subber} is not available to swap for #{self}.")
       return false
     end
     transaction do
@@ -155,35 +176,18 @@ class Request < ActiveRecord::Base
         errors.add(:fulfilling_swap, "Swapped requests are not reciprocal #{self} => #{fulfilling_swap} => #{fulfilling_swap.fulfilling_swap}.")
     end
 
-    transaction do
-      availability.destroy!
-      fulfilling_swap.availability.destroy!
-      update_attributes!(state: :fulfilled, availability: nil)
-      fulfilling_swap.update_attributes!(state: :fulfilled, availability: nil)
-    end
+    update_attributes!(state: :fulfilled) # c.f. after_update
   end
 
   def decline_pending_swap
-    offer_request = fulfilling_swap
-    offer_availability = availability
-    my_availability = offer_request.availability
-
-    if offer_request.nil?
+    if fulfilling_swap.nil?
       errors.add(:fulfilling_swap, "There is no swap offer pending.")
     elsif !received_offer?
       errors.add(:state, "Only received offers can be declined.")
       return false
     end
-    
-    transaction do
-      [self, offer_request].each do |r|
-        r.update_attributes!(state: :seeking_offers, availability: nil, 
-                             fulfilling_swap: nil)
-      end
-      [my_availability, offer_availability].each do |a|
-        a.destroy! if a.implicitly_created?
-      end
-    end
+
+    update!(state: :seeking_offers) # c.f. after_update
   end
         
 end

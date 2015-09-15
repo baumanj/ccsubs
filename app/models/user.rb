@@ -3,13 +3,26 @@ class User < ActiveRecord::Base
   has_many :requests
   has_many :fulfilled_requests, class_name: "Request", foreign_key: "fulfilling_user_id"
   has_many :availabilities
-  has_many :unavailabilities
-  accepts_nested_attributes_for :availabilities
+  accepts_nested_attributes_for :requests, :availabilities
   validates :name, presence: true, uniqueness: { case_sensitive: false }
   VALID_EMAIL_REGEX = /\A[\w+\-.]+@([a-z\d\-]+\.)+[a-z]+\z/i
   validates :email, presence: true, format: { with: VALID_EMAIL_REGEX },
     uniqueness: { case_sensitive: false }
   validates :vic, presence: true, uniqueness: true, on: :create
+  validate on: :update do
+    if suggested_availabilities(include_known: false).any?
+      errors.add(:suggested_availabilities, "must all be indicated 'Yes' or 'No'")
+    end
+
+    requests.find_all(&:new_record?).each do |r|
+      r.no_availabilities_conflicts(availabilities)
+      r.errors.each do |attr, msg|
+        full_attr = :"requests.#{attr}"
+        errors.add(full_attr, msg) if errors[full_attr].exclude? msg 
+      end
+    end
+  end
+
   has_secure_password
   MAX_LOGIN_ATTEMPTS = 10
   # allow_nil so that users can edit their profile w/o entering password
@@ -95,7 +108,7 @@ class User < ActiveRecord::Base
   end
   
   def open_availabilities
-    future_availabilities.select {|a| a.request.nil? }
+    future_availabilities.select {|a| a.request.nil? && a.free? }
   end
   
   def open_availability(matching_request)
@@ -105,14 +118,24 @@ class User < ActiveRecord::Base
       end
   end
 
-  def unavailable?(request)
-    a = availabilities.find_by_shifttime(request)
-    (a && a.request != nil) || unavailabilities.find_by_shifttime(request)
+  def conflict_for(shifttime)
+    a = availabilities.find_by_shifttime(shifttime)
+    if a && !a.free?
+      a
+    else
+      requests.find_by_shifttime(shifttime)
+    end
   end
 
-  def available?(request)
-    a = availabilities.find_by_shifttime(request)
-    a && a.request.nil?
+  # True iff positively unavailable; false if unknown
+  def unavailable?(shifttime)
+    !conflict_for(shifttime).nil?
+  end
+
+  # True iff positively available; false if unknown
+  def available?(shifttime)
+    a = availabilities.find_by_shifttime(shifttime)
+    a && a.free?
   end
 
   def availability_for!(request)
@@ -143,20 +166,28 @@ class User < ActiveRecord::Base
     end
     users_with_availability_matching_my_requests.flat_map do |u|
       u.open_requests.reject {|r| availability_known?(r) }
-    end.map {|r| Availability.new(date: r.date, shift: r.shift) }.uniq {|a| a.start }
+    end.map {|r| Availability.new(user: self, date: r.date, shift: r.shift) }.uniq {|a| a.start }
   end
 
+  # Will return true even if it's only known in memory and not persisted to the DB
   def availability_known?(shift)
-    [availabilities, unavailabilities, requests].reduce(false) do |found, x|
-      found || x.exists?(date: shift.date, shift: shift.shift_to_i)
+    [availabilities, requests].reduce(false) do |found, x|
+      found || x.find {|y| y.date == shift.date && y.shift == shift.shift }
     end
   end
 
-  def suggested_availabilities
+  def suggested_availabilities(include_known: false)
     unique_shift_requests = Request.all_seeking_offers.uniq {|r| r.start }
     unique_shift_requests.map do |r|
-      unless r.user == self || availability_known?(r)
-        Availability.new(date: r.date, shift: r.shift)
+      user_has_request_then = requests.find_by_shifttime(r)
+      # ^ this request must be persisted already, otherwise suggested availabilities
+      #   surprisingly dissapear and make you wonder how you got an error about
+      #   a request/availability conflict
+      unless user_has_request_then || (!include_known && availability_known?(r))
+        # Can't use find_by_shifttime because it queries the db instead of searching
+        # the newly created records from the availabilities proxy
+        availabilities.find {|a| a.start == r.start } ||
+          Availability.new(date: r.date, shift: r.shift, user: self, free: nil)
       end
     end.compact
   end
@@ -169,11 +200,12 @@ class User < ActiveRecord::Base
     pending_offers.any?
   end
 
+
   private
 
     def create_availability!(request)
       Availability.create!(user: self, shift: request.shift, date: request.date, 
-                           implicitly_created: true)
+                           free: true, implicitly_created: true)
     end
     
     def create_remember_token

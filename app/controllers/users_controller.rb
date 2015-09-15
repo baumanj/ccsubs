@@ -134,32 +134,30 @@ class UsersController < ApplicationController
 
   def create_request
     @user = User.find(params[:id])
-    @request = Request.new(request_params.merge(state: :seeking_offers, user: @user))
-    @suggested_availabilities = availabilities_params_values.map do |attributes|
-      Availability.new(attributes)
-    end
-
-    User.transaction do
-      if @user.update_attributes(user_params) && @request.save
-        flash[:success] = "Created request and added #{added_availability_string}"
-        redirect_to @request
-      else
-        @errors = @user.errors
-        @request.errors.each {|a,e| @errors[a] = e }
-        render 'requests/new' # try again
-        raise ActiveRecord::Rollback
-      end
+    @user.assign_attributes(user_params)
+    @request = @user.requests.find &:new_record?
+    message = "Created request and added #{changed_availability_string}"
+    if @user.save
+      flash[:success] = message
+      redirect_to @request
+    else
+      @errors = @user.errors
+      @suggested_availabilities = @user.suggested_availabilities(include_known: true).find_all &:new_record?
+      render 'requests/new'
     end
   end
 
   def update_availability
     @user = User.find(params[:id])
+    message = "Added #{changed_availability_string}"
     if @user.update_attributes(user_params)
-      flash[:success] = "Added #{added_availability_string}"
+      flash[:success] = message
+      redirect_to availabilities_path
     else
       @errors = @user.errors
+      @suggested_availabilities = @user.suggested_availabilities(include_known: true)    
+      render 'availabilities/index'
     end
-    redirect_to availabilities_path
   end
 
   def index
@@ -172,26 +170,28 @@ class UsersController < ApplicationController
 
   private
 
-    def added_availability_string
-      count = user_params[:availabilities_attributes].count
-      "#{count} #{'availability'.pluralize(count)}"
-    end
-
-    def user_params
-      u = params.require(:user)
-      if u.include? :availabilities_attributes
-        u = u.deep_dup
-        u[:availabilities_attributes].select! {|_, v| v[:create] == "1" }
+    def changed_availability_string
+      values = user_params.fetch(:availabilities_attributes, {}).values
+      true_values, false_values = values.partition {|v| v[:free] == "true" }
+      s = "#{true_values.count} #{'availability'.pluralize(true_values.count)}"
+      if false_values.empty?
+        s
+      else
+        s + " and #{false_values.count} #{'unavailability'.pluralize(false_values.count)}"
       end
-      u.permit(:name, :email, :password, :password_confirmation, :disabled, :vic,
-               :confirmation_token, availabilities_attributes: [:date, :shift])
     end
 
-    def availabilities_params_values
-      params.require(:user).permit(availabilities_attributes: [:date, :shift, :create])[:availabilities_attributes].values
-    end
-
-    def request_params
-      params.require(:user).require(:request).permit(:date, :shift, :text)
+    def user_params(include_unchanged: false)
+      u = params.require(:user)
+      if u.include? :availabilities_attributes and !include_unchanged
+        u = u.deep_dup
+        u[:availabilities_attributes].select! do |_, attributes|
+          ShiftTime.fix_attrs_for_find!(attributes) # stupid enums
+          Availability.find_or_initialize_by(attributes).free_changed?
+        end
+      end
+      u.permit(:name, :email, :password, :password_confirmation, :disabled, :vic, :confirmation_token,
+               availabilities_attributes: [:id, :date, :shift, :free],
+               requests_attributes: [:date, :shift])
     end
 end

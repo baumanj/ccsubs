@@ -2,55 +2,28 @@
 
 <h1>Your swap availabilty</h1>
 
-<div>
-  <ul class="availabilities">
-    <% if @availabilities.empty? %>
-      <h2>You don't have any swap availability. You should add some…</h2>
-    <% end %>
-    <% @availabilities.each do |availability| %>
-      <li>
-        <%= availability %>
-        <% if availability.tentative? %>
-           <%= link_to availability.request do %>
-            <button type="button" class="btn btn-default btn-xs" aria-label="Left Align" title="Tentatively committed">
-              <span class="glyphicon glyphicon-transfer" aria-hidden="true"></span>
-            </button>
-           <% end %>
-        <% elsif current_user_can_edit?(availability) %>
-          <%= link_to availability, method: :delete, data: { confirm: "Really delete this availability?" } do %>
-            <button type="button" class="btn btn-default btn-xs" aria-label="Left Align" title="Delete">
-              <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
-            </button>
-          <% end %>
-        <% end %>
-      </li>
-    <% end %>
-  </ul>
-</div>
 
-<%= render partial: 'availabilities/new', locals: {availability: @availability} %>
-
-<h1>Suggested availability</h1>
 <% if @suggested_availabilities.any? %>
 
-  <p>These shifts need swaps. Check all the ones you're available for, then click the "Add suggested" button.</p>
-
-  <%= form_for(@user, url: update_availability_url(@user)) do |f| %>
-    <%= render partial: 'availabilities/suggested',
-               locals: {f: f, availabilities: @suggested_availabilities} %>
-    <%= f.submit "Add suggested" %>
+  <% if @suggested_availabilities.any? {|a| a.free.nil? } %>
+    <h2>These shifts need swaps. Indicate the ones you're available for, then click the "Update" button.</h2>
+  <% else %>
+    <h2>Congratulations! You've added availability for <strong>all</strong> the open requests.</h2>
   <% end %>
-<% else %>
-  <p>Congratulations! You've added availability for <strong>all</strong> the open requests.</p>
-<% end %>
 
-<% if @unavailabilities.any? %>
-  <h1>Shifts you have expressed unavailabitity for</h1>
-  <div>
-    <ul class="availabilities">
-      <% @unavailabilities.each do |unavailability| %>
-        <li><%= unavailability %></li>
+  <div class="row">
+    <div class="col-md-6 col-md-offset-3">
+
+      <%= form_for(@user, url: update_availability_url(@user)) do |f| %>
+        <%= render 'shared/error_messages' %>
+        <%= render partial: 'availabilities/suggested',
+                   locals: {f: f, availabilities: @suggested_availabilities} %>
+        <%= f.submit "Update", class: "btn btn-large btn-primary" %>
       <% end %>
-    </ul>
+
+    </div>
   </div>
+
+<% else %>
+    <h2>There aren't any other open requests at the moment to add availability for</h2>
 <% end %>
