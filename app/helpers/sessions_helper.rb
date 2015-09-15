@@ -2,7 +2,9 @@ module SessionsHelper
 
   # This hits the DB for every pageload; we can do better
   def sign_in(user, password)
+    puts "******* in SessionsHelper#sign_in"
     remember_token = user.try_sign_in(password)
+    puts "******* in SessionsHelper#sign_in, remember_token = #{remember_token}"
     if remember_token
       cookies.permanent[:remember_token] = remember_token
       self.current_user = user
