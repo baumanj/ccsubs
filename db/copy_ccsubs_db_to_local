@@ -1,0 +1,7 @@
+#!/bin/bash
+set -o errexit
+set -o xtrace
+heroku pg:backups capture --app ccsubs
+curl -o /tmp/ccsubs.dump `heroku pg:backups public-url --app ccsubs`
+pg_restore --verbose --clean --no-acl --no-owner -h localhost -d ccsubs_development /tmp/ccsubs.dump
+"`dirname $0`"/../bin/rake db:migrate

@@ -1,0 +1,6 @@
+#!/bin/bash
+set -o errexit
+set -o xtrace
+heroku pg:backups capture --app ccsubs
+heroku pg:backups restore `heroku pg:backups public-url --app ccsubs` DATABASE_URL --app ccsubs-preview
+heroku run rake db:migrate --app ccsubs-preview
