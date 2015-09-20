@@ -136,27 +136,32 @@ class UsersController < ApplicationController
     @user = User.find(params[:id])
     @user.assign_attributes(user_params)
     @request = @user.requests.find &:new_record?
-    message = "Created request and added #{changed_availability_string}"
     if @user.save
-      flash[:success] = message
-      redirect_to @request
+      redirect_to @request, flash: { success: "Request created" }
     else
       @errors = @user.errors
-      @suggested_availabilities = @user.suggested_availabilities(include_known: true).find_all &:new_record?
-      render 'requests/new'
+      @suggested_availabilities = availabilities_from_user_params
+      render 'requests/specify_availability'
     end
   end
 
   def update_availability
     @user = User.find(params[:id])
-    message = "Added #{changed_availability_string}"
+    message = "Set #{changed_availability_string}"
     if @user.update_attributes(user_params)
       flash[:success] = message
       redirect_to availabilities_path
     else
       @errors = @user.errors
-      @suggested_availabilities = @user.suggested_availabilities(include_known: true)    
+      @suggested_availabilities = availabilities_from_user_params
       render 'availabilities/index'
+    end
+  end
+
+  if Rails.env.development?
+    def delete_all_availability
+      User.find(params[:id]).availabilities.destroy_all
+      redirect_to :back
     end
   end
 
@@ -173,25 +178,37 @@ class UsersController < ApplicationController
     def changed_availability_string
       values = user_params.fetch(:availabilities_attributes, {}).values
       true_values, false_values = values.partition {|v| v[:free] == "true" }
-      s = "#{true_values.count} #{'availability'.pluralize(true_values.count)}"
+      s = "#{true_values.count} #{'shift'.pluralize(true_values.count)} free"
       if false_values.empty?
         s
       else
-        s + " and #{false_values.count} #{'unavailability'.pluralize(false_values.count)}"
+        s + " and #{false_values.count} #{'shift'.pluralize(false_values.count)} busy"
       end
     end
 
-    def user_params(include_unchanged: false)
-      u = params.require(:user)
-      if u.include? :availabilities_attributes and !include_unchanged
-        u = u.deep_dup
-        u[:availabilities_attributes].select! do |_, attributes|
-          ShiftTime.fix_attrs_for_find!(attributes) # stupid enums
-          Availability.find_or_initialize_by(attributes).free_changed?
-        end
+    def availabilities_from_user_params
+      user_params[:availabilities_attributes].values.map do |attributes|
+        Availability.find_or_initialize_by(attributes)
       end
+    end
+
+    def user_params_excluding_unchanged_availabilities
+      if user_params.include? :availabilities_attributes
+        changed_user_params = user_params.deep_dup
+        changed_user_params[:availabilities_attributes].select! do |_, attributes|
+          Availability.find_or_initialize_by(attributes).changed?
+        end
+        return changed_user_params
+      else
+        return user_params
+      end
+    end
+
+    def user_params
+      u = params.require(:user)
       u.permit(:name, :email, :password, :password_confirmation, :disabled, :vic, :confirmation_token,
                availabilities_attributes: [:id, :date, :shift, :free],
                requests_attributes: [:date, :shift])
     end
+
 end

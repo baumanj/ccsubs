@@ -1,0 +1,10 @@
+<% provide(:title, 'New request') %>
+<h1>New Request: Step <%= step %> of 3</h1>
+
+<div class="col-md-8 col-md-offset-2 well steps">
+  <div class="col-md-3 <%= 'active' if step == 1 %>">Specify request</div>
+  <div class="col-md-1">➔</div>
+  <div class="col-md-3 <%= 'active' if step == 2 %>">Choose swap</div>
+  <div class="col-md-1">➔</div>
+  <div class="col-md-3 <%= 'active' if step == 3 %>">Specify availability</div>
+</div>

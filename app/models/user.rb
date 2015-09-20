@@ -1,21 +1,23 @@
 class User < ActiveRecord::Base
+
+  MAX_LOGIN_ATTEMPTS = 10
+
   attr_accessor :confirmation_token
-  has_many :requests
-  has_many :fulfilled_requests, class_name: "Request", foreign_key: "fulfilling_user_id"
-  has_many :availabilities
+  has_secure_password
+
+  has_many :requests, -> { extending ShiftTime::ClassMethods }
+  has_many :fulfilled_requests, -> { extending ShiftTime::ClassMethods }, class_name: "Request", foreign_key: "fulfilling_user_id"
+  has_many :availabilities, -> { extending ShiftTime::ClassMethods }
   accepts_nested_attributes_for :requests, :availabilities
+
+  # allow_nil so that users can edit their profile w/o entering password
+  validates :password, length: { minimum: 5 }, allow_nil: true
   validates :name, presence: true, uniqueness: { case_sensitive: false }
   VALID_EMAIL_REGEX = /\A[\w+\-.]+@([a-z\d\-]+\.)+[a-z]+\z/i
   validates :email, presence: true, format: { with: VALID_EMAIL_REGEX },
     uniqueness: { case_sensitive: false }
   validates :vic, presence: true, uniqueness: true, on: :create
   validate on: :update do
-    if availabilities.any? &:changed?
-      if suggested_availabilities(include_known: false).any?
-        errors.add(:suggested_availabilities, "must all be indicated 'Yes' or 'No'")
-      end
-    end
-
     requests.find_all(&:new_record?).each do |r|
       r.no_availabilities_conflicts(availabilities)
       r.errors.each do |attr, msg|
@@ -24,11 +26,6 @@ class User < ActiveRecord::Base
       end
     end
   end
-
-  has_secure_password
-  MAX_LOGIN_ATTEMPTS = 10
-  # allow_nil so that users can edit their profile w/o entering password
-  validates :password, length: { minimum: 5 }, allow_nil: true
 
   before_create :create_remember_token, :create_confirmation_token
 
@@ -95,22 +92,46 @@ class User < ActiveRecord::Base
     end
   end
 
-  def open_requests
-    future(:requests).select {|r| r.seeking_offers? }
-  end
-  
-  def future(attribute)
-    self.send(attribute).where("date >= ?", Date.today).select do |a| 
-      a.start > Time.now
+  # For given user U and shift S, describe the relation availability(U, S).
+  # That is, U's availability for S, in terms of these categories:
+  # (Higher categories preclude lower ones)
+  #
+  # Past: S is in the past (state of U irrelevant).
+  #
+  # Uninterested: U is not looking for swaps (value of S irrelevant).
+  #
+  # Requesting: U has a request at the same time as S.
+  #
+  # Free: U has specifed "yes", they can cover S.
+  #
+  # Busy: U has specified "no", they cannot cover S shift or they have accepted
+  #       a request to cover S already.
+  #
+  # Potential: None of the above; we have no information from U about S.
+  def availability_state_for(shifttime, looking_for_swaps: open_requests.any?)
+
+    if shifttime.start.past?
+      return :past
+    elsif !looking_for_swaps && open_requests.none?
+      return :uninterested
+    elsif requests.find_by_shifttime(shifttime)
+      return :requesting
+    end
+
+    availability = availabilities.find_by_shifttime(shifttime)
+    if availability.nil?
+      return :potential
+    else
+      return availability.free? ? :free : :busy
     end
   end
 
-  def future_availabilities
-    future(:availabilities)
+  def open_requests
+    requests.open
   end
   
   def open_availabilities
-    future_availabilities.select {|a| a.request.nil? && a.free? }
+    availabilities.open
   end
   
   def open_availability(matching_request)
@@ -140,14 +161,11 @@ class User < ActiveRecord::Base
     a && a.free?
   end
 
+  #revise
   def availability_for!(request)
     unless unavailable?(request)
       availabilities.find_by_shifttime(request) || create_availability!(request)
     end
-  end
-
-  def open_requests_matching_availability
-    Request.all_seeking_offers.select {|r| available?(r) }
   end
 
   def swap_candidates
@@ -157,41 +175,31 @@ class User < ActiveRecord::Base
     end
   end
   
-  # Return the array of requests whose owners have availability matching the user's requests
-  # but for whose requests the user's availability is unknown. That is, potential matches.
-  def unknown_availability
-    users_with_open_requests = Request.all_seeking_offers.map &:user
-    users_with_availability_matching_my_requests = users_with_open_requests.select do |u|
-      u.open_availabilities.find_index do |a|
-        open_requests.find_index {|r| r.start == a.start }
-      end
-    end
-    users_with_availability_matching_my_requests.flat_map do |u|
-      u.open_requests.reject {|r| availability_known?(r) }
-    end.map {|r| Availability.new(user: self, date: r.date, shift: r.shift) }.uniq {|a| a.start }
+  def requested_availabilities
+    availabilities_for(others_availability: :free, my_availability: :potential)
   end
 
-  # Will return true even if it's only known in memory and not persisted to the DB
-  def availability_known?(shift)
-    [availabilities, requests].reduce(false) do |found, x|
-      found || x.find {|y| y.date == shift.date && y.shift == shift.shift }
-    end
+  def suggested_availabilities
+    availabilities_for(:potential_matches)
   end
 
-  def suggested_availabilities(include_known: false)
-    unique_shift_requests = Request.all_seeking_offers.uniq {|r| r.start }
-    unique_shift_requests.map do |r|
-      user_has_request_then = requests.find_by_shifttime(r)
-      # ^ this request must be persisted already, otherwise suggested availabilities
-      #   surprisingly dissapear and make you wonder how you got an error about
-      #   a request/availability conflict
-      unless user_has_request_then || (!include_known && availability_known?(r))
-        # Can't use find_by_shifttime because it queries the db instead of searching
-        # the newly created records from the availabilities proxy
-        availabilities.find {|a| a.start == r.start } ||
-          Availability.new(date: r.date, shift: r.shift, user: self, free: nil)
+  # We can call this three ways:
+  # 1. With a named relation like :half_matches, the request list will come from
+  #    the mapping of the open requests like request.half_matches. The relation
+  #    can be any symbol Request responds to.
+  # 2. Like 1, but instead of a named relation, it is specified with the args
+  #    that Request#match accepts.
+  # 3. An existing collection of Requests.
+  def availabilities_for(relation_or_requests)
+    if relation_or_requests[0].is_a? Request
+      others_reqs = relation_or_requests
+    else
+      relation = relation_or_requests
+      others_reqs = open_requests.flat_map do |my_req|
+        relation.is_a?(Symbol) ? my_req.send(relation) : my_req.matches(relation)
       end
-    end.compact
+    end
+    others_reqs.map {|r| availability_for(r) }.uniq(&:start)
   end
 
   def pending_offers
@@ -200,6 +208,10 @@ class User < ActiveRecord::Base
 
   def pending_offers?
     pending_offers.any?
+  end
+
+  def availability_for(shifttime)
+    availabilities.find_or_initialize_by(shifttime.shifttime_attrs)
   end
 
   private

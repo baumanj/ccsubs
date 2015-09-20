@@ -1,6 +1,6 @@
 
-<%= f.label :start, "date" %>
+<%= f.label :start, "Date" %>
 <%= f.text_field :date, data: { provide: 'datepicker' }, class: 'datepicker' %>
-<%= f.label :shift, "time" %>
+<%= f.label :shift, "Time" %>
 <%= f.select :shift, ShiftTime::SHIFT_NAMES,
             { prompt: 'Select shift'} %>

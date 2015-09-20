@@ -5,21 +5,54 @@ module ShiftTime
   end
 
   module ClassMethods
-    def where_shifttime(shift)
-      self.where(date: shift.date, shift: shift.shift_to_i)
+    def where_shifttime(shifttime)
+      self.where(shifttime.shifttime_attrs)
     end
 
-    def find_by_shifttime(shift)
-      self.find_by(date: shift.date, shift: shift.shift_to_i)
+    def find_by_shifttime(shifttime)
+      self.find_by(shifttime.shifttime_attrs)
+    end
+
+    def fix_enum_attributes!(attributes)
+      begin
+        # Fix up enums: c.f. https://hackhands.com/ruby-on-enums-queries-and-rails-4-1/
+        shift_as_int = ShiftTime::SHIFT_NAMES.find_index(attributes[:shift])
+        attributes.merge!(shift: shift_as_int) if shift_as_int
+      rescue TypeError
+        # sometimes the first arg to a where or find isn't an attribute hash
+        # if not, there's nothing to do here
+      end
+    end
+
+    def find_by(attributes)
+      fix_enum_attributes!(attributes)
+      super
+    end
+
+    def where(opts, *rest)
+      fix_enum_attributes!(opts)
+      super
+    end
+
+    def future
+      where("date >= ?", Date.today).select {|s| s.start.future? }
+    end
+
+    def open
+      future.select {|s| s.open? }
     end
   end
   
   SHIFT_NAMES = [ '8-12:30', '12:30-5', '5-9', '9-1' ]
   DATE_FORMAT = "%A, %B %e"
-  
-  def self.fix_attrs_for_find!(attrs)
-    attrs.merge!(shift: ShiftTime::SHIFT_NAMES.find_index(attrs[:shift] || attrs[:shift]))
+
+  def shifttime_attrs
+    slice(:shift, :date)
   end
+
+  # def self.fix_attrs_for_find!(attrs)
+  #   attrs.merge!(shift: ShiftTime::SHIFT_NAMES.find_index(attrs[:shift] || attrs[:shift]))
+  # end
 
   def start
     if date && shift
@@ -40,15 +73,9 @@ module ShiftTime
     s = "#{date.strftime(DATE_FORMAT)}, #{shift}"
     Rails.env.development? ? "#{s} [#{id}]" : s
   end
-  
-  # Enums kinda suck, we need their integer value in query contexts
-  # https://hackhands.com/ruby-on-enums-queries-and-rails-4-1/
-  def shift_to_i
-    self.class.shifts[shift]
-  end
 
   def no_schedule_conflicts
-    if self.class.find_by(user: user, date: date, shift: shift_to_i)
+    if self.class.find_by(slice(:user, :date, :shift))
       errors.add(:shift, "can't be the same as your own existing #{self.class.name.downcase}")
     end
   end

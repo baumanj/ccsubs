@@ -2,7 +2,7 @@
   <%= availability_fields.hidden_field :user_id %>
   <%= availability_fields.hidden_field :date %>
   <%= availability_fields.hidden_field :shift %>
-  <div class="row">
+  <div class="row <%= "match" if availability_fields.object.match? %>">
     <div class="col-md-6"><%= availability_fields.object %></div>
     <div class="col-md-6">
       <%= availability_fields.label 'Yes' do %>

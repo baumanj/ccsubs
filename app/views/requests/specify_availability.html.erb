@@ -1,0 +1,31 @@
+<%= render partial: 'requests/new_request_progress', locals: {step: @step} %>
+
+<div class="col-md-8 col-md-offset-2 well">
+  <p>
+    These shifts have requests who may be able to swap with you.
+    Indicate the ones you're available for, then click the "Update" button.
+    Shifts for users which are more likely to be able to swap with you
+    <span class="match">look like this</span>.
+  </p>
+</div>
+
+<div class="row">
+  <div class="col-md-6 col-md-offset-3">
+
+    <%= render 'shared/error_messages' %>
+
+    <%= form_for(@request.user, url: create_user_request_url(@request.user)) do |f| %>
+
+      <%= f.fields_for :requests, @request do |request_fields| %>
+        <%= request_fields.hidden_field :user_id %>
+        <%= request_fields.hidden_field :date %>
+        <%= request_fields.hidden_field :shift %>
+      <% end %>
+
+      <%= render partial: 'availabilities/suggested',
+                 locals: {f: f, availabilities: @suggested_availabilities} %>
+      <%= f.submit "Update", class: "btn btn-large btn-primary" %>
+    <% end %>
+
+  </div>
+</div>

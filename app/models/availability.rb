@@ -8,9 +8,12 @@ class Availability < ActiveRecord::Base
   enum shift: ShiftTime::SHIFT_NAMES
 
   validates :user, presence: true
-  validates :free, :inclusion => [true, false]
   validates_with ShiftTimeValidator
   validate do
+    if free.nil?
+      errors.add(:free, "Must be indicated 'Yes' or 'No'")
+    end
+
     if free? && request != nil
       errors.add(:request, "Must be nil if free? is true")
     end
@@ -24,7 +27,7 @@ class Availability < ActiveRecord::Base
     # notify users with requests matching the availability this user just added
     if user.open_requests.any?
       UserMailer.active_user = user # For preview mode
-      Request.seeking_offers.where(date: self.date, shift: self.shift_to_i).each do |req|
+      Request.seeking_offers.where_shifttime(self).each do |req|
         full_matches, half_matches = user.open_requests.partition {|r| req.user.available?(r) }
         if full_matches.any?
           # Just let the other user know; this user will be notified on their dashboard
@@ -45,6 +48,10 @@ class Availability < ActiveRecord::Base
     end
   end
 
+  def busy?
+    free == false # can't be nil; nil would imply unknown
+  end
+
   def tentative?
     !request.nil? && !request.fulfilled?
   end
@@ -55,5 +62,12 @@ class Availability < ActiveRecord::Base
 
   def locked?
     !request.nil?
+  end
+
+  # others are free for any of this user's requests
+  def match?
+    Request.where_shifttime(self).map(&:user).uniq.any? do |other|
+      self.user.open_requests.any? {|r| other.availability_state_for(r) == :free }
+    end
   end
 end

@@ -13,7 +13,7 @@ class AvailabilitiesController < ApplicationController
 
   def index
     @user = current_user
-    @suggested_availabilities = @user.suggested_availabilities(include_known: true)
+    @suggested_availabilities = @user.suggested_availabilities
   end
 
   private

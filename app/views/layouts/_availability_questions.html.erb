@@ -1,6 +1,6 @@
-<% if current_user.unknown_availability.any? %>
+<% if current_user.requested_availabilities.any? %>
   <div class="alert alert-info">
-    <% current_user.unknown_availability.each do |a| %>
+    <% current_user.requested_availabilities.each do |a| %>
       <div class="row">
         <div class="col-md-4">
           Are you available <%= a %>?

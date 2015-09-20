@@ -1,5 +1,4 @@
-<% provide(:title, 'New request') %>
-<h1>New Request: Step 1 of 3</h1>
+<%= render partial: 'new_request_progress', locals: {step: @step} %>
 
 <div class="row">
   <div class="col-md-6 col-md-offset-3">
@@ -7,6 +6,7 @@
     <%= render 'shared/error_messages' %>
 
     <%= form_for @request do |f| %>
+      <%= hidden_field_tag :"from_step_#{@step}" %>
       <%= render partial: 'shared/shift_time', locals: {f: f} %>
       <% if current_user.admin? %>
         <%= f.label :user %>

@@ -14,36 +14,31 @@
       Currently, nobody looking for a swap is available to take this shift.
     </p>
     <p>
-      Adding more shifts you are available to swap for will increase the
-      chances of finding a match.
+      Adding more <%= link_to "shifts you are available to swap for", availabilities_path %>
+      will increase the chances of finding a match.
     </p>
   <% else %>
-    <p>Requests whose users are available to swap with this shift:</p>
-    <ul>
-    <% @swap_candidates.each do |user, reqs| %>
-      <li><%= user %>:</li>
-      <ul>
-      <% reqs.each do |req| %>
-        <li><%= button_to "Offer to swap for #{req}", offer_swap_url(req),
-                class: "btn btn-primary", method: :patch,
-                params: { offer_request_id: @request.id } %></li>
-      <% end %>
-      </ul>
-    <% end %>
-    </ul>
-  <% end %>
 
-  <% if @request.user.open_availabilities.empty? %>
-    <p>You haven't added any swap availability. You might want to 
-      <%= link_to "add some", availabilities_path %>.</p>
-  <% else %>
-    <p>Shifts you are available to swap for
-      (<%= link_to "edit availability", availabilities_path %>):</p>
-    <ul class="availabilities">
-      <% @request.user.open_availabilities.each do |availability| %>
-        <li><%= availability %></li>
-        <% end %>
-    </ul>
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3">
+
+        <ul>
+          <% @swap_candidates.each do |user, reqs| %>
+            <% reqs.each do |req| %>
+              <li>
+                  <%= button_to "Offer to swap for with #{req.user} for #{req}", offer_swap_url(req),
+                      class: "btn btn-primary", method: :patch,
+                      data: { confirm: "Do you promise to cover #{req} in return?" },
+                      params: { offer_request_id: @request.id } %>
+              </li>
+            <% end %>
+            </ul>
+          <% end %>
+        </ul>
+
+      </div>
+    </div>
+
   <% end %>
 
 <% end %>

@@ -23,6 +23,10 @@ Future:
 * Mass emails for upcoming shifts that are understaffed
 *! Notification to volunteer services for sub/swap requests that haven't been fulfilled when the shift is only one or two days away.
 *! Know when shifts are low (get shift information)
+*! Make it clear who is logged in (gravitar)
+*! auto log out at end of shift if on crisis line computer
+* alerts when 2+ request for shame shift
+* record declines with reason
 * See if I can replace User#upcoming_coverage with a proper relation
 * Change "reset password" language
 ☑ Remove superfluous "details box" on request view

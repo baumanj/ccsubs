@@ -1,15 +1,42 @@
 class Request < ActiveRecord::Base
+
   include ShiftTime
   default_scope { order(:date, :shift) }
 
   belongs_to :user
   belongs_to :fulfilling_swap, class_name: "Request"
-  belongs_to :availability
+  belongs_to :availability # the one with the same shift belonging to the other user
 
   validates :user, presence: true
   validates :shift, presence: true
   validates_with ShiftTimeValidator
   validate :no_availabilities_conflicts
+  validate do
+    # Seeking offers <-> no avaiability
+    unless seeking_offers? == availability.nil?
+      errors.add(:availability, "must #{seeking_offers? ? "not be" : "be"} set if the state is #{state}")
+    end
+
+    unless fulfilling_swap.nil?
+      # Fulfulling swap -> not seeking offers
+      unless !seeking_offers?
+        errors.add(:fulfilling_swap, "must #{seeking_offers? ? "not be" : "be"} set if the state is #{state}")
+      end
+
+      # Later this may be relaxed to be a cycle
+      unless fulfilling_swap.fulfilling_swap == self
+        errors.add(:fulfilling_swap, "must be a reflexive relation between two requests")
+      end
+
+      # If one sent the offer, the other received it
+      unless fulfilled?
+        sender = sent_offer? ? self : fulfilling_swap
+        unless sender.fulfilling_swap.received_offer?
+          errors.add(:state, "must be #{opposite_state} if the fulfilling swap #{fulfilling_swap.state}")
+        end
+      end
+    end
+  end
 
   def no_availabilities_conflicts(availabilities=user.availabilities)
     if availabilities.find {|a| a.start == self.start && a.free? }
@@ -24,6 +51,24 @@ class Request < ActiveRecord::Base
     elsif !future?
       errors.add(:start, "must be in the future")
       return false
+    end
+  end
+
+  before_validation do
+    if availability.nil? && received_or_sent_offer?
+      self.availability = fulfilling_swap.user.availability_for!(self)
+    end
+
+    if fulfilling_swap
+      if fulfilling_swap.fulfilling_swap != self
+        fulfilling_swap.fulfilling_swap = self
+      end
+
+      if received_or_sent_offer?
+        fulfilling_swap.state = opposite_state
+      elsif fulfilling_swap.received_or_sent_offer?
+        self.state = fulfilling_swap.opposite_state
+      end
     end
   end
 
@@ -46,10 +91,22 @@ class Request < ActiveRecord::Base
         update!(fulfilling_swap: nil)
       end
     end
-  end    
+  end
 
   enum shift: ShiftTime::SHIFT_NAMES
   enum state: [ :seeking_offers, :received_offer, :sent_offer, :fulfilled ]
+
+  def received_or_sent_offer?
+    received_offer? || sent_offer?
+  end
+
+  def opposite_state
+    if received_offer?
+      :sent_offer
+    elsif sent_offer?
+      :received_offer
+    end
+  end
 
   def self.on_or_after(date)
     Request.where("date >= ?", date)
@@ -85,6 +142,22 @@ class Request < ActiveRecord::Base
       others_requests = others.map {|o| o.open_requests.reject {|r| user.unavailable?(r) } }
       others.zip(others_requests).reject {|o, swappable_reqs| swappable_reqs.none? }
     end
+  end
+
+  def matches(others_availability: nil, my_availability: nil)
+    raise ArgumentError if others_availability.nil? || my_availability.nil?
+    Request.open.select do |other_request|
+      [*others_availability].include?(other_request.user.availability_state_for(self)) &&
+        [*my_availability].include?(user.availability_state_for(other_request, looking_for_swaps: new_record?))
+    end
+  end
+
+  def offerable_swaps
+    matches(others_availability: :free, my_availability: [:free, :potential])
+  end
+
+  def potential_matches
+    matches(others_availability: [:free, :potential], my_availability: [:free, :potential, :busy])
   end
 
   def open?

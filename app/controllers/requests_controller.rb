@@ -6,10 +6,57 @@ class RequestsController < ApplicationController
   before_action :check_editable, only: [:update, :destroy]
   before_action :check_request_is_open, only: [:offer_sub, :offer_swap]
 
+  # Request creation is a 3-step process, but sometimes steps can be skipped
+  # 1. 'specify_shift' coverage is needed for
+  # 2. 'choose_swap' among matches to offer a swap
+  # 3. 'specify_availability' for covering other's requests
+  def render(*args)
+    case args.first
+    when 'specify_shift'
+      @step = 1
+    when 'choose_swap'
+      @step = 2
+    when 'specify_availability'
+      @step = 3
+    end
+    super
+  end
+
   def new
-    @user = current_user
-    @request = Request.new(params.permit(:date, :shift, :text))
-    @suggested_availabilities = current_user.suggested_availabilities(include_known: false)
+    @request = Request.new(user: current_user)
+    render 'specify_shift'
+  end
+
+  def create
+    @request = Request.new(request_params)
+    @request.user = current_user unless current_user.admin?
+
+    if @request.fulfilling_swap # coming from 'specify_shift'
+      @request.update!(state: :sent_offer)
+      flash[:success] = "OK, we sent #{@request.fulfilling_swap.user} an email to let them know about your offer."
+      redirect_to @request
+    elsif !@request.valid?
+      @errors = @request.errors
+      render 'specify_shift'
+    elsif @request.offerable_swaps.any? && !params[:cant_swap]
+      render 'choose_swap'
+    elsif (potential_matches = @request.potential_matches).any?
+      flash.now[:notice] = "Skipping step 2: no current matches" if !params[:cant_swap]
+      @suggested_availabilities = @request.user.availabilities_for(potential_matches)
+      if params[:cant_swap] # infer that user is not free for all @request.offerable_swaps
+        @suggested_availabilities.each do |a|
+          a.free = false if @request.offerable_swaps.any? {|r| r.start == a.start }
+        end
+      end
+      render 'specify_availability'
+    else
+      if params[:from_step_1]
+        flash[:notice] = "Skipped steps 2 and 3: no current matches and all availability is specified"
+      end
+      @request.save!
+      flash[:success] = "Request created!"
+      redirect_to @request
+    end
   end
 
   # post '/requests/:id/offer/sub', to: 'requests#offer_sub', as: :offer_sub
@@ -101,10 +148,11 @@ class RequestsController < ApplicationController
   end
 
   def show
-    @swap_candidates = if current_user == @request.user
-      @request.swap_candidates
+    if current_user == @request.user
+      @suggested_availabilities = @request.user.availabilities_for(@request.potential_matches)
+      @swap_candidates = @request.swap_candidates
     else
-      @request.swap_candidates(current_user)
+      @swap_candidates = @request.swap_candidates(current_user)
     end
     @conflict = current_user.conflict_for(@request)
   end
@@ -119,6 +167,12 @@ class RequestsController < ApplicationController
 
     def find_request
       @request = Request.find(params[:id])
+    end
+
+    def request_params
+      permitted_keys = [:date, :shift, :fulfilling_swap_id]
+      permitted_keys << :user_id if current_user.admin?
+      params.require(:request).permit(*permitted_keys)
     end
 
     def check_owner
