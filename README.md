@@ -4,11 +4,15 @@ This is a web application for facilitating exchanging shift assignments.
 
 ## TODO:
 ### Next steps
+* Speed up availability pages
 * Notification to volunteer services for sub/swap requests that haven't been fulfilled when the shift is only one or two days away.
 * Know when shifts are low (get shift information)
 * Make it clear who is logged in (gravitar)
 * auto log out at end of shift if on crisis line computer
 ### Future
+* Allow admin to do all different actions as different users
+* Make create request button from others request page jump past step 1 of request creation process
+* Clean up partial usage, esp collections
 * The phone and browser have inconsistent behavior, phone seems to require all fields to be filled each time, where browser lets you edit one field, and leave others untouched (observed mainly in the profile edit page).
 * There seems to be a pretty fast timeout on the site (I typically was re-logging every couple of minutes).  Not sure if this is the site itself, or if it only allows one instance of me, and I was logging in from different browsers/devices, which signed me out of my previous instance.
 * Don't allow requests to be edited into the past.
