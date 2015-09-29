@@ -39,6 +39,7 @@ FactoryGirl.define do
           availability: build(:availability, date: received_offer_request_date, shift: received_offer_request_shift)
         )
       end
+      after(:build) {|r| r.fulfilling_swap.fulfilling_swap = r }
 
       factory :received_offer_request do
         after(:build) do |r|

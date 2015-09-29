@@ -84,6 +84,7 @@ class RequestsController < ApplicationController
   end
 
   def update
+    # Should we handle failure to look up requests by id?
     # @request.assign_attributes(request_params)
     # raise
     if params[:request_to_swap_with_id]

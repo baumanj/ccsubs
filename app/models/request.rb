@@ -112,23 +112,9 @@ class Request < ActiveRecord::Base
     end
   end
 
-  # Relax this once we allow N-way swaps for N > 2
-  # This seems like it should work with reflexive associations, but I can't make to happen
-  # Assume the the initial call will have val == nil or val.fulfilling_swap.nil?
-  def fulfilling_swap=(val)
-    raise ArgumentError if val == self
-    if self.fulfilling_swap != val
-      other_to_leave = (fulfilling_swap && fulfilling_swap.fulfilling_swap == self) ? fulfilling_swap : nil
-      other_to_join = (val && val.fulfilling_swap != self) ? val : nil
-      super
-      other_to_leave.fulfilling_swap = nil if other_to_leave
-      other_to_join.fulfilling_swap = self if other_to_join
-    end
-  end
-
   def send_swap_offer_to(request_to_swap_with)
-    transaction do
-      # self.fulfilling_swap already set from controller; can't be inferred
+    with_lock do
+      request_to_swap_with.lock!
       self.assign_attributes(
         state: :sent_offer,
         fulfilling_swap: request_to_swap_with,
@@ -137,9 +123,7 @@ class Request < ActiveRecord::Base
         state: :received_offer,
         fulfilling_swap: self,
         availability: self.user.find_or_initialize_availability_for(fulfilling_swap))
-      if save # work around weird issue
-        [self, request_to_swap_with].map {|r| Request.exists?(r) }.all?
-      end
+      save # fulfilling_swap and availabilities will be autosaved
     end
   end
 

@@ -28,6 +28,7 @@ describe Request do
     requests.product(requests).each do |sender, receiver|
       next if sender == receiver
       create(:availability, user: receiver.user, date: sender.date, shift: sender.shift)
+      puts "#{sender.inspect} sending offer to #{receiver.inspect}"
       expect(sender.send_swap_offer_to(receiver)).to_not be_truthy
     end
   end
@@ -35,7 +36,7 @@ describe Request do
   def check_request_not_found(sender, receiver, destroyed_request: nil)
     expect(Request.destroy(destroyed_request.id)).to be_truthy
     expect(Request.exists?(destroyed_request.id)).to eq(false)
-    expect(sender.send_swap_offer_to(receiver)).to_not be_truthy
+    expect { sender.send_swap_offer_to(receiver) }.to raise_error(ActiveRecord::RecordNotFound)
   end
 
   it "fails to offer swap if the sending request is not found" do
@@ -45,37 +46,4 @@ describe Request do
   it "fails to offer swap if the receiving request is not found" do
     check_request_not_found(*@requests, destroyed_request: @requests.second)
   end
-
-  it 'is the fulfilling swap of its fulfilling swap' do
-    r, r2, r3, r4 = create_list(:request, 4)
-
-    r.fulfilling_swap = r2
-    expect(r.fulfilling_swap.object_id).to eq(r2.object_id)
-    expect(r2.fulfilling_swap.object_id).to eq(r.object_id)
-
-    r2.fulfilling_swap = nil
-    expect(r.fulfilling_swap).to be_nil
-    expect(r2.fulfilling_swap).to be_nil
-
-    r.fulfilling_swap = r2
-    expect(r.fulfilling_swap.object_id).to eq(r2.object_id)
-    expect(r2.fulfilling_swap.object_id).to eq(r.object_id)
-
-    r.fulfilling_swap = r3
-    expect(r.fulfilling_swap.object_id).to eq(r3.object_id)
-    expect(r2.fulfilling_swap).to be_nil
-    expect(r3.fulfilling_swap.object_id).to eq(r.object_id)
-
-    r2.fulfilling_swap = r4
-    expect(r.fulfilling_swap.object_id).to eq(r3.object_id)
-    expect(r3.fulfilling_swap.object_id).to eq(r.object_id)
-    expect(r2.fulfilling_swap.object_id).to eq(r4.object_id)
-    expect(r4.fulfilling_swap.object_id).to eq(r2.object_id)
-
-    r.fulfilling_swap = r2
-    expect(r.fulfilling_swap.object_id).to eq(r2.object_id)
-    expect(r2.fulfilling_swap.object_id).to eq(r.object_id)
-    expect(r3.fulfilling_swap).to be_nil
-    expect(r4.fulfilling_swap).to be_nil
-	end
 end
