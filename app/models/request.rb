@@ -1,29 +1,6 @@
-# class Module
-#   def was_attr_accessor(*args)
-#     args.each do |arg|
-#       self.class_eval %Q{
-#         def #{arg}=(val)
-#           @#{arg}_was = self.#{arg} if val != self.#{arg}
-#           super
-#         end
-#       }
-
-#       self.class_eval %Q{
-#         def #{arg}_was
-#           @#{arg}_was
-#         end
-#       }
-#     end
-#   end
-# end
-
 class Request < ActiveRecord::Base
-
   include ShiftTime
   default_scope { order(:date, :shift) }
-
-  # was_attr_accessor :fulfilling_swap
-  attr_accessor :save_pending
 
   belongs_to :user
   # has_one :twin_variant, class_name: "Variant", foreign_key: :variant_id
