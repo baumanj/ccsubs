@@ -54,7 +54,6 @@ class Request < ActiveRecord::Base
         errors.add(:state, "should change if request is changing")
       end
     else
-      byebug
       errors.add(:state, "unexpectedly changed from #{state_change.join(' to ')}")
     end
 
@@ -98,6 +97,7 @@ class Request < ActiveRecord::Base
 
   def no_availabilities_conflicts(availabilities=user.availabilities)
     if availabilities.find {|a| a.start == self.start && a.free? }
+      byebug
       errors.add(:shift, "can't be the same as your own existing availability")
     end
   end
@@ -138,7 +138,7 @@ class Request < ActiveRecord::Base
         fulfilling_swap: self,
         availability: self.user.find_or_initialize_availability_for(fulfilling_swap))
       if save # work around weird issue
-        [self, request_to_swap_with].map {|r| r.persisted? && Request.exists?(r) }.all?
+        [self, request_to_swap_with].map {|r| Request.exists?(r) }.all?
       end
     end
   end
@@ -156,64 +156,64 @@ class Request < ActiveRecord::Base
 
   # When one request changes state, there are a number of related changes to make to
   # other linked requests and availabilities. Handle them in the callbacks for consistency.
-  before_validation do
-    begin
-      # if fulfilling_swap
-      #   # Set up the inverse relationship
-      #   if fulfilling_swap.fulfilling_swap != self
-      #     fulfilling_swap.fulfilling_swap = self
-      #   end
+  # before_validation do
+  #   begin
+  #     # if fulfilling_swap
+  #     #   # Set up the inverse relationship
+  #     #   if fulfilling_swap.fulfilling_swap != self
+  #     #     fulfilling_swap.fulfilling_swap = self
+  #     #   end
 
-      #   if received_offer? || sent_offer?
-      #     fulfilling_swap.state = opposite_state
-      #   elsif fulfilling_swap.received_offer? || fulfilling_swap.sent_offer?
-      #     self.state = fulfilling_swap.opposite_state
-      #   end
-      # end
+  #     #   if received_offer? || sent_offer?
+  #     #     fulfilling_swap.state = opposite_state
+  #     #   elsif fulfilling_swap.received_offer? || fulfilling_swap.sent_offer?
+  #     #     self.state = fulfilling_swap.opposite_state
+  #     #   end
+  #     # end
 
-      # if availability.nil? && !seeking_offers?
-      #   if received_offer?
-      #     self.availability = fulfilling_user.availabilities.find_by_shifttime!(self)
-      #   elsif sent_offer?
-      #     self.availability = fulfilling_user.find_or_create_availability_for!(self)
-      #   end
-      # end
+  #     # if availability.nil? && !seeking_offers?
+  #     #   if received_offer?
+  #     #     self.availability = fulfilling_user.availabilities.find_by_shifttime!(self)
+  #     #   elsif sent_offer?
+  #     #     self.availability = fulfilling_user.find_or_create_availability_for!(self)
+  #     #   end
+  #     # end
 
-      case state_change
-      when ['seeking_offers', 'sent_offer']
-        # # self.fulfilling_swap already set from controller; can't be inferred
-        # self.availability = fulfilling_user.availabilities.find_by_shifttime!(self)
-        # fulfilling_swap.assign_attributes(fulfilling_swap: self, state: :received_offer,
-        #                                   availability: user.find_or_initialize_availability_for(fulfilling_swap))
-      when ['seeking_offers', 'received_offer']
-        # Nothing more to do; fulfilling_swap handled it
-      when ['received_offer', 'fulfilled']
-        # fulfilling_swap.state = :fulfilled
-        # [availability, fulfilling_swap.availability].each {|a| a.free = false }
-      when ['sent_offer', 'fulfilled']
-        # Nothing more to do; fulfilling_swap handled it
-      when ['seeking_offers', 'fulfilled'] # <== sub (no swap)
-        availability.free = false
-      when ['received_offer', 'seeking_offers']
-        [self, fulfilling_swap].each do |r|
-          if r.availability.implicitly_created?
-            r.availability.mark_for_destruction
-            r.availability.request = nil
-          end
-          r.assign_attributes(state: :seeking_offers, fulfilling_swap: nil, availability: nil)
-          # r.save
-        end
-      when ['sent_offer', 'seeking_offers']
-        # Nothing more to do
-      else
-        # raise "Unexpected state change: #{state_change.join(' to ')}"
-      end
+  #     case state_change
+  #     when ['seeking_offers', 'sent_offer']
+  #       # # self.fulfilling_swap already set from controller; can't be inferred
+  #       # self.availability = fulfilling_user.availabilities.find_by_shifttime!(self)
+  #       # fulfilling_swap.assign_attributes(fulfilling_swap: self, state: :received_offer,
+  #       #                                   availability: user.find_or_initialize_availability_for(fulfilling_swap))
+  #     when ['seeking_offers', 'received_offer']
+  #       # Nothing more to do; fulfilling_swap handled it
+  #     when ['received_offer', 'fulfilled']
+  #       # fulfilling_swap.state = :fulfilled
+  #       # [availability, fulfilling_swap.availability].each {|a| a.free = false }
+  #     when ['sent_offer', 'fulfilled']
+  #       # Nothing more to do; fulfilling_swap handled it
+  #     when ['seeking_offers', 'fulfilled'] # <== sub (no swap)
+  #       availability.free = false
+  #     when ['received_offer', 'seeking_offers']
+  #       [self, fulfilling_swap].each do |r|
+  #         if r.availability.implicitly_created?
+  #           r.availability.mark_for_destruction
+  #           r.availability.request = nil
+  #         end
+  #         r.assign_attributes(state: :seeking_offers, fulfilling_swap: nil, availability: nil)
+  #         # r.save
+  #       end
+  #     when ['sent_offer', 'seeking_offers']
+  #       # Nothing more to do
+  #     else
+  #       # raise "Unexpected state change: #{state_change.join(' to ')}"
+  #     end
 
-    rescue => e
-      byebug
-      true # If there are problems, flag them in validate
-    end
-  end
+  #   rescue => e
+  #     byebug
+  #     true # If there are problems, flag them in validate
+  #   end
+  # end
 
   # before_save do
   #   byebug
@@ -229,7 +229,7 @@ class Request < ActiveRecord::Base
   # make sure availabilities and
 
   # Why can't these be before_validation?
-  after_update do
+  # after_update do
 
     # byebug
     # case state_change
@@ -257,7 +257,7 @@ class Request < ActiveRecord::Base
     # else
     #   raise "Unexpected state change: #{state_change.join(' to ')}"
     # end
-  end
+  # end
 
   def opposite_state
     if received_offer?
