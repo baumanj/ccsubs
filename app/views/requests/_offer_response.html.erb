@@ -1,18 +1,20 @@
 <div class="alert alert-warning">
   <p>
-    <%= offer.user %> has offered to swap with you for
-    <%= if offer == @request
-          # We're on the other person's request page, link to ours
-          link_to offer.fulfilling_swap, offer.fulfilling_swap
-        else
-          link_to offer, offer
-        end %>.
+    <%= receivers_request.fulfilling_user %> has offered to swap with you for
+    <% linked_req = (receivers_request == @request) ? receivers_request : receivers_request.fulfilling_swap %>
+    <%= link_to linked_req, linked_req # If we're on the other person's request page, link to ours %>
   </p>
 
-  <%= button_to "Accept", accept_swap_path(offer.fulfilling_swap),
-      class: "btn btn-large btn-primary", method: :patch,
-      data: { confirm: "Do you promise to cover #{offer} in return?" } %>
-  <%= button_to "Decline", decline_swap_path(offer.fulfilling_swap),
-      class: "btn btn-large btn-primary", method: :patch,
-      data: { confirm: "You really want to decline this offer?" } %>
+  <%= form_for receivers_request do |f| %>
+    <%= f.button(name: :offer_response, value: :accept,
+                 data: { confirm: "Do you promise to cover #{receivers_request.fulfilling_swap} in return?" },
+                 class: "btn btn-primary") do %>
+      Accept
+    <% end %>
+    <%= f.button(name: :offer_response, value: :decline,
+                 data: { confirm: "You really want to decline this offer?" },
+                 class: "btn btn-default") do %>
+      Decline
+    <% end %>
+  <% end %>
 </div>

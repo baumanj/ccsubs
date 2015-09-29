@@ -1,32 +1,11 @@
-<%= render partial: 'new_request_progress', locals: {step: @step} %>
+<% provide(:title, 'Choose swap') %>
+<h1>Choose swap for <%= @request %></h1>
 
 <div class="row">
   <div class="col-md-6 col-md-offset-3">
-
     <%= render 'shared/error_messages' %>
 
-    <%= form_for @request do |f| %>
-      <%= f.hidden_field :user_id %>
-      <%= f.hidden_field :date %>
-      <%= f.hidden_field :shift %>
-
-      <ul>
-        <% @request.offerable_swaps.each do |req_to_swap_with| %>
-          <li>
-            <%= f.button(name: 'request[fulfilling_swap_id]',
-                         value: req_to_swap_with.id,
-                         data: { confirm: "Do you promise to cover #{req_to_swap_with} in return?" },
-                         class: "btn btn-primary") do %>
-              Offer to swap with <%= req_to_swap_with.user %> for <%= req_to_swap_with %>
-            <% end %>
-        </li>
-        <% end %>
-      </ul>
-
-      <%= f.button(name: :cant_swap, class: "btn btn-default col-md-12") do %>
-        I can't swap for any of these
-      <% end %>
-    <% end %>
-
+    <%= render(partial: 'offer_swap_form',
+               locals: {my_request: @request, requests_to_swap_with: @requests_to_swap_with}) %>
   </div>
 </div>

@@ -1,5 +1,7 @@
-<h2><%= title %></h2>
-  <% if requests.any? %>
+<% if local_assigns[:title] %>
+  <h2><%= title %></h2>
+<% end %>
+<% if requests.any? %>
 	<ul class="requests">
 	  <% requests.each do |req| %>
 	    <li>
@@ -10,22 +12,22 @@
 	      		in exchange for <%= req.fulfilling_swap %>
 	      	<% end %>
 	      <% elsif req.sent_offer? %>
-	     	awaiting response from <%= req.fulfilling_swap.user %>
+          awaiting response from <%= req.fulfilling_user %>
 	      <% elsif req.received_offer? %>
-	      	pending offer from <%= req.fulfilling_swap.user %>
+	        pending offer from <%= req.fulfilling_user %>
 	      <% end %>
 
-        <% if current_user_can_edit?(req) %>
-          <%= link_to(req, method: :delete, data: { confirm: "Really delete this request?" }) do %>
-            <button type="button" class="btn btn-default btn-xs" aria-label="Left Align" title="Delete">
-              <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
-            </button>
-          <% end %>
-        <% end %>
+	    <% if current_user_can_edit?(req) %>
+	      <%= link_to(req, method: :delete, data: { confirm: "Really delete this request?" }) do %>
+	        <button type="button" class="btn btn-default btn-xs" aria-label="Left Align" title="Delete">
+	          <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+	        </button>
+	      <% end %>
+	    <% end %>
 
 	    </li>
 	  <% end %>
 	</ul>
-  <% else %>
-    <p>There don't appear to be any matching requests</p>
-  <% end %>
+<% else %>
+	<p>There don't appear to be any matching requests</p>
+<% end %>

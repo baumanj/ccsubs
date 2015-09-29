@@ -20,7 +20,7 @@
                 send_confirmation_path(current_user) %>
           </div>
         <% end%>
-        <% if current_user.pending_offers? && 
+        <% if current_user.pending_offers.any? &&
             !(@request && (@request.sent_offer? || @request.received_offer?)) %>
           <div class="alert alert-info">
             <%= link_to "Please click here respond to your pending " +
@@ -28,8 +28,10 @@
                 pending_requests_path(current_user) %>
           </div>
         <% end%>
-        <%= render 'layouts/availability_questions' %>
-        <%= render 'layouts/swap_suggestions' %>
+        <% unless @no_dashboard || true # FIX ME %>
+          <%= render 'layouts/availability_questions' %>
+          <%= render 'layouts/swap_suggestions' %>
+        <% end %>
       <% end %>
       <% flash.each do |key, value| %>
         <div class="alert alert-<%= flash_class(key) %>"><%= value %></div>

@@ -7,17 +7,14 @@ Ccsubs::Application.routes.draw do
   if Rails.env.development?
     delete '/users/delete/all/availability/:id', to: 'users#delete_all_availability', as: :delete_all_availability
   end
-  patch '/users/:id/request/create', to: 'users#create_request', as: :create_user_request
+  # patch '/users/:id/request/create', to: 'users#create_request', as: :create_user_request
   resources :users
   get '/requests/fulfilled', to: 'requests#fulfilled', as: :fulfilled_requests
   get '/requests/owned', to: 'requests#owned_index', as: :current_user_owned_requests
   get '/requests/owned/:user_id', to: 'requests#owned_index', as: :owned_requests
-  resources :requests, except: [:edit, :update]
+  resources :requests, except: [:edit]
   get '/requests/:user_id/pending', to: 'requests#pending', as: :pending_requests
-  patch '/requests/:id/offer/sub', to: 'requests#offer_sub', as: :offer_sub
-  patch '/requests/:id/offer/swap', to: 'requests#offer_swap', as: :offer_swap
-  patch '/requests/:id/accept/swap', to: 'requests#accept_swap', as: :accept_swap
-  patch '/requests/:id/decline/swap', to: 'requests#decline_swap', as: :decline_swap
+  patch '/requests/:id/sub', to: 'requests#offer_sub', as: :offer_sub
   resources :sessions, only: [:new, :create, :destroy]
   root 'static_pages#home'
   get '/help', to: 'static_pages#help', as: :help

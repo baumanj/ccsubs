@@ -37,16 +37,20 @@ group :doc do
   gem 'sdoc', require: false
 end
 
+group :development do
+  gem 'byebug'
+end
+
 group :development, :test do
   gem 'rspec-rails', '~> 3.0.0'
   gem 'factory_girl_rails'
   gem 'database_cleaner'
   gem 'better_errors'
   gem 'binding_of_caller'
+  gem 'faker'
 end
 
 group :test do
-  gem 'faker'
   gem 'capybara', '~> 2.2.0'
   gem 'guard-rspec'
   gem 'launchy'

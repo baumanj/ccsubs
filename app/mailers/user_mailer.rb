@@ -32,15 +32,15 @@ class UserMailer < ActionMailer::Base
     mail to: user, subject: "Confirm your ccsubs email"
   end
 
-  def notify_partial_match(req, half_matching_requests)
+  def notify_potential_matches(req, half_matching_requests)
     @req = req
     @available_user = half_matching_requests.first.user
     @potential_swaps = half_matching_requests
     mail to: @req.user,
-         subject: "Sub/Swap #{@req}: possible match"
+         subject: "Sub/Swap #{@req}: potential match found"
   end
 
-  def notify_match(req, matching_requests)
+  def notify_offerable_swaps(req, matching_requests)
     @req = req
     @available_user = matching_requests.first.user
     @suggested_swaps = matching_requests
@@ -62,17 +62,18 @@ class UserMailer < ActionMailer::Base
     mail to: @fulfilling_user, subject: "Sub/Swap #{@req}: you have agreed to sub"
   end
 
-  def notify_swap_offer(req, offer_req)
-    @req = req
-    @offer_req = offer_req
-    mail to: @req.user,
-         subject: "Sub/Swap #{@req}: swap offered! [ACTION REQUIRED]"
+  def notify_swap_offer(from: nil, to: nil)
+    raise ArgumentError if from.nil? || to.nil? # need ruby 2.1
+    @received_offer_request = to
+    @sent_offer_request = from
+    mail to: @received_offer_request.user,
+         subject: "Sub/Swap #{@received_offer_request}: swap offered! [ACTION REQUIRED]"
   end
 
   def notify_swap_accept(req)
     @req = req
     @accepter = req.user
-    @acceptee = req.fulfilling_swap.user
+    @acceptee = req.fulfilling_user
     mail to: @acceptee,
          subject: "Sub/Swap #{@req}: #{@acceptee} swapping for #{@accepter} covering #{@req.fulfilling_swap}",
          cc: VOLUNTEER_SERVICES
@@ -81,12 +82,12 @@ class UserMailer < ActionMailer::Base
   def remind_swap_accept(req)
     @req = req
     @accepter = req.user
-    @acceptee = req.fulfilling_swap.user
+    @acceptee = req.fulfilling_user
     mail to: @accepter,
          subject: "Sub/Swap #{@req}: swap from #{@acceptee} accepted for #{@req.fulfilling_swap}"
   end
 
-  def notify_swap_decline(req, offer_req)
+  def notify_swap_decline(decliners_request: req, offerers_request: offer_req)
     @req = req
     @decliner = req.user
     @declinee = offer_req.user

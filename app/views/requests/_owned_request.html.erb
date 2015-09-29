@@ -1,18 +1,15 @@
 <% if @request.received_offer? %>
 
-  <%= render partial: 'offer_response',
-      locals: {offer: @request.fulfilling_swap } %>
+  <%= render partial: 'offer_response', locals: {receivers_request: @request} %>
   
 <% elsif @request.sent_offer? %>
   <p>
-    Pending swap offered to <%= @request.fulfilling_swap.user %> for
+    Pending swap offered to <%= @request.fulfilling_user %> for
     <%= link_to @request.fulfilling_swap, @request.fulfilling_swap %>.
   </p>
 <% else %>
-  <% if @swap_candidates.empty? %>
-    <p>
-      Currently, nobody looking for a swap is available to take this shift.
-    </p>
+  <% if @requests_to_swap_with.empty? %>
+    <p>Currently, nobody looking for a swap is available to take this shift.</p>
     <p>
       Adding more <%= link_to "shifts you are available to swap for", availabilities_path %>
       will increase the chances of finding a match.
@@ -21,24 +18,18 @@
 
     <div class="row">
       <div class="col-md-6 col-md-offset-3">
-
-        <ul>
-          <% @swap_candidates.each do |user, reqs| %>
-            <% reqs.each do |req| %>
+        <%= form_for @request do |f| %>
+          <ul class="requests">
+            <% @requests_to_swap_with.each do |reqs_to_swap_with| %>
               <li>
-                  <%= button_to "Offer to swap for with #{req.user} for #{req}", offer_swap_url(req),
-                      class: "btn btn-primary", method: :patch,
-                      data: { confirm: "Do you promise to cover #{req} in return?" },
-                      params: { offer_request_id: @request.id } %>
+                <%= render partial: 'offer_swap_button',
+                           locals: {form: f, req_to_swap_with: req_to_swap_with} %>
               </li>
             <% end %>
-            </ul>
-          <% end %>
-        </ul>
-
+          </ul>
+        <% end %>
       </div>
     </div>
 
   <% end %>
-
 <% end %>

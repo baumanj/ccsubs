@@ -1,0 +1,12 @@
+<%= form_for(user) do |f| %>
+  <%= hidden_field_tag :redirect_to, @request %>
+  <%= f.fields_for :availabilities, availabilities_for_requests_user_cant_swap_with do |availability_fields| %>
+    <%= availability_fields.hidden_field :date %>
+    <%= availability_fields.hidden_field :shift %>
+    <%= availability_fields.hidden_field :free, value: false %>
+  <% end %>
+  <%= f.button(class: "btn btn-default col-md-12") do %>
+  <%# This partial should only be rendered when requests_to_swap_with is nonempty %>
+    I can't swap for <%= (requests_user_cant_swap_with.size > 1) ? "any of these requests" : "this request" %>
+  <% end %>
+<% end %>

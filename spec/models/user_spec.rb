@@ -8,6 +8,10 @@ describe User do
                      password_confirmation: 'foobar')
   end
   
+  it "has a valid factory" do
+    expect(create(:user)).to be_valid
+  end
+
   subject { @user }
   
   it { should respond_to(:name) }

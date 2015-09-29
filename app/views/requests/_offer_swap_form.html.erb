@@ -1,0 +1,15 @@
+<ul class="requests">
+  <%= form_for my_request do |f| %>
+    <% requests_to_swap_with.each do |req_to_swap_with| %>
+      <li>
+        <%= render partial: 'offer_swap_button',
+                   locals: {form: f, req_to_swap_with: req_to_swap_with} %>
+      </li>
+    <% end %>
+  <% end %>
+</ul>
+
+<%= render(partial: 'cant_offer_swap_form',
+           locals: {user: my_request.user,
+                    requests_user_cant_swap_with: requests_to_swap_with,
+                    availabilities_for_requests_user_cant_swap_with: @availabilities_for_requests_to_swap_with}) %>

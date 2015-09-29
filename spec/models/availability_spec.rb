@@ -1,5 +1,7 @@
 require 'spec_helper'
 
+# it "string" &block
 describe Availability do
-  pending "add some examples to (or delete) #{__FILE__}"
+	subject { [] }
+	it { is_true }
 end

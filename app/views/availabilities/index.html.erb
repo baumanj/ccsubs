@@ -4,7 +4,7 @@
 
 <% if @suggested_availabilities.any? %>
 
-  <%= render partial: 'availabilities/instructions' %>
+  <%= render 'availabilities/instructions' %>
 
   <div class="row">
     <div class="col-md-6 col-md-offset-3">
@@ -25,5 +25,5 @@
   </div>
 
 <% else %>
-    <h2>There aren't any other open requests at the moment to add availability for</h2>
+    <h2>There aren't any other active requests at the moment to add availability for</h2>
 <% end %>

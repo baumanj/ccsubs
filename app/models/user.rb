@@ -6,7 +6,6 @@ class User < ActiveRecord::Base
   has_secure_password
 
   has_many :requests, -> { extending ShiftTime::ClassMethods }
-  has_many :fulfilled_requests, -> { extending ShiftTime::ClassMethods }, class_name: "Request", foreign_key: "fulfilling_user_id"
   has_many :availabilities, -> { extending ShiftTime::ClassMethods }
   accepts_nested_attributes_for :requests, :availabilities
 
@@ -102,43 +101,42 @@ class User < ActiveRecord::Base
   #
   # Requesting: U has a request at the same time as S.
   #
+  # Subbing: U has a pending or accepted offer to cover S already.
+  #
   # Free: U has specifed "yes", they can cover S.
   #
-  # Busy: U has specified "no", they cannot cover S shift or they have accepted
-  #       a request to cover S already.
+  # Busy: U has specified "no", they cannot cover S shift or they have a
+  #       pending or accepted request to cover S already.
   #
   # Potential: None of the above; we have no information from U about S.
-  def availability_state_for(shifttime, looking_for_swaps: open_requests.any?)
+  def availability_state_for(shifttime, looking_for_swaps: requests.active.any?)
 
     if shifttime.start.past?
       return :past
-    elsif !looking_for_swaps && open_requests.none?
+    elsif !looking_for_swaps && requests.active.none?
       return :uninterested
     elsif requests.find_by_shifttime(shifttime)
       return :requesting
     end
 
     availability = availabilities.find_by_shifttime(shifttime)
-    if availability.nil?
+    if availability.nil? || availability.free.nil?
       return :potential
+    elsif availability.request
+        return :subbing
     else
       return availability.free? ? :free : :busy
     end
   end
 
-  def open_requests
-    requests.open
+  # True iff positively available; false if unknown
+  def available?(shifttime)
+    availability_state_for(shifttime) == :free
   end
-  
-  def open_availabilities
-    availabilities.open
-  end
-  
-  def open_availability(matching_request)
-      # We can't be available for our own requests
-      unless self == matching_request.user
-        open_availabilities.find {|a| a.start == matching_request.start }
-      end
+
+  # True iff positively unavailable; false if unknown
+  def unavailable?(shifttime)
+    !available?(shifttime) && availability_state_for(shifttime) != :potential
   end
 
   def conflict_for(shifttime)
@@ -150,33 +148,19 @@ class User < ActiveRecord::Base
     end
   end
 
-  # True iff positively unavailable; false if unknown
-  def unavailable?(shifttime)
-    !conflict_for(shifttime).nil?
-  end
-
-  # True iff positively available; false if unknown
-  def available?(shifttime)
-    a = availabilities.find_by_shifttime(shifttime)
-    a && a.free?
-  end
-
-  #revise
-  def availability_for!(request)
-    unless unavailable?(request)
-      availabilities.find_by_shifttime(request) || create_availability!(request)
+  def find_or_initialize_availability_for(request)
+    availabilities.find_or_initialize_by(request.shifttime_attrs) do |new_availability|
+      new_availability.assign_attributes(implicitly_created: true, free: true)
     end
   end
 
-  def swap_candidates
-    open_requests.select do |my_req|
-      others_reqs = my_req.swap_candidates.flat_map {|_, reqs| reqs }
-      others_reqs.any? {|r| available?(r) }
-    end
+  def offerable_swaps(for_requests=requests.active.all)
+    [*for_requests].flat_map(&:offerable_swaps)
   end
-  
+
   def requested_availabilities
-    availabilities_for(others_availability: :free, my_availability: :potential)
+    puts "******** requested_availabilities for #{self}"
+    availabilities_for(receivers_availability: :free, senders_availability: :potential)
   end
 
   def suggested_availabilities
@@ -185,42 +169,49 @@ class User < ActiveRecord::Base
 
   # We can call this three ways:
   # 1. With a named relation like :half_matches, the request list will come from
-  #    the mapping of the open requests like request.half_matches. The relation
-  #    can be any symbol Request responds to.
+  #    the mapping of the active requests like request.half_matches.
   # 2. Like 1, but instead of a named relation, it is specified with the args
   #    that Request#match accepts.
   # 3. An existing collection of Requests.
   def availabilities_for(relation_or_requests)
-    if relation_or_requests[0].is_a? Request
-      others_reqs = relation_or_requests
-    else
-      relation = relation_or_requests
-      others_reqs = open_requests.flat_map do |my_req|
-        relation.is_a?(Symbol) ? my_req.send(relation) : my_req.matches(relation)
+    matches =
+      if relation_or_requests[0].is_a? Request
+        relation_or_requests
+      else
+        # Would work with all; limiting to active is an optimization
+        puts "******** calling matching_requests for #{self}'s #{requests.active.count} active requests"
+        requests.active.matching_requests(relation_or_requests)
+        # ^ need to include a newly created request here
       end
-    end
-    others_reqs.map {|r| availability_for(r) }.uniq(&:start)
+    puts "******** mapping #{self}'s #{matches.count} matches to availabilities"
+    matches.map {|r| availability_for(r) }.uniq(&:start)
   end
 
   def pending_offers
-    Request.pending_requests(id)
-  end
-
-  def pending_offers?
-    pending_offers.any?
+    requests.select(&:pending?)
   end
 
   def availability_for(shifttime)
+    puts "******** availability_for for #{shifttime} for #{self}"
     availabilities.find_or_initialize_by(shifttime.shifttime_attrs)
+  end
+
+  def self.with_active_requests_check
+    fast = with_active_requests.to_a.sort
+    slow = with_active_requests_slow.sort
+    puts fast == slow
+  end
+
+  def self.with_active_requests_slow
+    User.select {|u| u.requests.any? {|r| r.active_slow? } }
+  end
+
+  def self.with_active_requests
+    joins(:requests).merge(Request.unscoped.active).distinct
   end
 
   private
 
-    def create_availability!(request)
-      Availability.create!(user: self, shift: request.shift, date: request.date, 
-                           free: true, implicitly_created: true)
-    end
-    
     def create_remember_token
       self.remember_token = User.digest(User.new_secure_token)
     end

@@ -1,8 +1,8 @@
-<% if current_user.swap_candidates.any? %>
+<% if current_user.offerable_swaps.any? %>
   <div class="alert alert-warning">
     <h2>You have swapportunities! Click on your
-      <%= "request".pluralize(current_user.swap_candidates.length) %> below.</h2>
-    <% current_user.swap_candidates.each do |req| %>
+      <%= "request".pluralize(current_user.offerable_swaps.length) %> below.</h2>
+    <% current_user.offerable_swaps.each do |req| %>
       <p><%= link_to req, req %></p>
     <% end %>
   </div>

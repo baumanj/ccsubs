@@ -2,54 +2,78 @@ class RequestsController < ApplicationController
   before_action :require_signin
   before_action :require_confirmed_email
   before_action :find_request, except: [:new, :create, :index, :owned_index, :fulfilled, :pending]
-  before_action :check_owner, only: [:update, :delete, :accept_swap, :decline_swap]
-  before_action :check_editable, only: [:update, :destroy]
-  before_action :check_request_is_open, only: [:offer_sub, :offer_swap]
-
-  # Request creation is a 3-step process, but sometimes steps can be skipped
-  # 1. 'specify_shift' coverage is needed for
-  # 2. 'choose_swap' among matches to offer a swap
-  # 3. 'specify_availability' for covering other's requests
-  def render(*args)
-    case args.first
-    when 'specify_shift'
-      @step = 1
-    when 'choose_swap'
-      @step = 2
-    when 'specify_availability'
-      @step = 3
-    end
-    super
-  end
+  before_action :check_owner, except: [:new, :create, :show, :index, :owned_index, :fulfilled, :pending]
+  before_action :check_editable, except: [:new, :create, :show, :index, :owned_index, :fulfilled, :pending]
 
   def new
     @request = Request.new(user: current_user)
-    render 'specify_shift'
   end
 
   def create
     @request = Request.new(request_params)
     @request.user = current_user unless current_user.admin?
-
-    if @request.fulfilling_swap # coming from 'specify_shift'
-      @request.update!(state: :sent_offer)
-      flash[:success] = "OK, we sent #{@request.fulfilling_swap.user} an email to let them know about your offer."
+    if @request.save
       redirect_to @request
-    elsif !@request.valid?
+    else
+      flash.now[:error] = "Request couldn't be created. Please check the errors and retry."
       @errors = @request.errors
-      render 'specify_shift'
+      render 'new'
+    end
+  end
+
+  def show
+    case @request.state
+    when 'seeking_offers'
+      if @request.user == current_user
+        if @request.offerable_swaps.any?
+          @requests_to_swap_with = @request.offerable_swaps
+          @availabilities_for_requests_to_swap_with = @request.user.availabilities_for(@requests_to_swap_with)
+          render 'choose_swap'
+# test this
+        elsif @request.potential_matches.any?
+          @suggested_availabilities = @request.user.availabilities_for(:potential_matches)
+          render 'specify_availability'
+        end
+      else
+        @requests_to_swap_with = current_user.offerable_swaps(@request)
+        @availabilities_for_requests_to_swap_with = current_user.availabilities_for(@requests_to_swap_with)
+      end
+# end test
+    when 'received_offer', 'sent_offer', 'fulfilled'
+      # Nothing extra to do
+    else
+      flash.now[:error] = "Request unexpectedly in #{@request.state} state"
+    end
+  end
+
+  def old_create
+    @request = Request.new(request_params)
+    @request.user = current_user unless current_user.admin?
+
+    raise
+    if @request.fulfilling_swap_id # coming from 'choose_swap'
+      if @request.update(state: :sent_offer)
+        raise
+        notify_swap_offer
+        redirect_to @request
+      else
+        if @request.offerable_swaps.any?
+          # raise
+          flash.now[:error] = "Something went wrong! We couldn't make the offer. Probably someone got there before you."
+          render 'choose_swap'
+        else
+          raise
+          specify_availability
+        end
+      end
+    elsif !@request.valid?
+      specify_shift
     elsif @request.offerable_swaps.any? && !params[:cant_swap]
       render 'choose_swap'
     elsif (potential_matches = @request.potential_matches).any?
-      flash.now[:notice] = "Skipping step 2: no current matches" if !params[:cant_swap]
-      @suggested_availabilities = @request.user.availabilities_for(potential_matches)
-      if params[:cant_swap] # infer that user is not free for all @request.offerable_swaps
-        @suggested_availabilities.each do |a|
-          a.free = false if @request.offerable_swaps.any? {|r| r.start == a.start }
-        end
-      end
-      render 'specify_availability'
+      specify_availability
     else
+      raise
       if params[:from_step_1]
         flash[:notice] = "Skipped steps 2 and 3: no current matches and all availability is specified"
       end
@@ -59,55 +83,83 @@ class RequestsController < ApplicationController
     end
   end
 
-  # post '/requests/:id/offer/sub', to: 'requests#offer_sub', as: :offer_sub
+  def update
+    # @request.assign_attributes(request_params)
+    # raise
+    if params[:request_to_swap_with_id]
+      request_to_swap_with = Request.find_by(id: params[:request_to_swap_with_id])
+      if request_to_swap_with && @request.send_swap_offer_to(request_to_swap_with)
+        notify_swap_offered(from: @request, to: request_to_swap_with)
+      # can we assume rollback after here?
+      elsif request_to_swap_with.nil?
+        flash[:error] = "Request to swap with could not be found; it may have just been deleted"
+      elsif @request.fulfilling_swap != request_to_swap_with
+        flash[:error] = "Your request already has a swap pending with #{@request.fulfilling_swap.user}'s #{@request.fulfilling_swap} request"
+      elsif request_to_swap_with.fulfilling_user
+        if request_to_swap_with.fulfilling_user != @request.user
+          flash[:error] = "Sorry, we couldn't make the offer; #{@request.fulfilling_swap.fulfilling_user} beat you to it"
+        else # Would it actually cause a save error if we beat ourselves to it?
+          flash[:error] = "You, uh, beat yourself?"
+        end
+      else
+        # What could cause this?
+        flash[:error] = "Something went wrong! We couldn't make the offer. #{@request.errors.full_messages.join(". ")}"
+      end
+    elsif params[:offer_response]
+      case params[:offer_response]
+      when :accept
+        if @request.accept_pending_swap
+          notify_swap_accepted
+        elsif @request.fulfilling_swap.nil?
+          flash[:error] = "There was no pending swap offer to accept"
+        else
+          flash[:error] = "Something went wrong! We couldn't accept the swap. #{@request.errors.full_messages.join(". ")}"
+        end
+      when :decline
+        request_we_declined_to_swap_for = @request.fulfilling_swap
+        if @request.decline_pendind_swap
+          notify_swap_declined(decliners_request: @request, offerers_request: request_we_declined_to_swap_for)
+        elsif @request.fulfilling_swap.nil?
+          flash[:error] = "There was no pending swap offer to decline"
+        else
+          flash[:error] = "Something went wrong! We couldn't decline the swap. #{@request.errors.full_messages.join(". ")}"
+        end
+      else
+        flash[:error] = "Unexpected offer response: #{params[:offer_response]}"
+      end
+
+    # when ['received_offer', 'fulfilled']
+    #   @request.save!
+    #   notify_swap_accepted
+    # when ['received_offer', 'seeking_offers']
+    #   request_we_declined_to_swap_for = @request.fulfilling_swap
+    #   @request.save!
+    #   notify_swap_declined(from: request_we_declined_to_swap_for)
+    # else
+    #   if params[:cant_swap] # infer that user is not free for all @request.offerable_swaps
+    #     @request.offerable_swaps.each do |request_user_cant_swap_for|
+    #       # Is there any chance we couldn't update any of these availabilities because
+    #       # the user made a different swap with one of them?
+    #       @request.user.availability_for(request_user_cant_swap_for).update!(free: false)
+    #     end
+    #   else
+    #     flash[:error] = "Unexpected state change from #{@request.previous_changes['state'].join(' to ')}"
+    #   end
+    end
+
+    redirect_to @request
+  end
+
   def offer_sub
-    emails = [mailer.notify_sub(@request, current_user),
-              mailer.remind_sub(@request, current_user)]
     if @request.fulfill_by_sub(current_user)
+      emails = [mailer.notify_sub(@request, current_user),
+                mailer.remind_sub(@request, current_user)]
       emails.each &:deliver
-      flash[:success] = "OK, we let #{@request.user} know the good news."
+      flash[:success] = "Thanks! We send #{@request.user} an email to let them know the good news."
     else
       flash[:error] = @request.errors.full_messages.join(". ")
     end
 
-    redirect_to @request
-  end
-
-  # post '/requests/:id/offer/swap', to: 'requests#offer_swap', as: :offer_swap
-  def offer_swap
-    offer_request = Request.find(params[:offer_request_id])
-    email = mailer.notify_swap_offer(@request, offer_request)
-    if @request.set_pending_swap(offer_request)
-      email.deliver
-      flash[:success] = "OK, we sent #{@request.user} an email to let them know about your offer."
-    else
-      flash[:error] = @request.errors.full_messages.join(" ")
-    end
-      
-    redirect_to :back
-  end
-
-  def decline_swap
-    offer_request = @request.fulfilling_swap
-    email = mailer.notify_swap_decline(@request, offer_request)
-    if @request.decline_pending_swap
-      email.deliver
-      flash[:success] = "#{offer_request.user}'s offer has been declined."
-    else
-      flash[:error] = @request.errors.full_messages.join(" ")
-    end
-    redirect_to @request
-  end
-
-  def accept_swap
-    emails = [mailer.notify_swap_accept(@request),
-              mailer.remind_swap_accept(@request)]
-    if @request.accept_pending_swap
-      emails.each &:deliver
-      flash[:success] = "#{@request.fulfilling_swap.user}'s offer has been accepted!"
-    else
-      flash[:error] = @request.errors.full_messages.join(" ")
-    end
     redirect_to @request
   end
 
@@ -119,7 +171,7 @@ class RequestsController < ApplicationController
         redirect_to requests_path
       end
     else
-      @requests = Request.all_seeking_offers
+      @requests = Request.active
     end
   end
 
@@ -147,16 +199,6 @@ class RequestsController < ApplicationController
     end
   end
 
-  def show
-    if current_user == @request.user
-      @suggested_availabilities = @request.user.availabilities_for(@request.potential_matches)
-      @swap_candidates = @request.swap_candidates
-    else
-      @swap_candidates = @request.swap_candidates(current_user)
-    end
-    @conflict = current_user.conflict_for(@request)
-  end
-
   def destroy
     @request.destroy
     flash[:success] = "Request deleted"
@@ -165,12 +207,27 @@ class RequestsController < ApplicationController
 
   private
 
+    def notify_swap_offered
+      # mailer.notify_swap_offer(from: @request, to: @request.fulfilling_swap).deliver
+      flash[:success] = "We sent #{@request.fulfilling_user} an email to let them know about your offer"
+    end
+
+    def notify_swap_accepted
+      [mailer.notify_swap_accept(@request), mailer.remind_swap_accept(@request)].each &:deliver
+      flash[:success] = "We sent #{@request.fulfilling_user} an email to let them know you accepted"
+    end
+
+    def notify_swap_declined(from: offer_request)
+      mailer.notify_swap_decline(decliners_request: @request, offerers_request: offer_request).deliver
+      flash[:success] = "We sent #{offer_request.user} an email to let them know you declined"
+    end
+
     def find_request
       @request = Request.find(params[:id])
     end
 
     def request_params
-      permitted_keys = [:date, :shift, :fulfilling_swap_id]
+      permitted_keys = [:date, :shift, :fulfilling_swap_id, :state]
       permitted_keys << :user_id if current_user.admin?
       params.require(:request).permit(*permitted_keys)
     end
@@ -187,12 +244,6 @@ class RequestsController < ApplicationController
       if @request.locked?
         flash[:error] = @request.locked_reason
         redirect_to @request
-      end
-    end
-    
-    def check_request_is_open
-      unless @request.open?
-        redirect_to :back, flash: { warning: "Sorry, this request is no longer open." }
       end
     end
 end

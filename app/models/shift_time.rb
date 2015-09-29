@@ -13,10 +13,15 @@ module ShiftTime
       self.find_by(shifttime.shifttime_attrs)
     end
 
+    def find_by_shifttime!(shifttime)
+      self.find_by!(shifttime.shifttime_attrs)
+    end
+
     def fix_enum_attributes!(attributes)
       begin
         # Fix up enums: c.f. https://hackhands.com/ruby-on-enums-queries-and-rails-4-1/
-        shift_as_int = ShiftTime::SHIFT_NAMES.find_index(attributes[:shift])
+        # shift_as_int = ShiftTime::SHIFT_NAMES.find(attributes[:shift])
+        shift_as_int = shifts[attributes[:shift]]
         attributes.merge!(shift: shift_as_int) if shift_as_int
       rescue TypeError
         # sometimes the first arg to a where or find isn't an attribute hash
@@ -29,48 +34,57 @@ module ShiftTime
       super
     end
 
-    def where(opts, *rest)
+    def where(opts = :chain, *rest)
       fix_enum_attributes!(opts)
       super
     end
 
-    def future
-      where("date >= ?", Date.today).select {|s| s.start.future? }
+    def on_or_after(date_)
+      where("#{table_name}.date >= ?", date_)
     end
 
-    def open
-      future.select {|s| s.open? }
+    def after(date_or_time)
+      date = date_or_time.to_date
+      next_shift = ShiftTime::next_shift(date_or_time.to_time)
+      where("#{table_name}.date > ? OR (#{table_name}.date = ? AND #{table_name}.shift >= ?)", date, date, next_shift)
+    end
+
+    def future
+      after(Time.now)
+    end
+
+    def active_check
+      fast = active.to_a.sort
+      medium = self.select(&:active?).sort
+      slow = self.select(&:active_slow?).sort
+      puts fast == medium
+      puts medium == slow
     end
   end
   
-  SHIFT_NAMES = [ '8-12:30', '12:30-5', '5-9', '9-1' ]
+  SHIFT_NAMES = [ '8am-12:30pm', '12:30pm-5pm', '5pm-9pm', '9pm-1am' ]
   DATE_FORMAT = "%A, %B %e"
+
+  def self.next_shift(time=Time.now)
+    SHIFT_NAMES.index {|s| time < Time.parse(s.split("-").first) } || 0
+  end
 
   def shifttime_attrs
     slice(:shift, :date)
   end
 
-  # def self.fix_attrs_for_find!(attrs)
-  #   attrs.merge!(shift: ShiftTime::SHIFT_NAMES.find_index(attrs[:shift] || attrs[:shift]))
-  # end
-
   def start
     if date && shift
-      case shift
-      when '8-12:30'
-        date + 8.hours
-      when'12:30-5'
-        date + 12.hours + 30.minutes
-      when '5-9'
-        date + (12 + 5).hours
-      when '9-1'
-        date + (12 + 9).hours
-      end
+      Time.parse(shift.split('-').first, date)
     end
   end
 
+  def active?
+    self.class.active.include?(self)
+  end
+
   def to_s
-    s = "#{date.strftime(DATE_FORMAT)}, #{shift}"
+    s = "#{date.strftime(DATE_FORMAT)}, #{shift.delete('ampm')}"
     Rails.env.development? ? "#{s} [#{id}]" : s
   end
 

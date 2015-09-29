@@ -132,23 +132,26 @@ class UsersController < ApplicationController
     end
   end
 
-  def create_request
-    @user = User.find(params[:id])
-    @user.assign_attributes(user_params)
-    @request = @user.requests.find &:new_record?
-    if @user.save
-      redirect_to @request, flash: { success: "Request created" }
-    else
-      @errors = @user.errors
-      @suggested_availabilities = availabilities_from_user_params
-      render 'requests/specify_availability'
-    end
-  end
+  # def create_request
+  #   @user = User.find(params[:id])
+  #   @user.assign_attributes(user_params)
+  #   @request = @user.requests.find &:new_record?
+  #   if @user.save
+  #     redirect_to @request, flash: { success: "Request created" }
+  #   else
+  #     @errors = @user.errors
+  #     @suggested_availabilities = availabilities_from_user_params
+  #     render 'requests/specify_availability'
+  #   end
+  # end
 
   def update_availability
     @user = User.find(params[:id])
     message = "Set #{changed_availability_string}"
-    if @user.update_attributes(user_params)
+    @user.assign_attributes(user_params)
+    raise
+    if @user.save
+    # if @user.update_attributes(user_params)
       flash[:success] = message
       redirect_to availabilities_path
     else
@@ -189,18 +192,6 @@ class UsersController < ApplicationController
     def availabilities_from_user_params
       user_params[:availabilities_attributes].values.map do |attributes|
         Availability.find_or_initialize_by(attributes)
-      end
-    end
-
-    def user_params_excluding_unchanged_availabilities
-      if user_params.include? :availabilities_attributes
-        changed_user_params = user_params.deep_dup
-        changed_user_params[:availabilities_attributes].select! do |_, attributes|
-          Availability.find_or_initialize_by(attributes).changed?
-        end
-        return changed_user_params
-      else
-        return user_params
       end
     end
 

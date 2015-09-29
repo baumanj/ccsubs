@@ -12,8 +12,7 @@
   <% end%>
 <% end %>
 
-
+<h2>There are currently <%= @requests.count %> shifts in need of coverage</h2>
 <div>
-  <%= render partial: 'request_list',
-      locals: {title: 'Requests in want of an offer', requests: @requests} %>
+  <%= render partial: 'request_list', locals: {requests: @requests} %>
 </div>

@@ -9,7 +9,7 @@
     <% end %>
     <% @requests.each do |req| %>
       <li>
-        <%= link_to req, req %>: <%= req.fulfilling_swap.user %> offers to swap for <%= req.fulfilling_swap %>
+        <%= link_to req, req %>: <%= req.fulfilling_user %> offers to swap for <%= req.fulfilling_swap %>
       </li>
     <% end %>
   </ul>

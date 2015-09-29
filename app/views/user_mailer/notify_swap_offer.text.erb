@@ -1,2 +1,2 @@
-Hey <%= @req.user %>,
-<%= @offer_req.user %> has offered to swap with you for your <%= @req %> shift. In exchange, you must take their <%= @offer_req %> shift. Please accept or decline this offer here: <%= request_url(@req) %>. Until you accept or decline this offer, you won't receive other offers for this request.
+Hey <%= @received_offer_request.user %>,
+<%= @sent_offer_request.user %> has offered to swap with you for your <%= @received_offer_request %> shift. Please accept if you agree to cover their <%= @sent_offer_request %> shift. You can accept or decline this offer here: <%= request_url(@received_offer_request) %>. Until you accept or decline this offer, you won't receive other offers for this request.

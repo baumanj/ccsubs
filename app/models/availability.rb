@@ -10,31 +10,47 @@ class Availability < ActiveRecord::Base
   validates :user, presence: true
   validates_with ShiftTimeValidator
   validate do
-    if free.nil?
+    if free?
+      if request && request.fulfilled? == free?
+        errors.add(:request, "Must be #{free? ? "not be" : "be"} fulfilled if free? is #{free?}")
+      end
+      if user.requests.find_by_shifttime(self)
+        errors.add(:shift, "can't be the same as your own existing request")
+      end
+    elsif free.nil?
       errors.add(:free, "Must be indicated 'Yes' or 'No'")
     end
 
-    if free? && request != nil
-      errors.add(:request, "Must be nil if free? is true")
-    end
-
-    if free? && user.requests.find {|r| r.start == self.start }
-      errors.add(:shift, "can't be the same as your own existing request")
-    end
+    # if (s = user.availability_state_for(self)) != :potential
+    #   errors.add(:state, "cannot be #{s} before creating availability")
+    # end
   end
 
-  after_create do
-    # notify users with requests matching the availability this user just added
-    if user.open_requests.any?
+  before_save do
+    puts "**** BEFORE SAVE for #{self.inspect}"
+  end
+
+  # Nofity other users about this availability we've just added
+  # on update to free as well?
+  after_save if: :active? do
+    Request.active.where_shifttime(self).each do |others_req|
+      # This other person (Bob) wants to know about two situations:
+      # 1. Bob can send a swap reqest for one or more of self's requests IF
+      #    Bob is available. Right now, we only know Bob is potential
+      #    :ask_sender_match
+      # 2. Bob can DEFINITELY send a swap request for one or more or self's
+      #    requests because they're both available. In fact, self will likely
+      #    have already send one. This is more specific and should come first.
+      #    :offerable_swaps
+
+      # We want to categorize matches for Bob as the sender
+      matching_requests = others_req.categorize_matches(self.user, [:offerable_swaps, :ask_sender_match])
       UserMailer.active_user = user # For preview mode
-      Request.seeking_offers.where_shifttime(self).each do |req|
-        full_matches, half_matches = user.open_requests.partition {|r| req.user.available?(r) }
-        if full_matches.any?
-          # Just let the other user know; this user will be notified on their dashboard
-          UserMailer.notify_match(req, full_matches).deliver
-        else
-          UserMailer.notify_partial_match(req, half_matches).deliver
-        end
+      if matching_requests[:offerable_swaps].any?
+          # Just let Bob know; self.user will be notified on their dashboard
+          UserMailer.notify_offerable_swaps(others_req, matching_requests[:offerable_swaps]).deliver
+      elsif matching_requests[:ask_sender_match].any?
+        UserMailer.notify_potential_matches(others_req, matching_requests[:potential_matches]).deliver
       end
     end
     # v2: only send a notification email if there have been new matching availabilities
@@ -42,22 +58,47 @@ class Availability < ActiveRecord::Base
   end
 
   before_destroy do
+    puts "**** BEFORE DESTROY for #{self.inspect}"
     if locked?
+      puts "Can not be deleted while tied to a pending offer"
       errors.add(:availability, "Can not be deleted while tied to a pending offer")
-      return false
+      false
     end
   end
 
-  def busy?
-    free == false # can't be nil; nil would imply unknown
+  # def self.with_includes
+  #   # does left outer join
+  #   # SELECT COUNT(DISTINCT "users"."id") FROM "users" LEFT OUTER JOIN "requests" ON "requests"."user_id" = "users"."id" WHERE ("requests"."id" IS NOT NULL)
+  #   User.includes(:requests).where.not("requests.id" => nil)
+  #   User.includes(:requests).where("requests.state" => 0).where.not("requests.id" => nil)
+  # end
+
+  def self.active
+    # It seems like the combination of these two should work, but it doesn't
+    # due to referencing the requests table twice. I can't seem to get a
+    # subquery to work with ActiveRecord::QueryMethods#from
+    joins(:user).merge(User.with_active_requests).
+      future.where(free: true).
+      includes(:request).where(requests: {state: Request.states[:seeking_offers]})
+      # includes(:request).where(requests: {availability_id: nil})
+      # select {|a| a.request.nil? } # < would like to replace with below
   end
 
-  def tentative?
-    !request.nil? && !request.fulfilled?
+  def self.active_slow
+    # It seems like the combination of these two should work, but it doesn't
+    # due to referencing the requests table twice. I can't seem to get a
+    # subquery to work with ActiveRecord::QueryMethods#from
+    joins(:user).merge(User.with_active_requests)
+      .future.where(free: true)
+      .select {|a| a.request.nil? } # < would like to replace with below
   end
 
-  def open?
-    start.future? && free? && user.open_requests.any?
+  def self.free
+    where(free: true)
+  end
+
+  def active_slow?
+    start.future? && free? && request.nil? && user.requests.any? {|r| r.active_slow? }
   end
 
   def locked?
@@ -65,9 +106,9 @@ class Availability < ActiveRecord::Base
   end
 
   # others are free for any of this user's requests
-  def match?
+  def match?(my_requests = user.requests.active)
     Request.where_shifttime(self).map(&:user).uniq.any? do |other|
-      self.user.open_requests.any? {|r| other.availability_state_for(r) == :free }
+      [*my_requests].any? {|r| other.availability_state_for(r) == :free }
     end
   end
 end

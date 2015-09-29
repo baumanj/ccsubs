@@ -1,0 +1,13 @@
+<%= form.button(name: 'request_to_swap_with_id', value: req_to_swap_with.id,
+                name: 'request[fulfilling_swap_id]', value: req_to_swap_with.id,
+                data: { confirm: "Do you promise to cover #{req_to_swap_with} in return?" },
+                class: "btn btn-primary") do %>
+  Offer to swap
+  <% if @request == form.object %>
+    with <%= req_to_swap_with.user %> for <%= req_to_swap_with %>
+  <% elsif @request == req_to_swap_with %>
+    with <%= req_to_swap_with.user %> for <%= form.object %>
+  <% else %>
+    with <%= req_to_swap_with.user %>'s <%= req_to_swap_with %> for <%= form.object %>
+  <% end %>
+<% end %>
