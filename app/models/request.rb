@@ -105,11 +105,16 @@ class Request < ActiveRecord::Base
   end
 
   def accept_pending_swap
-    [self, fulfilling_swap].each do |r|
-      fulfilling_swap.state = :fulfilled
-      r.each {|a| a.free = false }
+    with_lock do
+      if received_offer?
+        fulfilling_swap.lock!
+        [self, fulfilling_swap].each do |r|
+          r.state = :fulfilled
+          r.availability.free = false
+        end
+        save
+      end
     end
-    save # confirm fulfilling_swap will autosave
   end
 
   def decline_pending_swap
