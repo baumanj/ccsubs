@@ -4,6 +4,8 @@ This is a web application for facilitating exchanging shift assignments.
 
 ## TODO:
 ### Next steps
+* Fix implicitly created!
+* Better handle availability/request conflicts
 * Speed up availability pages
 * Allow admins to look at all others availabilty for a given shift to help Travis
 * Notification to volunteer services for sub/swap requests that haven't been fulfilled when the shift is only one or two days away.
