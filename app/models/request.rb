@@ -118,6 +118,17 @@ class Request < ActiveRecord::Base
   end
 
   def decline_pending_swap
+    with_lock do
+      if received_offer?
+        fulfilling_swap.lock!
+        [self, fulfilling_swap].each do |r|
+          r.fulfilling_swap = nil
+          r.state = :seeking_offers
+          r.availability = nil
+        end
+        save
+      end
+    end
   end
 
   # When one request changes state, there are a number of related changes to make to

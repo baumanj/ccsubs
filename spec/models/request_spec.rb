@@ -67,12 +67,35 @@ describe Request do
     end
   end
 
+  describe FactoryGirl.create(:received_offer_request) do
+    describe "#decline_pending_swap" do
+      before(:each) { expect(subject.decline_pending_swap).to eq(true) }
+      it { should_not be_changed }
+      it { should be_seeking_offers }
+      it "has no fulfilling_swap" do
+        expect(subject.fulfilling_swap).to be_nil
+      end
+      it "has no availability" do
+        expect(subject.availability).to be_nil
+      end
+    end
+  end
+
   context "when state is not received_offer" do
     it "will fail to accept_pending_swap" do
       types = [:request, :sent_offer_request, :fulfilled_request]
       types.each do |t|
         r = create(t)
         expect(r.accept_pending_swap).to be_falsey
+      end
+    end
+  end
+
+  context "when not seeking_offers" do
+    # Find a way to share among all non-seeking_offer states
+    describe FactoryGirl.create(:sent_offer_request) do
+      it "can't be destroyed" do
+        expect(subject.destroy).to eq(false)
       end
     end
   end
