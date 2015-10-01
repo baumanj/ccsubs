@@ -10,12 +10,13 @@ class Availability < ActiveRecord::Base
   validates :user, presence: true
   validates_with ShiftTimeValidator
   validate do
+    if user.requests.exists?(shifttime_attrs)
+      errors.add(:shift, "can't be the same as your own existing request")
+    end
+
     if free?
       if request && request.fulfilled? == free?
         errors.add(:request, "Must be #{free? ? "not be" : "be"} fulfilled if free? is #{free?}")
-      end
-      if user.requests.find_by_shifttime(self)
-        errors.add(:shift, "can't be the same as your own existing request")
       end
     elsif free.nil?
       errors.add(:free, "Must be indicated 'Yes' or 'No'")
@@ -24,10 +25,6 @@ class Availability < ActiveRecord::Base
     # if (s = user.availability_state_for(self)) != :potential
     #   errors.add(:state, "cannot be #{s} before creating availability")
     # end
-  end
-
-  before_save do
-    puts "**** BEFORE SAVE for #{self.inspect}"
   end
 
   # Nofity other users about this availability we've just added

@@ -48,6 +48,34 @@ describe Request do
     check_request_not_found(*@requests, destroyed_request: @requests.second)
   end
 
+  context "when state is seeking_offers" do
+    subject { FactoryGirl.create(:request) }
+    let(:subber) { create(:user) }
+
+    it "can fulfill_by_sub" do
+      expect(subject.fulfill_by_sub(subber)).to eq(true)
+      should be_fulfilled
+      expect(subject).to be_fulfilled
+      expect(subber.availabilities.find_by_shifttime(subject)).to_not be_free
+    end
+
+    it "fails fulfill_by_sub if request is not found" do
+      expect(Request.destroy(subject.id)).to be_truthy
+      expect(Request.exists?(subject.id)).to eq(false)
+      expect { subject.fulfill_by_sub(subber) }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    it "fails fulfill_by_sub if subber is not available" do
+      create(:availability, user: subber, date: subject.date, shift: subject.shift, free: false)
+      expect(subject.fulfill_by_sub(subber)).to be_falsey
+    end
+
+    it "fails fulfill_by_sub if subber has a conflicting request" do
+      create(:request, user: subber, date: subject.date, shift: subject.shift)
+      expect { subject.fulfill_by_sub(subber) }.to raise_error(ActiveRecord::RecordInvalid)
+    end
+  end
+
   context "when state is received_offer" do
     subject { create(:received_offer_request) }
 

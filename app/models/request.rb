@@ -130,9 +130,12 @@ class Request < ActiveRecord::Base
   end
 
   def fulfill_by_sub(subber)
-    transaction do
-      sub_availability = subber.find_or_create_availability_for!(self)
-      update_attributes!(availability: sub_availability, state: :fulfilled)
+    with_lock do
+      sub_availability = subber.find_or_initialize_availability_for(self)
+      if sub_availability.free?
+        sub_availability.update_attributes!(free: false) # change to update()
+        update_attributes!(availability: sub_availability, state: :fulfilled)
+      end
     end
   end
 
@@ -143,7 +146,6 @@ class Request < ActiveRecord::Base
       :received_offer
     end
   end
-
 
   def self.active_slow
     Request.select(&:active_slow?)
