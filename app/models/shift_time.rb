@@ -90,7 +90,7 @@ module ShiftTime
 
   def no_schedule_conflicts
     if self.class.find_by(slice(:user, :date, :shift))
-      errors.add(:shift, "can't be the same as your own existing #{self.class.name.downcase}")
+      errors.add(:shift, "can't be the same as your own existing #{self.class.to_s.humanize(capitalize: false)}")
     end
   end
 
