@@ -31,21 +31,11 @@ describe RequestsController do
   end
 
   describe "GET 'index'" do
-    it_behaves_like "an action needing login"
+    include_context "logged in and confirmed"
 
-    context "when logged in but unconfirmed" do
-      include_context "logged in"
-      it_behaves_like "an action needing user confirmation"
+    it "returns http success" do
+      get 'index'
+      expect(response).to be_success
     end
-
-    context "when logged in and confirmed" do
-      include_context "logged in and confirmed"
-
-      it "returns http success" do
-        get 'index'
-        expect(response).to be_success
-      end
-    end
-
   end
 end
