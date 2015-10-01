@@ -121,12 +121,13 @@ class Request < ActiveRecord::Base
     with_lock do
       if received_offer?
         fulfilling_swap.lock!
-        [self, fulfilling_swap].each do |r|
+        save_returns = [self, fulfilling_swap].map do |r|
           r.fulfilling_swap = nil
           r.state = :seeking_offers
           r.availability = nil
+          r.save
         end
-        save
+        save_returns.all?
       end
     end
   end

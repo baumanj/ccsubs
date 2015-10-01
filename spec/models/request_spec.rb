@@ -49,20 +49,24 @@ describe Request do
   end
 
   context "when state is received_offer" do
-  # context "some context" do 
-  #   subject { create(:received_offer_request) }
-  #   before { expect(subject.accept_pending_swap).to eq(true) }
-  #   it { should_not be_changed }
-  #   it { should be_fulfilled }
-  #   its(:fulfilling_swap) { should_not be_changed } 
-  #   its(:fulfilling_swap) { should be_fulfilled } 
-    it "will accept_pending_swap" do
-      receiver = create(:received_offer_request)
-      expect(receiver).to be_received_offer
-      expect(receiver.accept_pending_swap).to eq(true)
-      [receiver, receiver.fulfilling_swap].each do |r|
+    subject { create(:received_offer_request) }
+
+    it "can accept_pending_swap" do
+      expect(subject.accept_pending_swap).to eq(true)
+      [subject, subject.fulfilling_swap].each do |r|
         expect(r).to_not be_changed
         expect(r).to be_fulfilled
+      end
+    end
+
+    it "can decline_pending_swap" do
+      sender = subject.fulfilling_swap
+      expect(subject.decline_pending_swap).to eq(true)
+      sender.reload
+      [subject, sender].each do |r|
+        expect(r).to_not be_changed
+        expect(r).to be_seeking_offers
+        expect(r.fulfilling_swap).to be_nil
       end
     end
   end
