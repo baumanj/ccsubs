@@ -2,10 +2,7 @@ require 'spec_helper'
 
 describe User do
   before do
-    @user = User.new(name: 'a b',
-                     email: 'a@b.com',
-                     password: 'foobar',
-                     password_confirmation: 'foobar')
+    @user = create(:user)
   end
   
   it "has a valid factory" do
@@ -37,7 +34,8 @@ describe User do
   end
 
   describe "with a password that's too short" do
-    before { @user.password = @user.password_confirmation = "a" * 5 }
+    minimum_length = described_class.validators_on(:password).find {|v| v.kind == :length }.options[:minimum]
+    before { @user.password = @user.password_confirmation = "a" * (minimum_length - 1) }
     it { should be_invalid }
   end
 
@@ -53,7 +51,7 @@ describe User do
       let(:user_for_invalid_password) { found_user.authenticate("invalid") }
 
       it { should_not eq user_for_invalid_password }
-      specify { expect(user_for_invalid_password).to be_false }
+      specify { expect(user_for_invalid_password).to eq(false) }
     end
   end
 
