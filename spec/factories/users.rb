@@ -1,14 +1,9 @@
 module Faker
   class Number
-    def self.unique_number(digits)
-      @previously_selected ||= []
-      raise if @previously_selected.size >= 10**digits
+    def self.vic
       loop do
-        n = number(digits)
-        unless @previously_selected.include?(n)
-          @previously_selected << n
-          return n
-        end
+        new_vic = Faker::Number.number(5)
+        return new_vic unless User.exists?(vic: new_vic)
       end
     end
   end
@@ -19,7 +14,7 @@ FactoryGirl.define do
     name { Faker::Name.name }
     email { Faker::Internet.email }
     admin false
-    vic { Faker::Number.unique_number(5) }
+    vic { Faker::Number.vic }
     password Faker::Internet.password(min_length = 5)
     confirmed true
     disabled false
