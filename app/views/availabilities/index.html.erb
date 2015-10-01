@@ -22,6 +22,8 @@
               <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
             </button>
           <% end %>
+        <% elsif availability.request %>
+          (covering for <%= availability.request.user %>)
         <% end %>
       </li>
     <% end %>

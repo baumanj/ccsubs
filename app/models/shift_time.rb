@@ -29,8 +29,8 @@ module ShiftTime
   end
 
   def no_schedule_conflicts
-    if user.availabilities.find_by(date: date, shift: shift_to_i)
-      errors.add(:shift, "can't be the same as your own existing availability")
+    if self.class.find_by(user: user, date: date, shift: shift_to_i)
+      errors.add(:shift, "can't be the same as your own existing #{self.class.to_s.humanize(capitalize: false)}")
     elsif user.requests.find_by(date: date, shift: shift_to_i)
       errors.add(:shift, "can't be the same as your own existing request")
     end
