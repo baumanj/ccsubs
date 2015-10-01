@@ -3,9 +3,6 @@ class Request < ActiveRecord::Base
   default_scope { order(:date, :shift) }
 
   belongs_to :user
-  # has_one :twin_variant, class_name: "Variant", foreign_key: :variant_id
-  # belongs_to :twin, class_name: "Variant", foreign_key: :variant_id
-
   belongs_to :fulfilling_swap, class_name: "Request", autosave: true
   belongs_to :availability, autosave: true # the one with the same shift where user != self.user
   scope :active, -> { future.seeking_offers.where.not(user: nil) }
@@ -132,110 +129,12 @@ class Request < ActiveRecord::Base
     end
   end
 
-  # When one request changes state, there are a number of related changes to make to
-  # other linked requests and availabilities. Handle them in the callbacks for consistency.
-  # before_validation do
-  #   begin
-  #     # if fulfilling_swap
-  #     #   # Set up the inverse relationship
-  #     #   if fulfilling_swap.fulfilling_swap != self
-  #     #     fulfilling_swap.fulfilling_swap = self
-  #     #   end
-
-  #     #   if received_offer? || sent_offer?
-  #     #     fulfilling_swap.state = opposite_state
-  #     #   elsif fulfilling_swap.received_offer? || fulfilling_swap.sent_offer?
-  #     #     self.state = fulfilling_swap.opposite_state
-  #     #   end
-  #     # end
-
-  #     # if availability.nil? && !seeking_offers?
-  #     #   if received_offer?
-  #     #     self.availability = fulfilling_user.availabilities.find_by_shifttime!(self)
-  #     #   elsif sent_offer?
-  #     #     self.availability = fulfilling_user.find_or_create_availability_for!(self)
-  #     #   end
-  #     # end
-
-  #     case state_change
-  #     when ['seeking_offers', 'sent_offer']
-  #       # # self.fulfilling_swap already set from controller; can't be inferred
-  #       # self.availability = fulfilling_user.availabilities.find_by_shifttime!(self)
-  #       # fulfilling_swap.assign_attributes(fulfilling_swap: self, state: :received_offer,
-  #       #                                   availability: user.find_or_initialize_availability_for(fulfilling_swap))
-  #     when ['seeking_offers', 'received_offer']
-  #       # Nothing more to do; fulfilling_swap handled it
-  #     when ['received_offer', 'fulfilled']
-  #       # fulfilling_swap.state = :fulfilled
-  #       # [availability, fulfilling_swap.availability].each {|a| a.free = false }
-  #     when ['sent_offer', 'fulfilled']
-  #       # Nothing more to do; fulfilling_swap handled it
-  #     when ['seeking_offers', 'fulfilled'] # <== sub (no swap)
-  #       availability.free = false
-  #     when ['received_offer', 'seeking_offers']
-  #       [self, fulfilling_swap].each do |r|
-  #         if r.availability.implicitly_created?
-  #           r.availability.mark_for_destruction
-  #           r.availability.request = nil
-  #         end
-  #         r.assign_attributes(state: :seeking_offers, fulfilling_swap: nil, availability: nil)
-  #         # r.save
-  #       end
-  #     when ['sent_offer', 'seeking_offers']
-  #       # Nothing more to do
-  #     else
-  #       # raise "Unexpected state change: #{state_change.join(' to ')}"
-  #     end
-
-  #   rescue => e
-  #     byebug
-  #     true # If there are problems, flag them in validate
-  #   end
-  # end
-
-  # before_save do
-  #   byebug
-  #   puts "**** BEFORE SAVE for #{self.inspect} fulfilling_swap_was: #{fulfilling_swap_was}"
-  #   if fulfilling_swap.nil? && fulfilling_swap_was
-  #     if fulfilling_swap_was.changed? && !fulfilling_swap_was.save_pending
-  #       fulfilling_swap_was.save_pending = true
-  #       fulfilling_swap_was.save! # <== will trigger x's after_update to deal with its availability
-  #     end
-  #   end
-  # end
-
-  # make sure availabilities and
-
-  # Why can't these be before_validation?
-  # after_update do
-
-    # byebug
-    # case state_change
-    # when ['received_offer', 'fulfilled'], ['sent_offer', 'fulfilled'],
-    #      ['seeking_offers', 'fulfilled'] # <== sub (no swap)
-    #   if fulfilling_swap && !fulfilling_swap.fulfilled?
-    #     fulfilling_swap.update!(state: :fulfilled)
-    #   end
-    #   availability.update!(free: false)
-    # when ['received_offer', 'seeking_offers'], ['sent_offer', 'seeking_offers'] # offer declined
-    #   if availability
-    #     a = availability
-    #     a.update!(request: nil)
-    #     a.destroy! if a.implicitly_created?
-    #   end
-
-    #   if fulfilling_swap
-    #     fulfilling_swap.update_attributes!(state: :seeking_offers, fulfilling_swap: nil)
-    #     update!(fulfilling_swap: nil)
-    #   end
-    # when nil
-    #   # Staying the same is OK
-    # when ['seeking_offers', 'sent_offer'], ['seeking_offers', 'received_offer']
-    #   # nothing more to do
-    # else
-    #   raise "Unexpected state change: #{state_change.join(' to ')}"
-    # end
-  # end
+  def fulfill_by_sub(subber)
+    transaction do
+      sub_availability = subber.find_or_create_availability_for!(self)
+      update_attributes!(availability: sub_availability, state: :fulfilled)
+    end
+  end
 
   def opposite_state
     if received_offer?
@@ -249,17 +148,6 @@ class Request < ActiveRecord::Base
   def self.active_slow
     Request.select(&:active_slow?)
   end
-
-  # def self.categorize_matches(receivers_request, match_type_keys)
-  #   Hash[match_type_keys.map {|k| [k, []] }].tap do |matching_requests_hash|
-  #     active.each do |my_request|
-  #       matched_key = match_type_keys.find do |match_type_key|
-  #         my_request.match(receivers_request, MATCH_TYPE_MAP[match_type_key])
-  #       end
-  #       matching_requests_hash[matched_key] << receivers_request
-  #     end
-  #   end
-  # end
 
   # self is the senders request
   def categorize_matches(receiver, match_type_keys)
@@ -275,7 +163,6 @@ class Request < ActiveRecord::Base
 
   # Match all the active requests in the current scope against all active requests
   def self.matching_requests(match_type)
-    puts "******** self.matching_requests: matching #{active.count} against..."
     active.flat_map do |my_request|
       my_request.matching_requests(match_type)
     end
@@ -283,7 +170,6 @@ class Request < ActiveRecord::Base
 
   # Match self against all other active requests for match_type
   def matching_requests(match_type)
-    puts "******** self.matching_requests: ...#{Request.unscoped.all.active.count} with #{match_type.inspect}"
     match_type = MATCH_TYPE_MAP[match_type] || match_type
     # Would work with all; limiting to active is an optimization
     Request.unscoped.all.active.select do |receivers_request|
@@ -296,7 +182,6 @@ class Request < ActiveRecord::Base
     raise ArgumentError if receivers_availability.nil? || senders_availability.nil? # need ruby 2.1
     senders_availability_for_receivers_request = user.availability_state_for(receivers_request, looking_for_swaps: new_record?)
     receivers_availability_for_my_request = receivers_request.user.availability_state_for(self)
-    puts "******** #{user} is #{senders_availability_for_receivers_request} #{receivers_request.user}'s for #{receivers_request}; #{receivers_request.user} is #{receivers_availability_for_my_request} for #{self.user}'s #{self}"
     [*receivers_availability].include?(receivers_availability_for_my_request) &&
       [*senders_availability].include?(senders_availability_for_receivers_request)
   end
@@ -346,13 +231,6 @@ class Request < ActiveRecord::Base
     (availability || fulfilling_swap).user unless seeking_offers?
   end
 
-  def fulfill_by_sub(subber)
-    transaction do
-      sub_availability = subber.find_or_create_availability_for!(self)
-      update_attributes!(availability: sub_availability, state: :fulfilled)
-    end
-  end
-  
   def pending?
     received_offer? && start.future?
   end
