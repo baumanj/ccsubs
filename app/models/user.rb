@@ -68,7 +68,9 @@ class User < ActiveRecord::Base
   end
 
   def sign_out
-    update_attribute(:remember_token, User.digest(User.new_secure_token))
+    # update_attribute(:remember_token, User.digest(User.new_secure_token))
+    update(remember_token: User.digest(User.new_secure_token))
+    save!(validate: false)
   end
 
   def create_confirmation_token
@@ -87,7 +89,8 @@ class User < ActiveRecord::Base
 
   def confirm(token)
     if confirmation_token_valid?(token)
-      update_attribute(:confirmed, true)
+      # update_attribute(:confirmed, true)
+      update(confirmed: true)
     end
   end
 
