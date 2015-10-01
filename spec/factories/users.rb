@@ -18,7 +18,10 @@ FactoryGirl.define do
   factory :user do
     name { Faker::Name.name }
     email { Faker::Internet.email }
+    admin false
     vic { Faker::Number.unique_number(5) }
     password Faker::Internet.password(min_length = 5)
+    confirmed true
+    disabled false
   end
 end
