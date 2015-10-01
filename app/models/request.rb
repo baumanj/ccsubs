@@ -133,8 +133,8 @@ class Request < ActiveRecord::Base
     with_lock do
       sub_availability = subber.find_or_initialize_availability_for(self)
       if sub_availability.free?
-        sub_availability.update_attributes!(free: false) # change to update()
-        update_attributes!(availability: sub_availability, state: :fulfilled)
+        sub_availability.update!(free: false)
+        update!(availability: sub_availability, state: :fulfilled)
       end
     end
   end

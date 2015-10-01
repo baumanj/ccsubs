@@ -93,7 +93,7 @@ class UsersController < ApplicationController
 
   def update_password
     @user = User.find(params[:id])
-    if @user.update_attributes(user_params)
+    if @user.update(user_params)
       # Each link can only be used once
       @user.update_confirmation_token
       flash[:success] = "Update successful"
@@ -116,7 +116,7 @@ class UsersController < ApplicationController
     end
     resend_confirmation =
       params[:user][:email].downcase != @user.email && @user.confirmed?
-    if @user.update_attributes(user_params)
+    if @user.update(user_params)
       flash[:success] = "Update successful"
       if @user.disabled?
         sign_out(@user)
@@ -151,7 +151,7 @@ class UsersController < ApplicationController
     @user.assign_attributes(user_params)
     raise
     if @user.save
-    # if @user.update_attributes(user_params)
+    # if @user.update(user_params)
       flash[:success] = message
       redirect_to availabilities_path
     else
