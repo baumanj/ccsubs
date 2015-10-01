@@ -68,8 +68,7 @@ class User < ActiveRecord::Base
   end
 
   def sign_out
-    # update_attribute(:remember_token, User.digest(User.new_secure_token))
-    update(remember_token: User.digest(User.new_secure_token))
+    self.remember_token = User.digest(User.new_secure_token)
     save!(validate: false)
   end
 

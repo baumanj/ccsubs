@@ -68,4 +68,6 @@ describe User do
     end
   end
 
+  it "logs in and out correctly"
+
 end
