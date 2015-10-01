@@ -1,4 +1,4 @@
-require 'controllers/shared_spec'
+require 'controllers/shared'
 
 describe AvailabilitiesController do
 
