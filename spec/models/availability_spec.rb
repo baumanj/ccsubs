@@ -5,12 +5,12 @@ describe Availability do # without any subject, just calls Availability.new ?
   it { should_not be_nil }
   it { should be_free }
 
-  describe FactoryGirl.create(:availability) do
-    before(:all) { puts "Called inner before" }
-    it { should_not be_nil }
-    it { should be_free }
-    # its(:free) { should eq(true) }
-  end
+  # describe FactoryGirl.create(:availability) do
+  #   before(:all) { puts "Called inner before" }
+  #   it { should_not be_nil }
+  #   it { should be_free }
+  #   # its(:free) { should eq(true) }
+  # end
 
   # it "prints the subject AGAIN" do
   #   puts subject.inspect
