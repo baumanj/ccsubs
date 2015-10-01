@@ -9,3 +9,11 @@ shared_examples "an action needing login" do
     expect(response).to redirect_to(signin_url)
   end
 end
+
+shared_examples "an action needing admin" do
+  method, action = metadata[:parent_example_group][:description].scan(/\w+/)
+  it "redirects to signin" do
+    send(method.downcase, action)
+    expect(response).to redirect_to(root_url)
+  end
+end
