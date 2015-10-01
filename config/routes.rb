@@ -10,10 +10,9 @@ Ccsubs::Application.routes.draw do
   # patch '/users/:id/request/create', to: 'users#create_request', as: :create_user_request
   resources :users
   get '/requests/fulfilled', to: 'requests#fulfilled', as: :fulfilled_requests
-  get '/requests/owned', to: 'requests#owned_index', as: :current_user_owned_requests
-  get '/requests/owned/:user_id', to: 'requests#owned_index', as: :owned_requests
+  get '/requests/owned(/:user_id)', to: 'requests#owned_index', as: :owned_requests
+  get '/requests/pending(/:user_id)', to: 'requests#pending', as: :pending_requests
   resources :requests, except: [:edit]
-  get '/requests/:user_id/pending', to: 'requests#pending', as: :pending_requests
   patch '/requests/:id/sub', to: 'requests#offer_sub', as: :offer_sub
   resources :sessions, only: [:new, :create, :destroy]
   root 'static_pages#home'

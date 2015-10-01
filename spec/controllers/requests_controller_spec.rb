@@ -10,6 +10,26 @@ require 'controllers/shared'
 
 describe RequestsController do
 
+  ['index', 'fulfilled', 'owned_index', 'pending'].each do |action|
+    describe "GET '#{action}'" do
+      it_behaves_like "an action needing login"
+
+      context "when logged in but unconfirmed" do
+        include_context "logged in"
+        it_behaves_like "an action needing user confirmation"
+      end
+
+      context "when logged in and confirmed" do
+        include_context "logged in and confirmed"
+
+        it "returns http success" do
+          get 'index'
+          expect(response).to be_success
+        end
+      end
+    end
+  end
+
   describe "GET 'index'" do
     it_behaves_like "an action needing login"
 

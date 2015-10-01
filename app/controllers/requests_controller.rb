@@ -177,13 +177,8 @@ class RequestsController < ApplicationController
   end
 
   def owned_index
-    user_id = params[:user_id] || current_user.id
-    if current_user.admin? || user_id.to_i == current_user.id
-      @owner = User.find(user_id)
-      @requests = @owner.requests.on_or_after(Date.today)
-    else
-      redirect_to requests_path(owner: current_user)
-    end
+    @owner = User.find(user_id)
+    @requests = @owner.requests.on_or_after(Date.today)
   end
 
   def fulfilled
@@ -194,7 +189,7 @@ class RequestsController < ApplicationController
   end
 
   def pending
-    @requests = Request.pending_requests(params[:user_id])
+    @requests = Request.pending_requests(user_id)
     if @requests.count == 1
       redirect_to @requests.first
     end
@@ -207,6 +202,10 @@ class RequestsController < ApplicationController
   end
 
   private
+
+    def user_id
+      (current_user.admin? && params[:user_id]) || current_user.id
+    end
 
     def notify_swap_offered
       mailer.notify_swap_offer(from: @request, to: @request.fulfilling_swap).deliver
