@@ -1,47 +1,19 @@
-require 'rails_helper'
+require 'controllers/shared_spec'
 
 describe AvailabilitiesController do
 
-  describe "GET 'new'" do
-    it "returns http success" do
-      get 'new'
-      response.should be_success
-    end
-  end
-
-  describe "GET 'create'" do
-    it "returns http success" do
-      get 'create'
-      response.should be_success
-    end
-  end
-
-  describe "GET 'edit'" do
-    it "returns http success" do
-      get 'edit'
-      response.should be_success
-    end
-  end
-
   describe "GET 'index'" do
-    it "returns http success" do
+    it "redirects to signin" do
       get 'index'
-      response.should be_success
+      expect(response).to redirect_to(signin_url)
+    end
+
+    context "when logged in" do
+      include_context "logged in"
+      # before { current_user = create(:user) }
+      it "succeeds" do
+        expect(response).to be_ok
+      end
     end
   end
-
-  describe "GET 'show'" do
-    it "returns http success" do
-      get 'show'
-      response.should be_success
-    end
-  end
-
-  describe "GET 'destroy'" do
-    it "returns http success" do
-      get 'destroy'
-      response.should be_success
-    end
-  end
-
 end
