@@ -19,6 +19,19 @@ describe User do
   it { should respond_to(:authenticate) }
 
   it { should be_valid }
+  it { should_not be_confirmed }
+
+  describe "when correctly confirmed" do
+    subject { create(:confirmed_user) }
+    it { should be_confirmed }
+  end
+
+  describe "when incorrectly confirmed" do
+    before do
+      expect(subject.confirm(Faker::Internet.password)).to be_falsey
+    end
+    it { should_not be_confirmed }
+  end
 
   describe "when password is not present" do
     before do

@@ -16,7 +16,14 @@ FactoryGirl.define do
     admin false
     vic { Faker::Number.vic }
     password Faker::Internet.password(min_length = 5)
-    confirmed true
+    confirmed false
     disabled false
+
+    factory :confirmed_user do
+      after(:create) do |u|
+        u.update_confirmation_token
+        u.confirm(u.confirmation_token)
+      end
+    end
   end
 end
