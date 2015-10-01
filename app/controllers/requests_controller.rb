@@ -209,7 +209,7 @@ class RequestsController < ApplicationController
   private
 
     def notify_swap_offered
-      # mailer.notify_swap_offer(from: @request, to: @request.fulfilling_swap).deliver
+      mailer.notify_swap_offer(from: @request, to: @request.fulfilling_swap).deliver
       flash[:success] = "We sent #{@request.fulfilling_user} an email to let them know about your offer"
     end
 
