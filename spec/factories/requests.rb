@@ -17,14 +17,14 @@ FactoryGirl.define do
   factory :request do
     user
     date { Faker::Date.unique_in_the_next_year }
-    shift { Request.shifts.values.sample }
+    shift { Request.shifts.keys.sample }
 
     factory :sent_offer_request, class: Request do
       transient do
         sent_offer_request_date { Faker::Date.unique_in_the_next_year }
-        sent_offer_request_shift { Request.shifts.values.sample }
+        sent_offer_request_shift { Request.shifts.keys.sample }
         received_offer_request_date { Faker::Date.unique_in_the_next_year }
-        received_offer_request_shift { Request.shifts.values.sample }
+        received_offer_request_shift { Request.shifts.keys.sample }
       end
 
       date { sent_offer_request_date }
