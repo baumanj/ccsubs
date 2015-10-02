@@ -2,16 +2,6 @@
 
 <h1>Open requests</h1>
 
-<% if current_user.admin? %>
-  <% unless params[:past] %>
-    <h1>Current requests</h1>
-    <%= link_to "Show past requests", past: true %>
-  <% else %>
-    <h1>Past requests</h1>
-    <%= link_to "Show current requests" %>
-  <% end%>
-<% end %>
-
 <h2>There are currently <%= @requests.count %> shifts in need of coverage</h2>
 <div>
   <%= render partial: 'request_list', locals: {requests: @requests} %>

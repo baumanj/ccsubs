@@ -165,15 +165,7 @@ class RequestsController < ApplicationController
   end
 
   def index
-    if params[:past]
-      if current_user.admin?
-        @requests = Request.order(:date, :shift)
-      else
-        redirect_to requests_path
-      end
-    else
-      @requests = Request.active
-    end
+    @requests = Request.active
   end
 
   def owned_index
