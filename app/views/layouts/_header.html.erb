@@ -14,7 +14,7 @@
             </a>
             <ul class="dropdown-menu">
               <li><%= link_to "Profile", current_user %></li>
-              <li><%= link_to "My requests", current_user_owned_requests_path %></li>
+              <li><%= link_to "My requests", owned_requests_path(current_user) %></li>
               <li><%= link_to "My swap availability",
                 availabilities_path %></li>
               <li class="divider"></li>
