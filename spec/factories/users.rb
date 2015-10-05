@@ -24,6 +24,10 @@ FactoryGirl.define do
         u.update_confirmation_token
         u.confirm(u.confirmation_token)
       end
+
+      factory :admin do
+        admin true
+      end
     end
   end
 end

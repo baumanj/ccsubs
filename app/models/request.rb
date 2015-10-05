@@ -71,7 +71,6 @@ class Request < ActiveRecord::Base
 
   def no_availabilities_conflicts(availabilities=user.availabilities)
     if availabilities.find {|a| a.start == self.start && a.free? }
-      byebug
       errors.add(:shift, "can't be the same as your own existing availability")
     end
   end

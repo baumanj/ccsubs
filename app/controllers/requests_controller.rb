@@ -11,7 +11,7 @@ class RequestsController < ApplicationController
 
   def create
     @request = Request.new(request_params)
-    @request.user = current_user unless current_user.admin?
+    @request.user ||= current_user
     if @request.save
       redirect_to @request
     else
@@ -219,7 +219,7 @@ class RequestsController < ApplicationController
     end
 
     def request_params
-      permitted_keys = [:date, :shift, :fulfilling_swap_id, :state]
+      permitted_keys = [:date, :shift, :fulfilling_swap_id]
       permitted_keys << :user_id if current_user.admin?
       params.require(:request).permit(*permitted_keys)
     end
