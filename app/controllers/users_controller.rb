@@ -1,7 +1,7 @@
 require 'csv'
 
 class UsersController < ApplicationController
-  before_action :require_signin, except: [:new, :create, :reset_password, :update_password]
+  before_action :require_signin, except: [:reset_password, :update_password]
   before_action :check_authorization, except: [:reset_password]
   before_action :require_admin, only: [:new, :create, :index]
 

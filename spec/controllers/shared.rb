@@ -1,17 +1,31 @@
+# Expects the first example group under the "describe controller" group to be
+# a string of the form "HTTP_METHOD 'controller_action'"
+# e.g., "GET 'index'" or "PATCH 'offer_sub'"
+# Is there a way to just share this context in the top level controller describe?
+shared_context "do request in before", autorequest: true do
+  let(:params) { {} }
+
+  controller, method, action = metadata[:full_description].scan(/\w+/)
+  before do
+    subject.current_user = user
+    send(method.downcase, action, params)
+  end
+end
+
 shared_context "not logged in" do
-  before { subject.current_user = nil }
+  let(:user) { nil }
 end
 
 shared_context "logged in" do
-  before { subject.current_user = create(:user) }
+  let(:user) { create(:user) }
 end
 
 shared_context "logged in and confirmed" do
-  before { subject.current_user = create(:confirmed_user) }
+  let(:user) { create(:confirmed_user) }
 end
 
 shared_context "logged in as an admin", login: :admin do
-  before { subject.current_user = create(:admin) }
+  let(:user) { create(:admin) }
 end
 
 shared_context "must be logged in", requires: :login do
@@ -29,15 +43,10 @@ shared_context "current user must be an admin", requires: :admin do
   include_context "logged in as an admin"
 end
 
-# Expects the first example group under the "describe controller" group to be
-# a string of the form "HTTP_METHOD 'controller_action'"
-# e.g., "GET 'index'" or "PATCH 'offer_sub'"
 example_proc = proc do |context: nil, expect_redirect_to: nil|
   proc do
     include_context context
-    controller, method, action = metadata[:full_description].scan(/\w+/)
     it "redirects to #{expect_redirect_to}" do
-      send(method.downcase, action)
       expect(response).to redirect_to(subject.send(expect_redirect_to))
     end
   end

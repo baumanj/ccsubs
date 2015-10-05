@@ -6,47 +6,41 @@ end
 
 describe RequestsController do
 
-  describe "GET 'new'", requires: :confirmed_current_user, assigns: :request do
-    context "when logged in and confirmed" do
-      include_context "logged in and confirmed"
-
-      it "assigns @request to a new Request for the current user" do
-        get 'new'
-        expect(request).to be_a_new(Request)
-        expect(request.user).to eq(subject.current_user)
-      end
+  describe "GET 'new'", autorequest: true, requires: :confirmed_current_user, assigns: :request do
+    it "assigns @request to a new Request for the current user" do
+      expect(request).to be_a_new(Request)
+      expect(request.user).to eq(subject.current_user)
+      expect(response).to be_success
     end
   end
 
-  describe "POST 'create'", requires: :confirmed_current_user, assigns: :request do
+  describe "POST 'create'", autorequest: true, requires: :confirmed_current_user, assigns: :request do
+    let(:params) { { request: attributes_for(:request) } }
 
-    it "saves a new Request for current_user" do
-      expect(subject.current_user).to be_confirmed
-      expect(subject.current_user).to_not be_admin
-      post 'create', request: attributes_for(:request)
-      expect(request).to be_persisted
-      expect(request.user).to eq(subject.current_user)
-      expect(response).to redirect_to(request)
-    end
-
-    it "fails to create a request for a different user" do
-      other_user = create(:user)
-      expect(other_user).to_not eq(subject.current_user)
-      post 'create', request: attributes_for(:request).merge(user_id: other_user.id)
-      expect(request).to be_persisted
-      expect(request.user).to eq(subject.current_user)
-      expect(response).to redirect_to(request)
-    end
-
-    context "when logged in as admin", login: :admin do # need rspec upgrade to put on example directly?
-      it "can create a request for a different user" do
-        expect(subject.current_user).to be_admin
-        other_user = create(:user)
-        expect(other_user).to_not eq(subject.current_user)
-        post 'create', request: attributes_for(:request).merge(user_id: other_user.id)
+    context "when successful" do
+      before do
         expect(request).to be_persisted
-        expect(request.user).to eq(other_user)
         expect(response).to redirect_to(request)
+      end
+
+      it "saves a new Request for current_user" do
+        expect(request.user).to eq(subject.current_user)
+      end
+
+      context "with request[user_id] in params" do
+        let(:specified_user) { create(:user) }
+        let(:params) { { request: attributes_for(:request).merge(user_id: specified_user.id) } }
+        before { expect(specified_user).to_not eq(subject.current_user) }
+
+        it "fails to create a request for a different user" do
+          expect(request.user).to eq(subject.current_user)
+        end
+
+        context "when logged in as admin", login: :admin do # need rspec upgrade to put on example directly?
+          it "can create a request for a different user" do
+            expect(request.user).to eq(specified_user)
+          end
+        end
       end
     end
 
@@ -60,8 +54,7 @@ describe RequestsController do
   describe "#update" do it end
   describe "#offer_sub" do it end
 
-  describe "GET 'index'", requires: :confirmed_current_user do
-    before { get 'index' }
+  describe "GET 'index'", autorequest: true, requires: :confirmed_current_user do
 
     it "shows active requests" do
       expect(response).to be_success
