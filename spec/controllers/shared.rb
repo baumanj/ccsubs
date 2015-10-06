@@ -4,9 +4,11 @@
 # Is there a way to just share this context in the top level controller describe?
 shared_context "do request in before", autorequest: true do
   let(:params) { {} }
+  let(:evaluate_before_http_request) { }
 
   controller, method, action = metadata[:full_description].scan(/\w+/)
   before do
+    evaluate_before_http_request
     subject.current_user = user
     send(method.downcase, action, params)
   end
