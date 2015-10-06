@@ -69,14 +69,60 @@ describe RequestsController do
     end
   end
 
-  describe "#show" do it end
+  describe "GET 'show'", autorequest: true, requires: :confirmed_current_user do
+    let(:request) { create(:request) }
+    let(:params) { { id: request.id } }
+
+    shared_examples "a request with no swap options" do
+      it "assigns empty @requests_to_swap_with and @availabilities_for_requests_to_swap_with" do
+        expect(assigns[:requests_to_swap_with]).to be_empty
+        expect(assigns[:availabilities_for_requests_to_swap_with]).to be_nil
+        expect(request).to_not be_nil
+        expect(response).to be_success
+      end
+    end
+
+    context "when there are no swap options" do
+      it_behaves_like "a request with no swap options"
+
+      it "does not belong to the current_user" do
+        expect(request.user).to_not eq(subject.current_user)
+      end
+    end
+
+    context "when showing current_user's request" do
+      let(:request) { create(:request, user: user) }
+      it_behaves_like "a request with no swap options"
+
+      it "belongs to the current_user" do
+        expect(request.user).to eq(subject.current_user)
+      end
+
+      context "when this request can be offered as a swap" do
+        let(:evaluate_before_http_request) { receivable_request }
+        let(:receivable_request) do
+          create(:request,
+            user: create(:availability, date: request.date, shift: request.shift).user)
+        end
+
+        it "has receivable_request in @requests_to_swap_with" do
+          expect(assigns[:requests_to_swap_with]).to eq([receivable_request])
+          expect(assigns[:availabilities_for_requests_to_swap_with]).to_not be_empty
+          expect(response).to render_template(:choose_swap)
+        end
+      end
+
+      context "when there are any potential matches" do
+      end
+    end
+  end
+
   describe "#old_create" do it end
   describe "#update" do it end
   describe "#offer_sub" do it end
 
   describe "GET 'index'", autorequest: true, requires: :confirmed_current_user do
-
-    it "shows active requests" do
+    it "sets @requests to active requests" do
       expect(response).to be_success
       expect(assigns(:requests)).to eq(Request.active)
     end
