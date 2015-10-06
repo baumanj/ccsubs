@@ -1,12 +1,9 @@
 require 'controllers/shared'
 
-shared_context "let request = @request", assigns: :request do
-  let(:request) { assigns(:request) }
-end
-
 describe RequestsController do
+  let(:request) { assigns(:request) }
 
-  describe "GET 'new'", autorequest: true, requires: :confirmed_current_user, assigns: :request do
+  describe "GET 'new'", autorequest: true, requires: :confirmed_current_user do
     it "assigns @request to a new Request for the current user" do
       expect(request).to be_a_new(Request)
       expect(request.user).to eq(subject.current_user)
@@ -14,7 +11,7 @@ describe RequestsController do
     end
   end
 
-  describe "POST 'create'", autorequest: true, requires: :confirmed_current_user, assigns: :request do
+  describe "POST 'create'", autorequest: true, requires: :confirmed_current_user do
     let(:request_params) { attributes_for(:request) }
     let(:params) { { request: request_params } }
 
