@@ -15,7 +15,8 @@ describe RequestsController do
   end
 
   describe "POST 'create'", autorequest: true, requires: :confirmed_current_user, assigns: :request do
-    let(:params) { { request: attributes_for(:request) } }
+    let(:request_params) { attributes_for(:request) }
+    let(:params) { { request: request_params } }
 
     context "when successful" do
       before do
@@ -44,9 +45,31 @@ describe RequestsController do
       end
     end
 
-    it "fails to create a duplicate request"
-    it "fails to create a request in the past"
-    it "fails to create a request more than a year from now"
+    it "fails to save a duplicate request" do
+      post 'create', params
+      duplicate_request = assigns(:request)
+      expect(duplicate_request).to_not be_persisted
+      expect(duplicate_request.errors).to_not be_empty
+      expect(response).to render_template(:new)
+    end
+
+    shared_examples "a request with invalid parameters" do
+      it "fails to save" do
+        expect(request.errors).to_not be_empty
+        # puts request.errors.full_messages.join
+        expect(response).to render_template(:new)
+      end
+    end
+
+    context "when date is in the past" do
+      let(:request_params) { attributes_for(:request, date: Faker::Date.backward) }
+      it_behaves_like "a request with invalid parameters"
+    end
+
+    context "when date is more than a year in the future" do
+      let(:request_params) { attributes_for(:request, date: Faker::Date.between(1.year.from_now, 10.years.from_now)) }
+      it_behaves_like "a request with invalid parameters"
+    end
   end
 
   describe "#show" do it end
