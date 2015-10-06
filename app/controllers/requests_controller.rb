@@ -24,8 +24,9 @@ class RequestsController < ApplicationController
     case @request.state
     when 'seeking_offers'
       if @request.user == current_user
-        if @request.offerable_swaps.any?
-          @requests_to_swap_with = @request.offerable_swaps
+        # byebug
+        @requests_to_swap_with = @request.offerable_swaps
+        if @requests_to_swap_with.any?
           @availabilities_for_requests_to_swap_with = @request.user.availabilities_for(@requests_to_swap_with)
           render 'choose_swap'
 # test this
@@ -35,7 +36,9 @@ class RequestsController < ApplicationController
         end
       else
         @requests_to_swap_with = current_user.offerable_swaps(@request)
-        @availabilities_for_requests_to_swap_with = current_user.availabilities_for(@requests_to_swap_with)
+        if @requests_to_swap_with.any?
+          @availabilities_for_requests_to_swap_with = current_user.availabilities_for(@requests_to_swap_with)
+        end
       end
 # end test
     when 'received_offer', 'sent_offer', 'fulfilled'
