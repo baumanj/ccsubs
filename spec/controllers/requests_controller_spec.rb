@@ -113,6 +113,22 @@ describe RequestsController do
       end
 
       context "when there are any potential matches" do
+        let(:evaluate_before_http_request) { create(:request) }
+
+        it "adds them to @suggested_availabilities" do
+          expect(assigns[:suggested_availabilities]).to_not be_empty
+          expect(response).to render_template(:specify_availability)
+        end
+      end
+
+      context "when there are no potential matches" do
+        it_behaves_like "a request with no swap options"
+        let(:evaluate_before_http_request) do
+        end
+
+        it "has no @suggested_availabilities" do
+          expect(assigns[:suggested_availabilities]).to be_nil
+        end
       end
     end
   end

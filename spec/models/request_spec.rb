@@ -99,17 +99,16 @@ describe Request do
     end
   end
 
-  describe FactoryGirl.create(:received_offer_request) do
-    describe "#decline_pending_swap" do
-      before(:each) { expect(subject.decline_pending_swap).to eq(true) }
-      it { should_not be_changed }
-      it { should be_seeking_offers }
-      it "has no fulfilling_swap" do
-        expect(subject.fulfilling_swap).to be_nil
-      end
-      it "has no availability" do
-        expect(subject.availability).to be_nil
-      end
+  describe "#decline_pending_swap" do
+    subject { FactoryGirl.create(:received_offer_request) }
+    before(:each) { expect(subject.decline_pending_swap).to eq(true) }
+    it { should_not be_changed }
+    it { should be_seeking_offers }
+    it "has no fulfilling_swap" do
+      expect(subject.fulfilling_swap).to be_nil
+    end
+    it "has no availability" do
+      expect(subject.availability).to be_nil
     end
   end
 
