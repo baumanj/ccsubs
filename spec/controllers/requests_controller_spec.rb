@@ -34,10 +34,8 @@ describe RequestsController do
           expect(request.user).to eq(subject.current_user)
         end
 
-        context "when logged in as admin", login: :admin do # need rspec upgrade to put on example directly?
-          it "can create a request for a different user" do
-            expect(request.user).to eq(specified_user)
-          end
+        it "can create a request for a different user", login: :admin  do
+          expect(request.user).to eq(specified_user)
         end
       end
     end
