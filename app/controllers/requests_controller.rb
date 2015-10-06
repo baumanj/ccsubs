@@ -1,5 +1,4 @@
 class RequestsController < ApplicationController
-  before_action :require_signin
   before_action :require_confirmed_email
   before_action :find_request, except: [:new, :create, :index, :owned_index, :fulfilled, :pending]
   before_action :check_owner, except: [:new, :create, :show, :index, :owned_index, :fulfilled, :pending]
