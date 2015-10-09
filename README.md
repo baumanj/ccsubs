@@ -6,13 +6,14 @@ This is a web application for facilitating exchanging shift assignments.
 ### Next steps
 * Fix implicitly created!
 * Better handle availability/request conflicts
-* Speed up availability pages
+* Speed up availability pages (https://github.com/bbatsov/rails-style-guide#find-each)
 * Allow admins to look at all others availabilty for a given shift to help Travis
 * Notification to volunteer services for sub/swap requests that haven't been fulfilled when the shift is only one or two days away.
 * Know when shifts are low (get shift information)
 * Make it clear who is logged in (gravitar)
 * auto log out at end of shift if on crisis line computer
 ### Future
+* Don't use Time.now (https://github.com/bbatsov/rails-style-guide#time-now)
 * Update user fixture to test vics with 4 digits
 * Updrade to ruby 2.1
 * Clean up mailers
