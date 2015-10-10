@@ -156,8 +156,8 @@ class User < ActiveRecord::Base
     end
   end
 
-  def offerable_swaps(for_requests=requests.active.all)
-    [*for_requests].flat_map(&:offerable_swaps)
+  def offerable_swaps(for_requests=Request.active.all)
+    requests.active.all.flat_map(&:offerable_swaps).select {|r| [*for_requests].include?(r) }
   end
 
   def requested_availabilities
