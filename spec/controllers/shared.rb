@@ -3,14 +3,17 @@
 # e.g., "GET 'index'" or "PATCH 'offer_sub'"
 # Is there a way to just share this context in the top level controller describe?
 shared_context "do request in before", autorequest: true do
+  controller, method, action = metadata[:full_description].scan(/\w+/)
+
   let(:params) { {} }
   let(:evaluate_before_http_request) { }
+  let(:rendered_template) { action }
 
-  controller, method, action = metadata[:full_description].scan(/\w+/)
   before do
     evaluate_before_http_request
     subject.current_user = user
     send(method.downcase, action, params)
+    expect(response).to render_template(rendered_template) unless response.redirect?
   end
 end
 

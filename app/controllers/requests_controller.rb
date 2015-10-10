@@ -29,7 +29,6 @@ class RequestsController < ApplicationController
         if @requests_to_swap_with.any?
           @availabilities_for_requests_to_swap_with = @request.user.availabilities_for(@requests_to_swap_with)
           render 'choose_swap'
-# test this
         elsif @request.potential_matches.any?
           @suggested_availabilities = @request.user.availabilities_for(:potential_matches)
           render 'specify_availability'
@@ -39,8 +38,8 @@ class RequestsController < ApplicationController
         if @requests_to_swap_with.any?
           @availabilities_for_requests_to_swap_with = current_user.availabilities_for(@requests_to_swap_with)
         end
+        # What about potential matches?
       end
-# end test
     when 'received_offer', 'sent_offer', 'fulfilled'
       # Nothing extra to do
     else
