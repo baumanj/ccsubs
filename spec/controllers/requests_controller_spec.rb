@@ -152,7 +152,6 @@ describe RequestsController do
 
       context "when there are no potential matches" do
         it "doesn't allow the user to offer swaps or specify availability" do
-          expect(assigns[:requests_to_swap_with]).to be_empty
           expect(assigns).to_not include(:availabilities_for_requests_to_swap_with)
           expect(assigns).to_not include(:suggested_availabilities)
         end

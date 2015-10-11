@@ -13,6 +13,7 @@ This is a web application for facilitating exchanging shift assignments.
 * Make it clear who is logged in (gravitar)
 * auto log out at end of shift if on crisis line computer
 ### Future
+* Add poteintial matches to RequestsController#show for other users' requests
 * Don't use Time.now (https://github.com/bbatsov/rails-style-guide#time-now)
 * Update user fixture to test vics with 4 digits
 * Updrade to ruby 2.1
