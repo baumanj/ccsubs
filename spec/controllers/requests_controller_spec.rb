@@ -4,8 +4,8 @@ describe RequestsController do
   let(:request) { assigns(:request) }
 
   describe "GET 'new'", autorequest: true, requires: :confirmed_current_user do
+    let(:expected_assigns) { { request: be_a_new(Request) } }
     it "assigns @request to a new Request for the current user" do
-      expect(request).to be_a_new(Request)
       expect(request.user).to eq(subject.current_user)
       expect(response).to be_success
     end
@@ -14,6 +14,7 @@ describe RequestsController do
   describe "POST 'create'", autorequest: true, requires: :confirmed_current_user do
     let(:request_params) { attributes_for(:request) }
     let(:params) { { request: request_params } }
+    let(:expected_assigns) { { request: be_a_new(Request) } }
 
     context "when successful" do
       before do
@@ -28,13 +29,18 @@ describe RequestsController do
       context "with request[user_id] in params" do
         let(:specified_user) { create(:user) }
         let(:params) { { request: attributes_for(:request).merge(user_id: specified_user.id) } }
+        let(:expected_assigns) do
+          { request: be_a_new(Request),
+            errors: be_any }
+        end
+
         before { expect(specified_user).to_not eq(subject.current_user) }
 
         it "fails to create a request for a different user" do
           expect(request.user).to eq(subject.current_user)
         end
 
-        it "can create a request for a different user", login: :admin  do
+        it "can create a request for a different user", login: :admin do
           expect(request.user).to eq(specified_user)
         end
       end
@@ -50,6 +56,10 @@ describe RequestsController do
 
     shared_examples "a request with invalid parameters" do
       let(:rendered_template) { 'new' }
+      let(:expected_assigns) do
+        { request: be_a_new(Request),
+          errors: be_any }
+      end
 
       it "fails to save" do
         expect(request.errors).to_not be_empty
@@ -71,6 +81,11 @@ describe RequestsController do
   describe "GET 'show'", autorequest: true, requires: :confirmed_current_user do
     let(:request) { create(:request) }
     let(:params) { { id: request.id } }
+    let(:expected_assigns) do
+      { request: eq(request),
+        requests_to_swap_with: be_empty
+      }
+    end
 
     shared_examples "an action that just finds the request record" do
       it "finds the request record and renders 'show'" do
@@ -95,9 +110,13 @@ describe RequestsController do
         end
         let(:evaluate_before_http_request) { receivable_request }
         let(:rendered_template) { 'choose_swap' }
+        let(:expected_assigns) do
+          { request: eq(request),
+            requests_to_swap_with: contain_exactly(receivable_request),
+            availabilities_for_requests_to_swap_with: be_any }
+        end
 
         it "lets the current_user choose which request to offfer a swap to" do
-          expect(assigns[:requests_to_swap_with]).to eq([receivable_request])
           expect(assigns[:availabilities_for_requests_to_swap_with].size).to eq(1)
           expect(assigns[:availabilities_for_requests_to_swap_with].first.start).to eq(receivable_request.start)
         end
@@ -119,6 +138,11 @@ describe RequestsController do
           nonmatching_requests
         end
         let(:rendered_template) { 'specify_availability' }
+        let(:expected_assigns) do
+          { request: eq(request),
+            requests_to_swap_with: be_empty,
+            suggested_availabilities: be_any }
+        end
 
         it "lets the current_user specify their availability for the potential matches" do
           expect(assigns[:suggested_availabilities].size).to eq(1)
@@ -161,9 +185,13 @@ describe RequestsController do
           create(:request,
             user: create(:availability, date: current_user_request.date, shift: current_user_request.shift).user)
         end
+        let(:expected_assigns) do
+          { request: eq(request),
+            requests_to_swap_with: contain_exactly(request),
+            availabilities_for_requests_to_swap_with: be_any }
+        end
 
         it "lets the current_user choose which of their request to offer as a swap" do
-          expect(assigns[:requests_to_swap_with]).to eq([request])
           expect(assigns[:availabilities_for_requests_to_swap_with].size).to eq(1)
           expect(assigns[:availabilities_for_requests_to_swap_with].first.start).to eq(request.start)
         end
@@ -257,6 +285,8 @@ describe RequestsController do
   describe "#offer_sub" do it end
 
   describe "GET 'index'", autorequest: true, requires: :confirmed_current_user do
+    let(:expected_assigns) { { requests: eq(Request.active) } }
+
     it "sets @requests to active requests" do
       expect(response).to be_success
       expect(assigns(:requests)).to eq(Request.active)

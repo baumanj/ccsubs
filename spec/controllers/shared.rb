@@ -8,12 +8,23 @@ shared_context "do request in before", autorequest: true do
   let(:params) { {} }
   let(:evaluate_before_http_request) { }
   let(:rendered_template) { action }
+  let(:expected_assigns) { {} }
 
   before do
     evaluate_before_http_request
     subject.current_user = user
     send(method.downcase, action, params)
-    expect(response).to render_template(rendered_template) unless response.redirect?
+    unless response.redirect?
+      expect(response).to be_success
+      expect(response).to render_template(rendered_template)
+      expected_assigns.merge!(
+        current_user: eq(subject.current_user),
+        marked_for_same_origin_verification: eq(!expected_assigns.key?(:errors))
+      )
+      assigns.each do |var_name, value|
+        expect(value).to expected_assigns[var_name.to_sym]
+      end
+    end
   end
 end
 
