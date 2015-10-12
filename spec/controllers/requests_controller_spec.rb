@@ -158,17 +158,17 @@ describe RequestsController do
       end
 
       context "when request state is received_offer" do
-        let(:request) { create(:received_offer_request) }
+        let(:request) { create(:received_offer_request, user: user) }
         it_behaves_like "an action that just finds the request record"
       end
 
       context "when request state is sent_offer" do
-        let(:request) { create(:sent_offer_request) }
+        let(:request) { create(:sent_offer_request, user: user) }
         it_behaves_like "an action that just finds the request record"
       end
 
       context "when request state is fulfilled" do
-        let(:request) { create(:fulfilled_request) }
+        let(:request) { create(:fulfilled_request, user: user) }
         it_behaves_like "an action that just finds the request record"
       end
     end
@@ -195,88 +195,22 @@ describe RequestsController do
           expect(assigns[:availabilities_for_requests_to_swap_with].first.start).to eq(request.start)
         end
       end
+
+      context "when request state is received_offer" do
+        let(:request) { create(:received_offer_request) }
+        it_behaves_like "an action that just finds the request record"
+      end
+
+      context "when request state is sent_offer" do
+        let(:request) { create(:sent_offer_request) }
+        it_behaves_like "an action that just finds the request record"
+      end
+
+      context "when request state is fulfilled" do
+        let(:request) { create(:fulfilled_request) }
+        it_behaves_like "an action that just finds the request record"
+      end
     end
-
-    # shared_examples "a request with no offerable swaps" do
-    #   it "assigns empty @requests_to_swap_with and @availabilities_for_requests_to_swap_with" do
-    #     expect(assigns[:requests_to_swap_with]).to be_empty
-    #     expect(assigns[:availabilities_for_requests_to_swap_with]).to be_nil
-    #     expect(request).to_not be_nil
-    #     expect(response).to be_success
-    #   end
-    # end
-
-    # context "when there are no offerable swaps" do
-    #   it_behaves_like "a request with no offerable swaps"
-
-    #   it "does not belong to the current_user" do
-    #     expect(request.user).to_not eq(subject.current_user)
-    #   end
-
-    # end
-
-    # include_context "when current_user viewing request can offer a swap" do
-
-    #   context "when showing current_user's request" do
-    #     let(:request) { create(:request, user: user) }
-    #     let(:sendable_request) { request }
-    #     let(:others_request) { receivable_request }
-
-    #     it "belongs to the current_user" do
-    #       expect(request.user).to eq(subject.current_user)
-    #     end
-    #   end
-
-    #   context "when showing other user's request" do
-    #     let(:request) { receivable_request }
-    #     let(:sendable_request) { create(:request, user: user) }
-    #     let(:others_request) { receivable_request }
-
-    #     it "does not belong to the current_user" do
-    #       expect(request.user).to_not eq(subject.current_user)
-    #     end
-    #   end
-    # end
-
-    # context "when showing current_user's request" do
-    #   let(:request) { create(:request, user: user) }
-    #   it_behaves_like "a request with no offerable swaps"
-
-    #   it "belongs to the current_user" do
-    #     expect(request.user).to eq(subject.current_user)
-    #   end
-
-    #   context "when this request can be offered as a swap" do
-    #     let(:evaluate_before_http_request) { receivable_request }
-    #     let(:receivable_request) do
-    #       create(:request,
-    #         user: create(:availability, date: request.date, shift: request.shift).user)
-    #     end
-
-    #     it "lets the user choose the swap" do
-    #       expect(assigns[:requests_to_swap_with]).to eq([receivable_request])
-    #       expect(assigns[:availabilities_for_requests_to_swap_with]).to_not be_empty
-    #       expect(response).to render_template(:choose_swap)
-    #     end
-    #   end
-
-    #   context "when there aren't any offerable swaps but are potential matches" do
-    #     let(:evaluate_before_http_request) { create(:request) }
-
-    #     it "lets the user specify their availability" do
-    #       expect(assigns[:suggested_availabilities]).to_not be_empty
-    #       expect(response).to render_template(:specify_availability)
-    #     end
-    #   end
-
-    #   context "when there are no potential matches" do
-    #     it_behaves_like "a request with no offerable swaps"
-
-    #     it "has no @suggested_availabilities" do
-    #       expect(assigns[:suggested_availabilities]).to be_nil
-    #     end
-    #   end
-    # end
   end
 
   describe "#old_create" do it end
