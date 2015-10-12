@@ -13,6 +13,8 @@ class User < ActiveRecord::Base
   MAX_LOGIN_ATTEMPTS = 10
   # allow_nil so that users can edit their profile w/o entering password
   validates :password, length: { minimum: 5 }, allow_nil: true
+  include Gravtastic
+  gravtastic :email
 
   before_create :create_remember_token, :create_confirmation_token
 
