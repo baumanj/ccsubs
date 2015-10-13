@@ -3,6 +3,17 @@ module ShiftTime
   SHIFT_NAMES = [ :'8-12:30', :'12:30-5', :'5-9', :'9-1' ]
   DATE_FORMAT = "%A, %B %e"
   
+  def self.shift_end(time=Time.now)
+    ranges = [
+      (Time.zone.parse('1am')...Time.zone.parse('8am')),
+      (Time.zone.parse('8am')...Time.zone.parse('12:30pm')),
+      (Time.zone.parse('12:30pm')...Time.zone.parse('5pm')),
+      (Time.zone.parse('5pm')...Time.zone.parse('9pm'))
+    ]
+    ranges.each {|r| return r.end if r.cover?(time) }
+    return Date.tomorrow + 1.hour
+  end
+
   def start
     if date && shift
       case shift

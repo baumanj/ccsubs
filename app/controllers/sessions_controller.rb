@@ -18,7 +18,7 @@ class SessionsController < ApplicationController
           flash.now[:error] = 'Cannot send reset email to unconfirmed email address'
         end
         render 'forgot'
-      elsif sign_in(user, params[:session][:password])
+      elsif sign_in(user, params[:session][:password], params[:session][:auto_signout] == "1")
         url = session.delete(:pre_signin_url)
         redirect_to url || root_url
       else
