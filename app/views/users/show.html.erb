@@ -1,3 +1,7 @@
+<%= link_to("http://www.gravatar.com/#{current_user.gravatar_id}/") do %>
+  <%= image_tag current_user.gravatar_url(d: :identicon) %>
+<% end %>
+<small>Click to edit profile picture on gravatar.com</small>
 <dl>
   <dt>Name</dt> <dd><%= @user.name %></dd>
   <dt>Email</dt> <dd><%= @user.email %>

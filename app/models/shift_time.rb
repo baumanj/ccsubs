@@ -73,6 +73,17 @@ module ShiftTime
     slice(:shift, :date)
   end
 
+  def self.shift_end(time=Time.now)
+    ranges = [
+      (Time.zone.parse('1am')...Time.zone.parse('8am')),
+      (Time.zone.parse('8am')...Time.zone.parse('12:30pm')),
+      (Time.zone.parse('12:30pm')...Time.zone.parse('5pm')),
+      (Time.zone.parse('5pm')...Time.zone.parse('9pm'))
+    ]
+    ranges.each {|r| return r.end if r.cover?(time) }
+    return Date.tomorrow + 1.hour
+  end
+
   def start
     if date && shift
       Time.parse(shift.split('-').first, date)

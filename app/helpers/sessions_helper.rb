@@ -1,9 +1,13 @@
 module SessionsHelper
+  include ActionView::Helpers::DateHelper
 
   # This hits the DB for every pageload; we can do better
-  def sign_in(user, password)
+  def sign_in(user, password, auto_signout)
     remember_token = user.try_sign_in(password)
     if remember_token
+      auto_signout_time = auto_signout ? ShiftTime.shift_end : 20.years.from_now
+      cookies[:auto_signout_time] = auto_signout_time
+      flash[:notice] = "You will be automatically signed out in #{distance_of_time_in_words_to_now(auto_signout_time)}"
       cookies.permanent[:remember_token] = remember_token
       self.current_user = user
     end
@@ -26,7 +30,7 @@ module SessionsHelper
   end
 
   def current_user
-    @current_user ||= find_user_by_cookie
+    @current_user ||= find_user_by_cookie_unless_expired
   end
 
   def current_user_owns?(obj)
@@ -81,6 +85,16 @@ module SessionsHelper
   end
 
   private
+
+    def find_user_by_cookie_unless_expired
+      user = find_user_by_cookie
+      if Time.zone.parse(cookies.fetch(:auto_signout_time, Time.current.to_s)).future?
+        user
+      elsif user
+        user.sign_out
+        nil
+      end
+    end
 
     def find_user_by_cookie
       remember_token_digest = User.digest(cookies.permanent[:remember_token])

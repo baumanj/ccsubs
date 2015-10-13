@@ -9,6 +9,7 @@ class User < ActiveRecord::Base
   has_many :availabilities, -> { extending ShiftTime::ClassMethods }
   accepts_nested_attributes_for :requests, :availabilities
 
+  MAX_LOGIN_ATTEMPTS = 10
   # allow_nil so that users can edit their profile w/o entering password
   validates :password, length: { minimum: 5 }, allow_nil: true
   validates :name, presence: true, uniqueness: { case_sensitive: false }
@@ -25,6 +26,9 @@ class User < ActiveRecord::Base
       end
     end
   end
+
+  include Gravtastic
+  gravtastic :email
 
   before_create :create_remember_token, :create_confirmation_token
 
