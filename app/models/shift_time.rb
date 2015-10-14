@@ -62,11 +62,48 @@ module ShiftTime
     end
   end
   
-  SHIFT_NAMES = [ '8am-12:30pm', '12:30pm-5pm', '5pm-9pm', '9pm-1am' ]
+  SHIFT_OFFSETS = [
+    8.hours   ...12.5.hours,
+    12.5.hours...17.hours,
+    17.hours  ...21.hours,
+    21.hours  ...25.hours
+  ]
+
+  def self.time_range(offset_range, date)
+    times = [offset_range.begin, offset_range.end].map {|off| date + off}
+    Range.new(*times, offset_range.exclude_end?)
+  end
+
+  SHIFT_NAMES = SHIFT_OFFSETS.map do |offset_range|
+    tr = ShiftTime.time_range(offset_range, Date.today)
+    times = [tr.begin, tr.end]
+    times.map {|t| t.strftime("%-l#{':%M' unless t.min.zero?}") }.join("-")
+  end
+
   DATE_FORMAT = "%A, %B %e"
 
-  def self.next_shift(time=Time.now)
-    SHIFT_NAMES.index {|s| time < Time.parse(s.split("-").first) } || 0
+  def self.next_shift(time=Time.current)
+    current_shift = time_to_shift(time)
+    if current_shift.nil?
+      0 # before first shift
+    else
+      (current_shift + 1) % SHIFT_OFFSETS.length
+    end
+  end
+
+  def self.time_to_shift_time_ranges(time=Time.current)
+    date = if time.seconds_since_midnight < (SHIFT_OFFSETS.last.end - 24.hours)
+        time.to_date.yesterday
+      else
+        time.to_date
+      end
+    SHIFT_OFFSETS.map {|range| time_range(range, date) }
+  end
+
+  # Return shift index for the time or nil if not part of any shift
+  def self.time_to_shift(time=Time.current)
+    time_ranges = time_to_shift_time_ranges(time)
+    time_ranges.index {|time_range| time_range.cover?(time) }
   end
 
   def shifttime_attrs
@@ -74,19 +111,14 @@ module ShiftTime
   end
 
   def self.shift_end(time=Time.now)
-    ranges = [
-      (Time.zone.parse('1am')...Time.zone.parse('8am')),
-      (Time.zone.parse('8am')...Time.zone.parse('12:30pm')),
-      (Time.zone.parse('12:30pm')...Time.zone.parse('5pm')),
-      (Time.zone.parse('5pm')...Time.zone.parse('9pm'))
-    ]
-    ranges.each {|r| return r.end if r.cover?(time) }
-    return Date.tomorrow + 1.hour
+    time_ranges = time_to_shift_time_ranges(time)
+    time_range = time_ranges.find {|time_range| time_range.cover?(time) }
+    time_range.nil? ? time_ranges.first.begin : time_range.end
   end
 
   def start
     if date && shift
-      Time.parse(shift.split('-').first, date)
+      date + SHIFT_OFFSETS[self.class.shifts[shift]].begin
     end
   end
 
@@ -95,7 +127,7 @@ module ShiftTime
   end
 
   def to_s
-    s = "#{date.strftime(DATE_FORMAT)}, #{shift.delete('ampm')}"
+    s = "#{date.strftime(DATE_FORMAT)}, #{shift}"
     Rails.env.development? ? "#{s} [#{id}]" : s
   end
 
