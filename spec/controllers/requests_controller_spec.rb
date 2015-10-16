@@ -213,7 +213,6 @@ describe RequestsController do
     end
   end
 
-  describe "#old_create" do it end
   describe "#update" do it end
   describe "#offer_sub" do it end
 

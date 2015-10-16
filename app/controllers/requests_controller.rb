@@ -47,43 +47,6 @@ class RequestsController < ApplicationController
     end
   end
 
-  def old_create
-    @request = Request.new(request_params)
-    @request.user = current_user unless current_user.admin?
-
-    raise
-    if @request.fulfilling_swap_id # coming from 'choose_swap'
-      if @request.update(state: :sent_offer)
-        raise
-        notify_swap_offer
-        redirect_to @request
-      else
-        if @request.offerable_swaps.any?
-          # raise
-          flash.now[:error] = "Something went wrong! We couldn't make the offer. Probably someone got there before you."
-          render 'choose_swap'
-        else
-          raise
-          specify_availability
-        end
-      end
-    elsif !@request.valid?
-      specify_shift
-    elsif @request.offerable_swaps.any? && !params[:cant_swap]
-      render 'choose_swap'
-    elsif (potential_matches = @request.potential_matches).any?
-      specify_availability
-    else
-      raise
-      if params[:from_step_1]
-        flash[:notice] = "Skipped steps 2 and 3: no current matches and all availability is specified"
-      end
-      @request.save!
-      flash[:success] = "Request created!"
-      redirect_to @request
-    end
-  end
-
   def update
     # Should we handle failure to look up requests by id?
     # @request.assign_attributes(request_params)
