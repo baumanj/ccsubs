@@ -7,25 +7,41 @@ shared_context "do request in before", autorequest: true do
 
   let(:params) { {} }
   let(:evaluate_before_http_request) { }
-  let(:rendered_template) { action }
+  let(:rendered_template) { }
   let(:expected_assigns) { {} }
+  let(:expect_flash_error_to) { be_nil }
 
   before do
     evaluate_before_http_request
     subject.current_user = user
     send(method.downcase, action, params)
-    unless response.redirect?
-      expect(response).to be_success
+    if response.redirect?
       expect(response).to render_template(rendered_template)
-      expected_assigns.merge!(
-        current_user: eq(subject.current_user),
-        marked_for_same_origin_verification: eq(!expected_assigns.key?(:errors))
-      )
-      assigns.each do |var_name, value|
-        expect(value).to expected_assigns[var_name.to_sym]
+    else
+      expect(response).to be_success
+      expect(response).to render_template(rendered_template || action)
+    end
+    expect(flash[:error]).to expect_flash_error_to
+    expected_assigns.merge!(
+      current_user: eq(subject.current_user),
+      marked_for_same_origin_verification: eq(true).or(eq(false)),
+      _optimized_routes: eq(true)
+    )
+    assigns.each do |var_name, value|
+      expect(value).to expected_assigns[var_name.to_sym]
+      if !expected_assigns[var_name.to_sym].matches?(value)
+        puts "#{var_name} did not match"
       end
     end
   end
+end
+
+shared_context "expect flash error to be set", expect: :flash_error do
+  let(:expect_flash_error_to) { be_a(String) }
+end
+
+shared_context "no template rendered", rendered: nil do
+  let(:rendered_template) { nil }
 end
 
 shared_context "not logged in" do
@@ -61,7 +77,8 @@ end
 
 example_proc = proc do |context: nil, expect_redirect_to: nil|
   proc do
-    include_context context
+    [*context].each {|c| include_context c }
+    # include_context context
     it "redirects to #{expect_redirect_to}" do
       expect(response).to redirect_to(subject.send(expect_redirect_to))
     end
@@ -72,7 +89,7 @@ shared_examples("an action needing login",
   &example_proc.call(context: "not logged in", expect_redirect_to: :signin_url))
 
 shared_examples("an action needing user confirmation",
-  &example_proc.call(context: "logged in", expect_redirect_to: :current_user))
+  &example_proc.call(context: ["logged in", "no template rendered"], expect_redirect_to: :current_user))
 
 shared_examples("an action needing an admin",
   &example_proc.call(context: "logged in and confirmed", expect_redirect_to: :root_url))

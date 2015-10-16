@@ -1,52 +1,27 @@
 require 'controllers/shared'
 
+shared_context "receivable_request", create: :receivable_request do
+  let(:receivable_request) do
+    create(:request,
+      user: create(:availability, date: request.date, shift: request.shift).user)
+  end
+end
+
 describe RequestsController do
-  let(:request) { assigns(:request) }
 
   describe "GET 'new'", autorequest: true, requires: :confirmed_current_user do
     let(:expected_assigns) { { request: be_a_new(Request) } }
     it "assigns @request to a new Request for the current user" do
-      expect(request.user).to eq(subject.current_user)
-      expect(response).to be_success
+      expect(assigns(:request).user).to eq(subject.current_user)
     end
   end
 
   describe "POST 'create'", autorequest: true, requires: :confirmed_current_user do
     let(:request_params) { attributes_for(:request) }
     let(:params) { { request: request_params } }
-    let(:expected_assigns) { { request: be_a_new(Request) } }
+    let(:expected_assigns) { { request: be_a(Request) } }
 
-    context "when successful" do
-      before do
-        expect(request).to be_persisted
-        expect(response).to redirect_to(request)
-      end
-
-      it "saves a new Request for current_user" do
-        expect(request.user).to eq(subject.current_user)
-      end
-
-      context "with request[user_id] in params" do
-        let(:specified_user) { create(:user) }
-        let(:params) { { request: attributes_for(:request).merge(user_id: specified_user.id) } }
-        let(:expected_assigns) do
-          { request: be_a_new(Request),
-            errors: be_any }
-        end
-
-        before { expect(specified_user).to_not eq(subject.current_user) }
-
-        it "fails to create a request for a different user" do
-          expect(request.user).to eq(subject.current_user)
-        end
-
-        it "can create a request for a different user", login: :admin do
-          expect(request.user).to eq(specified_user)
-        end
-      end
-    end
-
-    it "fails to save a duplicate request" do
+    it "fails to save a duplicate request", rendered: nil do
       post 'create', params
       duplicate_request = assigns(:request)
       expect(duplicate_request).to_not be_persisted
@@ -62,17 +37,44 @@ describe RequestsController do
       end
 
       it "fails to save" do
-        expect(request.errors).to_not be_empty
-        # puts request.errors.full_messages.join
+        expect(assigns(:request).errors).to_not be_empty
+        # puts assigns(:request).errors.full_messages.join
       end
     end
 
-    context "when date is in the past" do
+    context "when successful" do
+      before do
+        expect(assigns(:request)).to be_persisted
+        expect(response).to redirect_to(assigns(:request))
+      end
+
+      it "saves a new Request for current_user" do
+        expect(assigns(:request).user).to eq(subject.current_user)
+      end
+
+      context "with request[user_id] in params" do
+        let(:specified_user) { create(:user) }
+        let(:params) { { request: attributes_for(:request).merge(user_id: specified_user.id) } }
+        let(:expected_assigns) { { request: be_persisted } }
+
+        before { expect(specified_user).to_not eq(subject.current_user) }
+
+        it "fails to create a request for a different user" do
+          expect(assigns(:request).user).to eq(subject.current_user)
+        end
+
+        it "can create a request for a different user", login: :admin do
+          expect(assigns(:request).user).to eq(specified_user)
+        end
+      end
+    end
+
+    context "when date is in the past", expect: :flash_error do
       let(:request_params) { attributes_for(:request, date: Faker::Date.backward) }
       it_behaves_like "a request with invalid parameters"
     end
 
-    context "when date is more than a year in the future" do
+    context "when date is more than a year in the future", expect: :flash_error do
       let(:request_params) { attributes_for(:request, date: Faker::Date.between(1.year.from_now, 10.years.from_now)) }
       it_behaves_like "a request with invalid parameters"
     end
@@ -103,11 +105,8 @@ describe RequestsController do
         expect(assigns[:request].user).to eq(subject.current_user)
       end
 
-      context "when request can send a swap offer" do
-        let(:receivable_request) do
-          create(:request,
-            user: create(:availability, date: request.date, shift: request.shift).user)
-        end
+      context "when request can send a swap offer", create: :receivable_request do
+
         let(:evaluate_before_http_request) { receivable_request }
         let(:rendered_template) { 'choose_swap' }
         let(:expected_assigns) do
@@ -213,15 +212,52 @@ describe RequestsController do
     end
   end
 
-  describe "#update" do it end
+  describe "PATCH 'update'", autorequest: true, requires: :confirmed_current_user do
+    let(:request) { create(:request) }
+    let(:params) { { id: request.id } }
+    let(:expected_assigns) { { request: eq(request) } }
+
+    it "must be owned by the user", expect: :flash_error, rendered: nil do
+      expect(response).to redirect_to(request_url(request))
+    end
+
+    context "when updating request_to_swap_with_id", create: :receivable_request do
+      let(:request) { create(:request, user: user) }
+      let(:params) do
+        { id: request.id,
+          request_to_swap_with_id: receivable_request.id
+        }
+      end
+
+      context "when request is seeking_offers" do
+        let(:rendered_template) { "user_mailer/notify_swap_offer" }
+
+        it "sends an offer" do
+          expect(assigns(:request)).to be_sent_offer
+          expect(assigns(:request).fulfilling_swap).to eq(receivable_request)
+          expect(assigns(:request).fulfilling_swap).to be_received_offer
+          # check email was sent
+        end
+      end
+
+      [:received_offer_request, :sent_offer_request, :fulfilled_request].each do |request_type|
+        context "when request is #{request_type}" do
+          let(:request) { create(request_type, user: user) }
+          it "doesn't send an offer", expect: :flash_error do
+            expect(flash[:error]).to_not be_nil
+            expect(assigns(:request).fulfilling_swap).to_not eq(receivable_request)
+          end
+        end
+      end
+    end
+  end
+
   describe "#offer_sub" do it end
 
   describe "GET 'index'", autorequest: true, requires: :confirmed_current_user do
     let(:expected_assigns) { { requests: eq(Request.active) } }
 
     it "sets @requests to active requests" do
-      expect(response).to be_success
-      expect(assigns(:requests)).to eq(Request.active)
     end
   end
 
