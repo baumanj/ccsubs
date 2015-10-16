@@ -54,7 +54,7 @@ class RequestsController < ApplicationController
     if params[:request_to_swap_with_id]
       request_to_swap_with = Request.find_by(id: params[:request_to_swap_with_id])
       if request_to_swap_with && @request.send_swap_offer_to(request_to_swap_with)
-        notify_swap_offered(from: @request, to: request_to_swap_with)
+        notify_swap_offered
       # can we assume rollback after here?
       elsif request_to_swap_with.nil?
         flash[:error] = "Request to swap with could not be found; it may have just been deleted"
