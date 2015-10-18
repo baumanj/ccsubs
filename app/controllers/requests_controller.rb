@@ -48,31 +48,20 @@ class RequestsController < ApplicationController
   end
 
   def update
-    # Should we handle failure to look up requests by id?
-    # @request.assign_attributes(request_params)
-    # raise
     if params[:request_to_swap_with_id]
       request_to_swap_with = Request.find_by(id: params[:request_to_swap_with_id])
       if request_to_swap_with && @request.send_swap_offer_to(request_to_swap_with)
         notify_swap_offered
-      # can we assume rollback after here?
       elsif request_to_swap_with.nil?
         flash[:error] = "Request to swap with could not be found; it may have just been deleted"
-      elsif @request.fulfilling_swap != request_to_swap_with
-        flash[:error] = "Your request already has a swap pending with #{@request.fulfilling_swap.user}'s #{@request.fulfilling_swap} request"
-      elsif request_to_swap_with.fulfilling_user
-        if request_to_swap_with.fulfilling_user != @request.user
-          flash[:error] = "Sorry, we couldn't make the offer; #{@request.fulfilling_swap.fulfilling_user} beat you to it"
-        else # Would it actually cause a save error if we beat ourselves to it?
-          flash[:error] = "You, uh, beat yourself?"
-        end
+      elsif @request.fulfilling_user
+        flash[:error] = "Sorry, #{@request.fulfilling_user} beat you to it"
       else
-        # What could cause this?
         flash[:error] = "Something went wrong! We couldn't make the offer. #{@request.errors.full_messages.join(". ")}"
       end
-    elsif params[:offer_response]
+    else
       case params[:offer_response]
-      when :accept
+      when 'accept'
         if @request.accept_pending_swap
           notify_swap_accepted
         elsif @request.fulfilling_swap.nil?
@@ -80,10 +69,10 @@ class RequestsController < ApplicationController
         else
           flash[:error] = "Something went wrong! We couldn't accept the swap. #{@request.errors.full_messages.join(". ")}"
         end
-      when :decline
+      when 'decline'
         request_we_declined_to_swap_for = @request.fulfilling_swap
-        if @request.decline_pendind_swap
-          notify_swap_declined(decliners_request: @request, offerers_request: request_we_declined_to_swap_for)
+        if @request.decline_pending_swap
+          notify_swap_declined(request_we_declined_to_swap_for)
         elsif @request.fulfilling_swap.nil?
           flash[:error] = "There was no pending swap offer to decline"
         else
@@ -173,7 +162,7 @@ class RequestsController < ApplicationController
       flash[:success] = "We sent #{@request.fulfilling_user} an email to let them know you accepted"
     end
 
-    def notify_swap_declined(from: offer_request)
+    def notify_swap_declined(offer_request)
       mailer.notify_swap_decline(decliners_request: @request, offerers_request: offer_request).deliver
       flash[:success] = "We sent #{offer_request.user} an email to let them know you declined"
     end
@@ -196,7 +185,6 @@ class RequestsController < ApplicationController
     end
 
     def check_editable
-      locked_reason = @request.locked?
       if @request.locked?
         flash[:error] = @request.locked_reason
         redirect_to @request

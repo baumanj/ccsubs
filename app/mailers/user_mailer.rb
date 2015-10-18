@@ -88,11 +88,11 @@ class UserMailer < ActionMailer::Base
   end
 
   def notify_swap_decline(decliners_request: req, offerers_request: offer_req)
-    @req = req
-    @decliner = req.user
-    @declinee = offer_req.user
+    @decliners_request = decliners_request
+    @decliner = decliners_request.user
+    @declinee = offerers_request.user
     mail to: @declinee,
-         subject: "Sub/Swap #{@req}: swap with #{@decliner} declined 😭"
+         subject: "Sub/Swap #{offerers_request}: swap with #{@decliner} declined 😭"
   end
 
   def reset_password(user)

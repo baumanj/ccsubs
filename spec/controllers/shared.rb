@@ -8,6 +8,7 @@ shared_context "do request in before", autorequest: true do
   let(:params) { {} }
   let(:evaluate_before_http_request) { }
   let(:rendered_template) { }
+  let(:rendered_templates) { [rendered_template] if rendered_template }
   let(:expected_assigns) { {} }
   let(:expect_flash_error_to) { be_nil }
 
@@ -16,12 +17,16 @@ shared_context "do request in before", autorequest: true do
     subject.current_user = user
     send(method.downcase, action, params)
     if response.redirect?
-      expect(response).to render_template(rendered_template)
+      defaut_template = nil
     else
+      defaut_template = action
       expect(response).to be_success
-      expect(response).to render_template(rendered_template || action)
+    end
+    (rendered_templates || [defaut_template]).each do |t|
+      expect(response).to render_template(t)
     end
     expect(flash[:error]).to expect_flash_error_to
+    puts "flash[:error]: #{flash[:error]}" if flash[:error]
     expected_assigns.merge!(
       current_user: eq(subject.current_user),
       marked_for_same_origin_verification: eq(true).or(eq(false)),

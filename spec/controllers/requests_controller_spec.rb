@@ -229,6 +229,13 @@ describe RequestsController do
         }
       end
 
+      context "when request to swap with is deleted" do
+        let(:evaluate_before_http_request) { receivable_request.destroy! }
+        it "fails", expect: :flash_error, rendered: nil do
+          expect(assigns(:request)).to be_seeking_offers
+        end
+      end
+
       context "when request is seeking_offers" do
         let(:rendered_template) { "user_mailer/notify_swap_offer" }
 
@@ -236,16 +243,54 @@ describe RequestsController do
           expect(assigns(:request)).to be_sent_offer
           expect(assigns(:request).fulfilling_swap).to eq(receivable_request)
           expect(assigns(:request).fulfilling_swap).to be_received_offer
-          # check email was sent
         end
       end
 
       [:received_offer_request, :sent_offer_request, :fulfilled_request].each do |request_type|
         context "when request is #{request_type}" do
           let(:request) { create(request_type, user: user) }
+          let(:original_request_state) { request.state }
+          let(:evaluate_before_http_request) { original_request_state }
+
           it "doesn't send an offer", expect: :flash_error do
+            unless assigns(:request).changed? # (i.e., not saved)
+              expect(assigns(:request).state).to eq(original_request_state)
+              expect(assigns(:request).fulfilling_swap).to_not eq(receivable_request)
+            end
             expect(flash[:error]).to_not be_nil
-            expect(assigns(:request).fulfilling_swap).to_not eq(receivable_request)
+          end
+        end
+      end
+    end
+
+    context "when responding to offer" do
+      let(:request) { create(:received_offer_request, user: user) }
+      let(:params) do
+        { id: request.id,
+          offer_response: offer_response
+        }
+      end
+      let(:request_that_sent_the_offer) { request.fulfilling_swap }
+      let(:evaluate_before_http_request) { request_that_sent_the_offer }
+
+      context "when 'offer_response' is 'accept'" do
+        let(:offer_response) { :accept }
+        let(:rendered_templates) { ["user_mailer/notify_swap_accept", "user_mailer/remind_swap_accept"] }
+
+        it "sets the requests states to 'fulfilled' and sends nofitication" do
+          [assigns(:request), request_that_sent_the_offer.reload].each do |r|
+            expect(r).to be_fulfilled
+          end
+        end
+      end
+
+      context "when 'offer_response' is 'decline'" do
+        let(:offer_response) { :decline }
+        let(:rendered_template) { "user_mailer/notify_swap_decline" }
+
+        it "sets the requests states to 'seeking_offers' and sends nofitication" do
+          [assigns(:request), request_that_sent_the_offer.reload].each do |r|
+            expect(r).to be_seeking_offers
           end
         end
       end

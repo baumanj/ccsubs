@@ -223,8 +223,6 @@ class Request < ActiveRecord::Base
       "The request can't be changed after the shift has passed."
     elsif fulfilled?
       "The request can't be changed after it's been fulfilled."
-    elsif received_offer? || sent_offer?
-      "The request can't be changed while there is a pending offer."
     end
   end
     
