@@ -24,7 +24,6 @@ class RequestsController < ApplicationController
     case @request.state
     when 'seeking_offers'
       if @request.user == current_user
-        # byebug
         @requests_to_swap_with = @request.offerable_swaps
         if @requests_to_swap_with.any?
           @availabilities_for_requests_to_swap_with = @request.user.availabilities_for(@requests_to_swap_with)
@@ -49,35 +48,13 @@ class RequestsController < ApplicationController
 
   def update
     if params[:request_to_swap_with_id]
-      request_to_swap_with = Request.find_by(id: params[:request_to_swap_with_id])
-      if request_to_swap_with && @request.send_swap_offer_to(request_to_swap_with)
-        notify_swap_offered
-      elsif request_to_swap_with.nil?
-        flash[:error] = "Request to swap with could not be found; it may have just been deleted"
-      elsif @request.fulfilling_user
-        flash[:error] = "Sorry, #{@request.fulfilling_user} beat you to it"
-      else
-        flash[:error] = "Something went wrong! We couldn't make the offer. #{@request.errors.full_messages.join(". ")}"
-      end
+      set_fulfilling_swap
     else
       case params[:offer_response]
       when 'accept'
-        if @request.accept_pending_swap
-          notify_swap_accepted
-        elsif @request.fulfilling_swap.nil?
-          flash[:error] = "There was no pending swap offer to accept"
-        else
-          flash[:error] = "Something went wrong! We couldn't accept the swap. #{@request.errors.full_messages.join(". ")}"
-        end
+        accept_swap_offer
       when 'decline'
-        request_we_declined_to_swap_for = @request.fulfilling_swap
-        if @request.decline_pending_swap
-          notify_swap_declined(request_we_declined_to_swap_for)
-        elsif @request.fulfilling_swap.nil?
-          flash[:error] = "There was no pending swap offer to decline"
-        else
-          flash[:error] = "Something went wrong! We couldn't decline the swap. #{@request.errors.full_messages.join(". ")}"
-        end
+        decline_swap_offer
       else
         flash[:error] = "Unexpected offer response: #{params[:offer_response]}"
       end
@@ -129,6 +106,40 @@ class RequestsController < ApplicationController
   end
 
   private
+
+    def set_fulfilling_swap
+      request_to_swap_with = Request.find_by(id: params[:request_to_swap_with_id])
+      if request_to_swap_with && @request.send_swap_offer_to(request_to_swap_with)
+        notify_swap_offered
+      elsif request_to_swap_with.nil?
+        flash[:error] = "Request to swap with could not be found; it may have just been deleted"
+      elsif @request.fulfilling_user
+        flash[:error] = "Sorry, #{@request.fulfilling_user} beat you to it"
+      else
+        flash[:error] = "Something went wrong! We couldn't make the offer. #{@request.errors.full_messages.join(". ")}"
+      end
+    end
+
+    def accept_swap_offer
+      if @request.accept_pending_swap
+        notify_swap_accepted
+      elsif @request.fulfilling_swap.nil?
+        flash[:error] = "There was no pending swap offer to accept"
+      else
+        flash[:error] = "Something went wrong! We couldn't accept the swap. #{@request.errors.full_messages.join(". ")}"
+      end
+    end
+
+    def decline_swap_offer
+      request_we_declined_to_swap_for = @request.fulfilling_swap
+      if @request.decline_pending_swap
+        notify_swap_declined(request_we_declined_to_swap_for)
+      elsif @request.fulfilling_swap.nil?
+        flash[:error] = "There was no pending swap offer to decline"
+      else
+        flash[:error] = "Something went wrong! We couldn't decline the swap. #{@request.errors.full_messages.join(". ")}"
+      end
+    end
 
     def user_id
       (current_user.admin? && params[:user_id]) || current_user.id
