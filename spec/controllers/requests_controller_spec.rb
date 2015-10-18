@@ -330,6 +330,28 @@ describe RequestsController do
         expect(assigns(:request)).to be_fulfilled
       end
     end
+
+    [:sent_offer_request, :received_offer_request, :fulfilled_request].each do |request_type|
+      context "when request is #{request_type}" do
+        let(:request) { create(request_type) }
+        let(:original_request_state) { request.state }
+
+        it "displays an error and doesn't change the request", expect: :flash_error do
+          expect(assigns(:request).state).to eq(original_request_state)
+        end
+      end
+    end
+
+    context "when the subber doesn't have the availability" do
+      let(:request) { create(:seeking_offers_request) }
+      let(:evaluate_before_http_request) do
+        create(:availability, user: user, free: false, date: request.date, shift: request.shift)
+      end
+
+      it "displays an error and doesn't fulfill the request", expect: :flash_error do
+        expect(assigns(:request)).to be_seeking_offers
+      end
+    end
   end
 
   describe "GET 'index'", autorequest: true, requires: :confirmed_current_user do

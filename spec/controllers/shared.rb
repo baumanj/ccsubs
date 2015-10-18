@@ -1,3 +1,5 @@
+RSpec::Matchers.define_negated_matcher :be_nonempty, :be_empty
+
 # Expects the first example group under the "describe controller" group to be
 # a string of the form "HTTP_METHOD 'controller_action'"
 # e.g., "GET 'index'" or "PATCH 'offer_sub'"
@@ -42,7 +44,7 @@ shared_context "do request in before", autorequest: true do
 end
 
 shared_context "expect flash error to be set", expect: :flash_error do
-  let(:expect_flash_error_to) { be_a(String) }
+  let(:expect_flash_error_to) { be_nonempty }
 end
 
 shared_context "no template rendered", rendered: nil do

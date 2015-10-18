@@ -101,24 +101,24 @@ class Request < ActiveRecord::Base
   end
 
   def accept_pending_swap
-    with_lock do
-      if received_offer?
+    if received_offer?
+      with_lock do
         fulfilling_swap.lock!
         [self, fulfilling_swap].each do |r|
           r.state = :fulfilled
           r.availability.free = false
         end
         save
-      else
-        errors.add(:state, "cannot be #{state} when accepting swap")
-        false
       end
+    else
+      errors.add(:state, "cannot be #{state} when accepting swap")
+      false
     end
   end
 
   def decline_pending_swap
-    with_lock do
-      if received_offer?
+    if received_offer?
+      with_lock do
         fulfilling_swap.lock!
         save_returns = [self, fulfilling_swap].map do |r|
           r.fulfilling_swap = nil
@@ -127,20 +127,28 @@ class Request < ActiveRecord::Base
           r.save
         end
         save_returns.all?
-      else
-        errors.add(:state, "cannot be #{state} when declining swap")
-        false
       end
+    else
+      errors.add(:state, "cannot be #{state} when declining swap")
+      false
     end
   end
 
   def fulfill_by_sub(subber)
-    with_lock do
-      sub_availability = subber.find_or_initialize_availability_for(self)
-      if sub_availability.free?
-        sub_availability.update!(free: false)
-        update!(availability: sub_availability, state: :fulfilled)
+    if seeking_offers?
+      with_lock do
+        sub_availability = subber.find_or_initialize_availability_for(self)
+        if sub_availability.free?
+          sub_availability.update!(free: false)
+          update!(availability: sub_availability, state: :fulfilled)
+        else
+          errors.add(:subber, "must not be listed as unavailable")
+          false
+        end
       end
+    else
+      errors.add(:state, "cannot be #{state} when fulfilling by sub")
+      false
     end
   end
 
