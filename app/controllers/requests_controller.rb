@@ -81,24 +81,6 @@ class RequestsController < ApplicationController
       else
         flash[:error] = "Unexpected offer response: #{params[:offer_response]}"
       end
-
-    # when ['received_offer', 'fulfilled']
-    #   @request.save!
-    #   notify_swap_accepted
-    # when ['received_offer', 'seeking_offers']
-    #   request_we_declined_to_swap_for = @request.fulfilling_swap
-    #   @request.save!
-    #   notify_swap_declined(from: request_we_declined_to_swap_for)
-    # else
-    #   if params[:cant_swap] # infer that user is not free for all @request.offerable_swaps
-    #     @request.offerable_swaps.each do |request_user_cant_swap_for|
-    #       # Is there any chance we couldn't update any of these availabilities because
-    #       # the user made a different swap with one of them?
-    #       @request.user.availability_for(request_user_cant_swap_for).update!(free: false)
-    #     end
-    #   else
-    #     flash[:error] = "Unexpected state change from #{@request.previous_changes['state'].join(' to ')}"
-    #   end
     end
 
     redirect_to @request

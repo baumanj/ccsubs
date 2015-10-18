@@ -109,6 +109,9 @@ class Request < ActiveRecord::Base
           r.availability.free = false
         end
         save
+      else
+        errors.add(:state, "cannot be #{state} when accepting swap")
+        false
       end
     end
   end
@@ -124,6 +127,9 @@ class Request < ActiveRecord::Base
           r.save
         end
         save_returns.all?
+      else
+        errors.add(:state, "cannot be #{state} when declining swap")
+        false
       end
     end
   end

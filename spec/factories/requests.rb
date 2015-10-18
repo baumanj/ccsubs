@@ -14,7 +14,7 @@ module Faker
 end
 
 FactoryGirl.define do
-  factory :request do
+  factory :request, aliases: [:seeking_offers_request] do
     user
     date { Faker::Date.unique_in_the_next_year }
     shift { Request.shifts.keys.sample }

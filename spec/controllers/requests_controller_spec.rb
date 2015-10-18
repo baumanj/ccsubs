@@ -7,6 +7,11 @@ shared_context "receivable_request", create: :receivable_request do
   end
 end
 
+shared_context "expect request to be saved", expect: :request_saved do
+  # changed? implies unsaved; see ActiveModel::Dirty
+  after { expect(assigns[:request]).to_not be_changed }
+end
+
 describe RequestsController do
 
   describe "GET 'new'", autorequest: true, requires: :confirmed_current_user do
@@ -239,7 +244,7 @@ describe RequestsController do
       context "when request is seeking_offers" do
         let(:rendered_template) { "user_mailer/notify_swap_offer" }
 
-        it "sends an offer" do
+        it "sends an offer", expect: :request_saved do
           expect(assigns(:request)).to be_sent_offer
           expect(assigns(:request).fulfilling_swap).to eq(receivable_request)
           expect(assigns(:request).fulfilling_swap).to be_received_offer
@@ -257,13 +262,12 @@ describe RequestsController do
               expect(assigns(:request).state).to eq(original_request_state)
               expect(assigns(:request).fulfilling_swap).to_not eq(receivable_request)
             end
-            expect(flash[:error]).to_not be_nil
           end
         end
       end
     end
 
-    context "when responding to offer" do
+    context "when responding to offer", expect: :request_saved do
       let(:request) { create(:received_offer_request, user: user) }
       let(:params) do
         { id: request.id,
@@ -291,6 +295,23 @@ describe RequestsController do
         it "sets the requests states to 'seeking_offers' and sends nofitication" do
           [assigns(:request), request_that_sent_the_offer.reload].each do |r|
             expect(r).to be_seeking_offers
+          end
+        end
+      end
+
+      [:seeking_offers_request, :sent_offer_request, :fulfilled_request].each do |request_type|
+        context "when request is #{request_type}" do
+          let(:request) { create(request_type, user: user) }
+          let(:original_request_state) { request.state }
+
+          [:accept, :decline].each do |offer_response_value|
+            context "when offer_response is #{offer_response_value}" do
+              let(:offer_response) { offer_response_value }
+
+              it "displays an error and doesn't change the request", expect: :flash_error do
+                expect(assigns(:request).state).to eq(original_request_state)
+              end
+            end
           end
         end
       end
