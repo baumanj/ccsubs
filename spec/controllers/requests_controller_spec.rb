@@ -318,7 +318,19 @@ describe RequestsController do
     end
   end
 
-  describe "#offer_sub" do it end
+  describe "PATCH 'offer_sub'", autorequest: true, requires: :confirmed_current_user do
+    let(:request) { create(:request) }
+    let(:params) { { id: request.id } }
+    let(:expected_assigns) { { request: eq(request) } }
+
+    context "when request is seeking_offers", expect: :request_saved do
+      let(:request) { create(:seeking_offers_request) }
+      let(:rendered_templates) { ["user_mailer/notify_sub", "user_mailer/remind_sub"] }
+      it "sets the request state to 'fulfilled' and sends nofitication" do
+        expect(assigns(:request)).to be_fulfilled
+      end
+    end
+  end
 
   describe "GET 'index'", autorequest: true, requires: :confirmed_current_user do
     let(:expected_assigns) { { requests: eq(Request.active) } }
