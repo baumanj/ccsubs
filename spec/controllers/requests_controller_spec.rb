@@ -361,7 +361,35 @@ describe RequestsController do
     end
   end
 
-  describe "#owned_index" do it end
+  request_types = [
+    :seeking_offers_request,
+    :sent_offer_request,
+    :received_offer_request,
+    :fulfilled_request
+  ]
+  past_request_types = request_types.map {|rt| :"past_#{rt}" }
+
+  describe "GET 'owned_index'", autorequest: true, requires: :confirmed_current_user do
+    let(:expected_assigns) do
+      { owner: eq(user),
+        requests: match_array(expected_requests) }
+    end
+    let(:expected_requests) do
+      request_types.shuffle.map do |type|
+        create(type, user: user)
+      end
+    end
+    let(:excluded_requests) do
+      create(request_types.sample) # not belonging to user
+      create(past_request_types.sample, user: user)
+    end
+    let(:evaluate_before_http_request) { expected_requests; excluded_requests }
+
+    it "sets @requests to all requests on or after today" do
+      expect(assigns(:requests).size).to be > 1
+    end
+  end
+
   describe "#fulfilled" do it end
   describe "#pending" do it end
   describe "#destroy" do it end
