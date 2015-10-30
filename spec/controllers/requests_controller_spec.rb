@@ -390,7 +390,48 @@ describe RequestsController do
     end
   end
 
-  describe "#fulfilled" do it end
+  describe "GET 'fulfilled'", autorequest: true, requires: :login do
+    let(:expected_assigns) do
+      { requests: match_array(expected_requests),
+        today: match_array(todays_requests),
+        this_week: match_array(this_weeks_requests),
+        later: match_array(later_requests)
+      }
+    end
+
+    let(:todays_requests) do
+      Array.new(rand(10)) { create(:fulfilled_request) }
+    end
+
+    let(:this_weeks_requests) do
+      Array.new(rand(10)) do
+        create(:fulfilled_request,
+               date: Faker::Date.between(1.day.from_now, 1.week.from_now))
+      end
+    end
+
+    let(:later_requests) do
+      Array.new(rand(10)) do
+        create(:fulfilled_request,
+               date: Faker::Date.between(8.days.from_now, 1.year.from_now))
+      end
+    end
+
+    let(:expected_requests) do
+      todays_requests + this_weeks_requests + later_requests
+    end
+
+    let(:evaluate_before_http_request) do
+      unfulfilled_request_types =
+        request_types.reject {|t| t == :fulfilled_request} +
+        past_request_types.reject {|t| t == :past_fulfilled_request }
+      rand(100).times { create(unfulfilled_request_types.sample) }
+    end
+
+    it "assigns all instance variables correctly" do
+    end
+  end
+
   describe "#pending" do it end
   describe "#destroy" do it end
 end
