@@ -31,9 +31,10 @@ class Request < ActiveRecord::Base
   # seeking_offers state.
   def self.decline_past_offers
     received_offer.where("date <= ?", Date.today).each do |request|
-      if request.start.past? && request.fulfilling_swap.future?
+      other_request = request.fulfilling_swap
+      if request.start.past? && other_request.future?
         if request.decline_pending_swap
-          UserMailer.notify_swap_decline(request, request.fulfilling_swap).deliver
+          UserMailer.notify_swap_decline(request, other_request).deliver
         end
       end
     end
