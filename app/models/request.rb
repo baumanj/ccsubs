@@ -26,6 +26,19 @@ class Request < ActiveRecord::Base
     Request.where("date >= ?", date)
   end
 
+  # If there are any requests which have received a swap offer, but whose time
+  # has passed, decline them so the offering requests go back to the
+  # seeking_offers state.
+  def self.decline_past_offers
+    received_offer.where("date <= ?", Date.today).each do |request|
+      if request.start.past? && request.fulfilling_swap.future?
+        if request.decline_pending_swap
+          UserMailer.notify_swap_decline(request, request.fulfilling_swap).deliver
+        end
+      end
+    end
+  end
+
   def self.all_seeking_offers
     Request.seeking_offers.where("date >= ?", Date.today).select {|r| r.start > Time.now }
   end
@@ -138,10 +151,16 @@ class Request < ActiveRecord::Base
       return false
     elsif availability.start != start
       errors.add(:availability, "must be for same shift")
+      return false
     elsif fulfilling_swap.availability.user != self.user
       errors.add(:user, "Availability is for #{fulfilling_swap.availability.user}; should be for #{self.user}.")
+      return false
     elsif fulfilling_swap.fulfilling_swap != self
-        errors.add(:fulfilling_swap, "Swapped requests are not reciprocal #{self} => #{fulfilling_swap} => #{fulfilling_swap.fulfilling_swap}.")
+      errors.add(:fulfilling_swap, "Swapped requests are not reciprocal #{self} => #{fulfilling_swap} => #{fulfilling_swap.fulfilling_swap}.")
+      return false
+    elsif start.past?
+      errors.add(:start, "must be in the future")
+      return false
     end
 
     transaction do
