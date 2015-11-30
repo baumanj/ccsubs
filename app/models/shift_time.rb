@@ -43,14 +43,28 @@ module ShiftTime
       where("#{table_name}.date >= ?", date_)
     end
 
-    def after(date_or_time)
+    def relative(date_or_time, date_op, shift_op)
       date = date_or_time.to_date
       next_shift = ShiftTime::next_shift(date_or_time.to_time)
-      where("#{table_name}.date > ? OR (#{table_name}.date = ? AND #{table_name}.shift >= ?)", date, date, next_shift)
+      where("#{table_name}.date #{date_op} ? OR " \
+           "(#{table_name}.date = ? AND #{table_name}.shift #{shift_op} ?)",
+            date, date, next_shift)
+    end
+
+    def after(date_or_time)
+      relative(date_or_time, ">", ">=")
+    end
+
+    def before(date_or_time)
+      relative(date_or_time, "<", "<")
     end
 
     def future
       after(Time.now)
+    end
+
+    def past
+      before(Time.now)
     end
 
     def active_check

@@ -180,12 +180,11 @@ class Request < ActiveRecord::Base
   # has passed, decline them so the offering requests go back to the
   # seeking_offers state.
   def self.decline_past_offers
-    received_offer.where("date <= ?", Date.today).each do |request|
+    past.received_offer.each do |request|
       other_request = request.fulfilling_swap
-      if request.start.past? && other_request.future?
-        if request.decline_pending_swap
-          UserMailer.notify_swap_decline(request, other_request).deliver
-        end
+      if other_request.start.future? && request.decline_pending_swap
+        UserMailer.notify_swap_decline(decliners_request: request,
+                                       offerers_request: other_request).deliver
       end
     end
   end
