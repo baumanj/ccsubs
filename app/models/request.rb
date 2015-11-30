@@ -176,6 +176,20 @@ class Request < ActiveRecord::Base
     end
   end
 
+  # If there are any requests which have received a swap offer, but whose time
+  # has passed, decline them so the offering requests go back to the
+  # seeking_offers state.
+  def self.decline_past_offers
+    received_offer.where("date <= ?", Date.today).each do |request|
+      other_request = request.fulfilling_swap
+      if request.start.past? && other_request.future?
+        if request.decline_pending_swap
+          UserMailer.notify_swap_decline(request, other_request).deliver
+        end
+      end
+    end
+  end
+
   # Match all the active requests in the current scope against all active requests
   def self.matching_requests(match_type)
     active.flat_map do |my_request|

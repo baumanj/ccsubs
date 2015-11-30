@@ -3,7 +3,7 @@
 <h2><%= @request.user %> humbly requests coverage for</h2>
 <h1><%= @request %></h1>
 
-<% if @request.start.past? %>
+<% if @request.start.past? && !@request.received_offer? %>
   <p>This request's start time has passed.</p>
 <% elsif @request.fulfilled? %>
   <%= render 'fulfilled_request' %>

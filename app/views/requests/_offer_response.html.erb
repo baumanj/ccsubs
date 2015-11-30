@@ -2,7 +2,7 @@
   <p>
     <%= receivers_request.fulfilling_user %> has offered to swap with you for
     <% linked_req = (receivers_request == @request) ? receivers_request : receivers_request.fulfilling_swap %>
-    <%= link_to linked_req, linked_req # If we're on the other person's request page, link to ours %>
+    <%= link_to linked_req, linked_req %>
   </p>
 
   <%= form_for receivers_request do |f| %>
