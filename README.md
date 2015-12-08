@@ -4,6 +4,9 @@ This is a web application for facilitating exchanging shift assignments.
 
 ## TODO:
 ### Next steps
+* Add gravatar to request detail
+* Send staff email notifications about shift changes
+* Alert staff and volunteer about shifts that look like they won't be covered and remind volunteer to call in the absence
 * Fix implicitly created!
 * Better handle availability/request conflicts
 * Speed up availability pages (https://github.com/bbatsov/rails-style-guide#find-each)
