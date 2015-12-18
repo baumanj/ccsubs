@@ -4,15 +4,17 @@ This is a web application for facilitating exchanging shift assignments.
 
 ## TODO:
 ### Next steps
+* All hands on deck email
 * Add gravatar to request detail
 * Send staff email notifications about shift changes
-* Alert staff and volunteer about shifts that look like they won't be covered and remind volunteer to call in the absence
+* Alert staff and volunteer 48 hours in advance about shifts that look like they won't be covered and remind volunteer to call in the absence
 * Fix implicitly created!
 * Better handle availability/request conflicts
 * Speed up availability pages (https://github.com/bbatsov/rails-style-guide#find-each)
 * Allow admins to look at all others availabilty for a given shift to help Travis
 * Notification to volunteer services for sub/swap requests that haven't been fulfilled when the shift is only one or two days away.
 * Know when shifts are low (get shift information)
+* Disallow doing two consecutive shifts
 * Make it clear who is logged in (gravitar)
 * auto log out at end of shift if on crisis line computer
 ### Future
