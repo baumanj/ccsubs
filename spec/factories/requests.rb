@@ -1,9 +1,16 @@
 module Faker
   class Date
     def self.unique(date_method)
-      @previously_selected ||= []
-      @previously_selected << send(date_method, excluding: @previously_selected)
-      @previously_selected.last
+      @previously_selected ||= Hash.new {|hash, key| hash[key] = [] }
+
+      if (unique_date = send(date_method, excluding: @previously_selected[date_method]))
+        @previously_selected[date_method] << unique_date
+      else
+        # If we've used all the ones in the range, recycle oldest
+        @previously_selected[date_method].rotate!
+      end
+
+      @previously_selected[date_method].last
     end
 
     def self.in_the_next_year(excluding: nil)
