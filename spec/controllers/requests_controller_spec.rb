@@ -24,7 +24,7 @@ describe RequestsController do
 
   describe "GET 'new'", autorequest: true, requires: :confirmed_current_user do
     let(:expected_assigns) { { request: be_a_new(Request) } }
- 
+
     context "when passed 'date' and 'shift' params" do
       let(:params) { attributes_for(:request).slice(:date, :shift) }
 

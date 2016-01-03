@@ -189,7 +189,6 @@ class User < ActiveRecord::Base
       else
         # Would work with all; limiting to active is an optimization
         puts "******** calling matching_requests for #{self}'s #{requests.active.count} active requests"
-        # requests.active.matching_requests(relation_or_requests)
         requests.matching_requests(relation_or_requests)
         # ^ need to include a newly created request here
       end
