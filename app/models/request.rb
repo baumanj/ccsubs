@@ -6,6 +6,7 @@ class Request < ActiveRecord::Base
   belongs_to :fulfilling_swap, class_name: "Request", autosave: true
   belongs_to :availability, autosave: true # the one with the same shift where user != self.user
   scope :active, -> { future.seeking_offers.where.not(user: nil) }
+  scope :pending, -> { future.received_offer }
 
   enum shift: ShiftTime::SHIFT_NAMES
   enum state: [ :seeking_offers, :received_offer, :sent_offer, :fulfilled ]
@@ -200,7 +201,7 @@ class Request < ActiveRecord::Base
   def matching_requests(match_type)
     match_type = MATCH_TYPE_MAP[match_type] || match_type
     # Would work with all; limiting to active is an optimization
-    Request.unscoped.all.active.select do |receivers_request|
+    Request.unscoped.all.active.order(:date, :shift).select do |receivers_request|
       match(receivers_request, match_type)
     end
   end
@@ -208,8 +209,13 @@ class Request < ActiveRecord::Base
   # self is the sender's request
   def match(receivers_request, senders_availability: nil, receivers_availability: nil)
     raise ArgumentError if receivers_availability.nil? || senders_availability.nil? # need ruby 2.1
-    senders_availability_for_receivers_request = user.availability_state_for(receivers_request, looking_for_swaps: new_record?)
-    receivers_availability_for_my_request = receivers_request.user.availability_state_for(self)
+
+    senders_availability_for_receivers_request =
+      user.availability_state_for(receivers_request,
+                                  looking_for_swaps: new_record?)
+    receivers_availability_for_my_request =
+      receivers_request.user.availability_state_for(self)
+
     [*receivers_availability].include?(receivers_availability_for_my_request) &&
       [*senders_availability].include?(senders_availability_for_receivers_request)
   end
@@ -240,7 +246,6 @@ class Request < ActiveRecord::Base
     start.future? && seeking_offers? && user
   end
 
-
   def locked?
     !locked_reason.nil?
   end
@@ -255,10 +260,6 @@ class Request < ActiveRecord::Base
     
   def fulfilling_user
     (availability || fulfilling_swap).user unless seeking_offers?
-  end
-
-  def pending?
-    received_offer? && start.future?
   end
 
   def inspect

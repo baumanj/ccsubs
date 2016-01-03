@@ -14,10 +14,24 @@ end
 
 describe RequestsController do
 
+  request_types = [
+    :seeking_offers_request,
+    :sent_offer_request,
+    :received_offer_request,
+    :fulfilled_request
+  ]
+  past_request_types = request_types.map {|rt| :"past_#{rt}" }
+
   describe "GET 'new'", autorequest: true, requires: :confirmed_current_user do
     let(:expected_assigns) { { request: be_a_new(Request) } }
-    it "assigns @request to a new Request for the current user" do
-      expect(assigns(:request).user).to eq(subject.current_user)
+ 
+    context "when passed 'date' and 'shift' params" do
+      let(:params) { attributes_for(:request).slice(:date, :shift) }
+
+      it "assigns them to @request" do
+        expect(assigns(:request).date).to eq(params[:date])
+        expect(assigns(:request).shift).to eq(params[:shift])
+      end
     end
   end
 
@@ -190,13 +204,14 @@ describe RequestsController do
         end
         let(:expected_assigns) do
           { request: eq(request),
-            requests_to_swap_with: contain_exactly(request),
+            requests_to_swap_with: contain_exactly(current_user_request),
             availabilities_for_requests_to_swap_with: be_any }
         end
 
-        it "lets the current_user choose which of their request to offer as a swap" do
-          expect(assigns[:availabilities_for_requests_to_swap_with].size).to eq(1)
-          expect(assigns[:availabilities_for_requests_to_swap_with].first.start).to eq(request.start)
+        it "lets the current_user choose which of their requests to offer as a swap" do
+          availabilities = assigns[:availabilities_for_requests_to_swap_with]
+          expect(availabilities.size).to eq(1)
+          expect(availabilities.first.start).to eq(current_user_request.start)
         end
       end
 
@@ -361,14 +376,6 @@ describe RequestsController do
     end
   end
 
-  request_types = [
-    :seeking_offers_request,
-    :sent_offer_request,
-    :received_offer_request,
-    :fulfilled_request
-  ]
-  past_request_types = request_types.map {|rt| :"past_#{rt}" }
-
   describe "GET 'owned_index'", autorequest: true, requires: :confirmed_current_user do
     let(:expected_assigns) do
       { owner: eq(user),
@@ -432,6 +439,47 @@ describe RequestsController do
     end
   end
 
-  describe "#pending" do it end
+  describe "GET 'pending'", autorequest: true, requires: :confirmed_current_user do
+    let(:expected_assigns) do
+      { requests: match_array(pending_requests) }
+    end
+
+    let(:pending_requests) do
+      # Create 2 to 4 pending requests
+      Array.new(2 + rand(3)) do
+        create(:received_offer_request, user: user)
+      end
+    end
+
+    let(:non_pending_requests) do
+      # Requests from the user, but which are not pending
+      non_pending_request_types =
+        request_types.reject {|t| t == :received_offer_request} +
+        past_request_types
+      rand(10).times { create(non_pending_request_types.sample, user: user) }
+
+      # Requests from other users
+      rand(10).times { create((request_types + past_request_types).sample) }
+    end
+
+    let(:evaluate_before_http_request) do
+      pending_requests
+      non_pending_requests
+    end
+
+    it "assigns instance variables correctly" do
+    end
+
+    context "when only one pending request" do
+      let(:pending_requests) do
+        [create(:received_offer_request, user: user)]
+      end
+
+      it "redirects to the pending request" do
+        expect(response).to redirect_to(pending_requests.first)
+      end
+    end
+  end
+
   describe "#destroy" do it end
 end

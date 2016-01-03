@@ -5,7 +5,7 @@
 
     <%= render 'shared/error_messages' %>
 
-    <%= form_for(@request.user, url: create_user_request_url(@request.user)) do |f| %>
+    <%= form_for(@request.user, url: update_availability_path(@request.user)) do |f| %>
 
       <%= f.fields_for :requests, @request do |request_fields| %>
         <%= request_fields.hidden_field :user_id %>

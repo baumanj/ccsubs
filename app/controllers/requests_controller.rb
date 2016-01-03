@@ -5,7 +5,7 @@ class RequestsController < ApplicationController
   before_action :check_editable, except: [:new, :create, :show, :index, :owned_index, :fulfilled, :pending]
 
   def new
-    @request = Request.new(user: current_user)
+    @request = Request.new(params.permit(:date, :shift))
   end
 
   def create
@@ -93,7 +93,7 @@ class RequestsController < ApplicationController
   end
 
   def pending
-    @requests = Request.pending_requests(user_id)
+    @requests = current_user.requests.pending
     if @requests.count == 1
       redirect_to @requests.first
     end

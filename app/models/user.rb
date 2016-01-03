@@ -159,8 +159,12 @@ class User < ActiveRecord::Base
     end
   end
 
+  # Return all the requests owned by this user which could be offered as a swap
+  # for at least one of the requests in for_requests
   def offerable_swaps(for_requests=Request.active.all)
-    requests.active.all.flat_map(&:offerable_swaps).select {|r| [*for_requests].include?(r) }
+    requests.active.select do |my_request|
+      (my_request.offerable_swaps & [*for_requests]).any?
+    end
   end
 
   def requested_availabilities
@@ -185,15 +189,12 @@ class User < ActiveRecord::Base
       else
         # Would work with all; limiting to active is an optimization
         puts "******** calling matching_requests for #{self}'s #{requests.active.count} active requests"
-        requests.active.matching_requests(relation_or_requests)
+        # requests.active.matching_requests(relation_or_requests)
+        requests.matching_requests(relation_or_requests)
         # ^ need to include a newly created request here
       end
     puts "******** mapping #{self}'s #{matches.count} matches to availabilities"
     matches.map {|r| availability_for(r) }.uniq(&:start)
-  end
-
-  def pending_offers
-    requests.select(&:pending?)
   end
 
   def availability_for(shifttime)

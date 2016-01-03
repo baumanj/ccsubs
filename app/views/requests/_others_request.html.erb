@@ -33,7 +33,7 @@
         <% unless @request.user.availabilities.active.empty? %>
           They are available to swap for the following shifts. If you need
           coverage for one of these, you should create a request.
-          <% @request.user.open_availabilities.each do |availability| %>
+          <% @request.user.availabilities.active.each do |availability| %>
             <%= button_to "New request for #{availability}", new_request_path,
                           class: "btn", method: :get,
                           params: { date: availability.date,
@@ -48,7 +48,7 @@
           <%= form_for my_request do |f| %>
             <li>
               <%= render partial: 'offer_swap_button',
-                         locals: {form: f, request_to_swap_with: @request} %>
+                         locals: {form: f, req_to_swap_with: @request} %>
             </li>
           <% end %>
         <% end %>

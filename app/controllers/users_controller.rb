@@ -110,7 +110,7 @@ class UsersController < ApplicationController
 
   def update
     @user = User.find(params[:id])
-    if params[:user][:password].empty? &&  params[:user][:password_confirmation].empty?
+    if params[:user][:password].empty? && params[:user][:password_confirmation].empty?
       params[:user].delete(:password)
       params[:user].delete(:password_confirmation)
     end
@@ -148,10 +148,7 @@ class UsersController < ApplicationController
   def update_availability
     @user = User.find(params[:id])
     message = "Set #{changed_availability_string}"
-    @user.assign_attributes(user_params)
-    raise
-    if @user.save
-    # if @user.update(user_params)
+    if @user.update(user_params)
       flash[:success] = message
       redirect_to availabilities_path
     else

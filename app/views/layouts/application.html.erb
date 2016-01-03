@@ -20,11 +20,11 @@
                 send_confirmation_path(current_user) %>
           </div>
         <% end%>
-        <% if current_user.pending_offers.any? &&
+        <% if current_user.requests.pending.any? &&
             !(@request && (@request.sent_offer? || @request.received_offer?)) %>
           <div class="alert alert-info">
             <%= link_to "Please click here respond to your pending " +
-                "offer".pluralize(current_user.pending_offers.size),
+                "offer".pluralize(current_user.requests.pending.size),
                 pending_requests_path(current_user) %>
           </div>
         <% end%>
