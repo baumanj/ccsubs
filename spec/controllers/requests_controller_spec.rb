@@ -3,7 +3,7 @@ require 'controllers/shared'
 shared_context "receivable_request", create: :receivable_request do
   let(:receivable_request) do
     create(:request,
-      user: create(:availability, date: request.date, shift: request.shift).user)
+      user: create(:availability, date: ask.date, shift: ask.shift).user)
   end
 end
 
@@ -100,10 +100,10 @@ describe RequestsController do
   end
 
   describe "GET 'show'", autorequest: true, requires: :confirmed_current_user do
-    let(:request) { create(:request) }
-    let(:params) { { id: request.id } }
+    let(:ask) { create(:request) }
+    let(:params) { { id: ask.id } }
     let(:expected_assigns) do
-      { request: eq(request),
+      { request: eq(ask),
         requests_to_swap_with: be_empty
       }
     end
@@ -111,14 +111,15 @@ describe RequestsController do
     shared_examples "an action that just finds the request record" do
       it "finds the request record and renders 'show'" do
         expect(assigns).to contain_exactly(
-          ["request", request],
+          ["_optimized_routes", true],
+          ["request", ask],
           ["current_user", subject.current_user],
           ["marked_for_same_origin_verification", true])
       end
     end
 
     context "when request belongs to current_user" do
-      let(:request) { create(:request, user: current_user) }
+      let(:ask) { create(:request, user: current_user) }
 
       it "belongs to current_user" do
         expect(assigns[:request].user).to eq(subject.current_user)
@@ -129,7 +130,7 @@ describe RequestsController do
         let(:evaluate_before_http_request) { receivable_request }
         let(:rendered_template) { 'choose_swap' }
         let(:expected_assigns) do
-          { request: eq(request),
+          { request: eq(ask),
             requests_to_swap_with: contain_exactly(receivable_request),
             availabilities_for_requests_to_swap_with: be_any }
         end
@@ -144,7 +145,7 @@ describe RequestsController do
         let(:potential_match_request) { create(:request) }
         let(:nonmatching_requests) do
           [ create(:request, user:
-              create(:availability, free: false, date: request.date, shift: request.shift)
+              create(:availability, free: false, date: ask.date, shift: ask.shift)
                 .user),
             create(:sent_offer_request),
             create(:received_offer_request),
@@ -157,7 +158,7 @@ describe RequestsController do
         end
         let(:rendered_template) { 'specify_availability' }
         let(:expected_assigns) do
-          { request: eq(request),
+          { request: eq(ask),
             requests_to_swap_with: be_empty,
             suggested_availabilities: be_any }
         end
@@ -176,17 +177,17 @@ describe RequestsController do
       end
 
       context "when request state is received_offer" do
-        let(:request) { create(:received_offer_request, user: current_user) }
+        let(:ask) { create(:received_offer_request, user: current_user) }
         it_behaves_like "an action that just finds the request record"
       end
 
       context "when request state is sent_offer" do
-        let(:request) { create(:sent_offer_request, user: current_user) }
+        let(:ask) { create(:sent_offer_request, user: current_user) }
         it_behaves_like "an action that just finds the request record"
       end
 
       context "when request state is fulfilled" do
-        let(:request) { create(:fulfilled_request, user: current_user) }
+        let(:ask) { create(:fulfilled_request, user: current_user) }
         it_behaves_like "an action that just finds the request record"
       end
     end
@@ -198,12 +199,12 @@ describe RequestsController do
 
       context "when request can recieve a swap offer from current_user" do
         let(:current_user_request) { create(:request, user: current_user) }
-        let(:request) do
+        let(:ask) do
           create(:request,
             user: create(:availability, date: current_user_request.date, shift: current_user_request.shift).user)
         end
         let(:expected_assigns) do
-          { request: eq(request),
+          { request: eq(ask),
             requests_to_swap_with: contain_exactly(current_user_request),
             availabilities_for_requests_to_swap_with: be_any }
         end
@@ -216,35 +217,35 @@ describe RequestsController do
       end
 
       context "when request state is received_offer" do
-        let(:request) { create(:received_offer_request) }
+        let(:ask) { create(:received_offer_request) }
         it_behaves_like "an action that just finds the request record"
       end
 
       context "when request state is sent_offer" do
-        let(:request) { create(:sent_offer_request) }
+        let(:ask) { create(:sent_offer_request) }
         it_behaves_like "an action that just finds the request record"
       end
 
       context "when request state is fulfilled" do
-        let(:request) { create(:fulfilled_request) }
+        let(:ask) { create(:fulfilled_request) }
         it_behaves_like "an action that just finds the request record"
       end
     end
   end
 
   describe "PATCH 'update'", autorequest: true, requires: :confirmed_current_user do
-    let(:request) { create(:request) }
-    let(:params) { { id: request.id } }
-    let(:expected_assigns) { { request: eq(request) } }
+    let(:ask) { create(:request) }
+    let(:params) { { id: ask.id } }
+    let(:expected_assigns) { { request: eq(ask) } }
 
     it "must be owned by the user", expect: :flash_error, rendered: nil do
-      expect(response).to redirect_to(request_url(request))
+      expect(response).to redirect_to(request_url(ask))
     end
 
     context "when updating request_to_swap_with_id", create: :receivable_request do
-      let(:request) { create(:request, user: current_user) }
+      let(:ask) { create(:request, user: current_user) }
       let(:params) do
-        { id: request.id,
+        { id: ask.id,
           request_to_swap_with_id: receivable_request.id
         }
       end
@@ -268,8 +269,8 @@ describe RequestsController do
 
       [:received_offer_request, :sent_offer_request, :fulfilled_request].each do |request_type|
         context "when request is #{request_type}" do
-          let(:request) { create(request_type, user: current_user) }
-          let(:original_request_state) { request.state }
+          let(:ask) { create(request_type, user: current_user) }
+          let(:original_request_state) { ask.state }
           let(:evaluate_before_http_request) { original_request_state }
 
           it "doesn't send an offer", expect: :flash_error do
@@ -283,13 +284,13 @@ describe RequestsController do
     end
 
     context "when responding to offer", expect: :request_saved do
-      let(:request) { create(:received_offer_request, user: current_user) }
+      let(:ask) { create(:received_offer_request, user: current_user) }
       let(:params) do
-        { id: request.id,
+        { id: ask.id,
           offer_response: offer_response
         }
       end
-      let(:request_that_sent_the_offer) { request.fulfilling_swap }
+      let(:request_that_sent_the_offer) { ask.fulfilling_swap }
       let(:evaluate_before_http_request) { request_that_sent_the_offer }
 
       context "when 'offer_response' is 'accept'" do
@@ -316,8 +317,8 @@ describe RequestsController do
 
       [:seeking_offers_request, :sent_offer_request, :fulfilled_request].each do |request_type|
         context "when request is #{request_type}" do
-          let(:request) { create(request_type, user: current_user) }
-          let(:original_request_state) { request.state }
+          let(:ask) { create(request_type, user: current_user) }
+          let(:original_request_state) { ask.state }
 
           [:accept, :decline].each do |offer_response_value|
             context "when offer_response is #{offer_response_value}" do
@@ -334,12 +335,12 @@ describe RequestsController do
   end
 
   describe "PATCH 'offer_sub'", autorequest: true, requires: :confirmed_current_user do
-    let(:request) { create(:request) }
-    let(:params) { { id: request.id } }
-    let(:expected_assigns) { { request: eq(request) } }
+    let(:ask) { create(:request) }
+    let(:params) { { id: ask.id } }
+    let(:expected_assigns) { { request: eq(ask) } }
 
     context "when request is seeking_offers", expect: :request_saved do
-      let(:request) { create(:seeking_offers_request) }
+      let(:ask) { create(:seeking_offers_request) }
       let(:rendered_templates) { ["user_mailer/notify_sub", "user_mailer/remind_sub"] }
       it "sets the request state to 'fulfilled' and sends nofitication" do
         expect(assigns(:request)).to be_fulfilled
@@ -348,8 +349,8 @@ describe RequestsController do
 
     [:sent_offer_request, :received_offer_request, :fulfilled_request].each do |request_type|
       context "when request is #{request_type}" do
-        let(:request) { create(request_type) }
-        let(:original_request_state) { request.state }
+        let(:ask) { create(request_type) }
+        let(:original_request_state) { ask.state }
 
         it "displays an error and doesn't change the request", expect: :flash_error do
           expect(assigns(:request).state).to eq(original_request_state)
@@ -358,9 +359,9 @@ describe RequestsController do
     end
 
     context "when the subber doesn't have the availability" do
-      let(:request) { create(:seeking_offers_request) }
+      let(:ask) { create(:seeking_offers_request) }
       let(:evaluate_before_http_request) do
-        create(:availability, user: current_user, free: false, date: request.date, shift: request.shift)
+        create(:availability, user: current_user, free: false, date: ask.date, shift: ask.shift)
       end
 
       it "displays an error and doesn't fulfill the request", expect: :flash_error do
@@ -482,15 +483,18 @@ describe RequestsController do
   end
 
   describe "DELETE 'destroy'", autorequest: true, requires: :confirmed_current_user do
-    let(:request) { create(:request) }
-    let(:params) { { id: request.id } }
-    # let(:expected_assigns) { { request: eq(request) } }
+    let(:ask) { create(:request) }
+    let(:params) { { id: ask.id } }
+    let(:expected_assigns) { { request: eq(ask) } }
 
     context "when seeking_offers" do
 
       context "when the current_user is the request owner" do
-        let(:request) { create(:seeking_offers_request, user: current_user) }
+        let(:ask) { create(:seeking_offers_request, user: current_user) }
 
+        it "removes the request record" do
+          expect(assigns[:request]).to be_destroyed
+        end
       end
 
     end
@@ -498,7 +502,6 @@ describe RequestsController do
     it "fails unless the request is in the seeking_offers state"
     it "fails if the request is in the past"
     it "fails unless requested by the owner or an admin"
-    it "removes the request record"
   end
 
 end

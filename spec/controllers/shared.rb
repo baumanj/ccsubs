@@ -17,6 +17,7 @@ shared_context "do request in before", autorequest: true do
   before do
     evaluate_before_http_request
     subject.current_user = current_user
+    request.env["HTTP_REFERER"] = root_url
     send(method.downcase, action, params)
 
     if response.redirect?
