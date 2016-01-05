@@ -16,7 +16,7 @@ shared_context "do request in before", autorequest: true do
 
   before do
     evaluate_before_http_request
-    subject.current_user = user
+    subject.current_user = current_user
     send(method.downcase, action, params)
 
     if response.redirect?
@@ -55,19 +55,19 @@ shared_context "no template rendered", rendered: nil do
 end
 
 shared_context "not logged in" do
-  let(:user) { nil }
+  let(:current_user) { nil }
 end
 
 shared_context "logged in" do
-  let(:user) { create(:user) }
+  let(:current_user) { create(:user) }
 end
 
 shared_context "logged in and confirmed" do
-  let(:user) { create(:confirmed_user) }
+  let(:current_user) { create(:confirmed_user) }
 end
 
 shared_context "logged in as an admin", login: :admin do
-  let(:user) { create(:admin) }
+  let(:current_user) { create(:admin) }
 end
 
 shared_context "must be logged in", requires: :login do

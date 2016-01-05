@@ -118,7 +118,7 @@ describe RequestsController do
     end
 
     context "when request belongs to current_user" do
-      let(:request) { create(:request, user: user) }
+      let(:request) { create(:request, user: current_user) }
 
       it "belongs to current_user" do
         expect(assigns[:request].user).to eq(subject.current_user)
@@ -176,17 +176,17 @@ describe RequestsController do
       end
 
       context "when request state is received_offer" do
-        let(:request) { create(:received_offer_request, user: user) }
+        let(:request) { create(:received_offer_request, user: current_user) }
         it_behaves_like "an action that just finds the request record"
       end
 
       context "when request state is sent_offer" do
-        let(:request) { create(:sent_offer_request, user: user) }
+        let(:request) { create(:sent_offer_request, user: current_user) }
         it_behaves_like "an action that just finds the request record"
       end
 
       context "when request state is fulfilled" do
-        let(:request) { create(:fulfilled_request, user: user) }
+        let(:request) { create(:fulfilled_request, user: current_user) }
         it_behaves_like "an action that just finds the request record"
       end
     end
@@ -197,7 +197,7 @@ describe RequestsController do
       end
 
       context "when request can recieve a swap offer from current_user" do
-        let(:current_user_request) { create(:request, user: user) }
+        let(:current_user_request) { create(:request, user: current_user) }
         let(:request) do
           create(:request,
             user: create(:availability, date: current_user_request.date, shift: current_user_request.shift).user)
@@ -242,7 +242,7 @@ describe RequestsController do
     end
 
     context "when updating request_to_swap_with_id", create: :receivable_request do
-      let(:request) { create(:request, user: user) }
+      let(:request) { create(:request, user: current_user) }
       let(:params) do
         { id: request.id,
           request_to_swap_with_id: receivable_request.id
@@ -268,7 +268,7 @@ describe RequestsController do
 
       [:received_offer_request, :sent_offer_request, :fulfilled_request].each do |request_type|
         context "when request is #{request_type}" do
-          let(:request) { create(request_type, user: user) }
+          let(:request) { create(request_type, user: current_user) }
           let(:original_request_state) { request.state }
           let(:evaluate_before_http_request) { original_request_state }
 
@@ -283,7 +283,7 @@ describe RequestsController do
     end
 
     context "when responding to offer", expect: :request_saved do
-      let(:request) { create(:received_offer_request, user: user) }
+      let(:request) { create(:received_offer_request, user: current_user) }
       let(:params) do
         { id: request.id,
           offer_response: offer_response
@@ -316,7 +316,7 @@ describe RequestsController do
 
       [:seeking_offers_request, :sent_offer_request, :fulfilled_request].each do |request_type|
         context "when request is #{request_type}" do
-          let(:request) { create(request_type, user: user) }
+          let(:request) { create(request_type, user: current_user) }
           let(:original_request_state) { request.state }
 
           [:accept, :decline].each do |offer_response_value|
@@ -360,7 +360,7 @@ describe RequestsController do
     context "when the subber doesn't have the availability" do
       let(:request) { create(:seeking_offers_request) }
       let(:evaluate_before_http_request) do
-        create(:availability, user: user, free: false, date: request.date, shift: request.shift)
+        create(:availability, user: current_user, free: false, date: request.date, shift: request.shift)
       end
 
       it "displays an error and doesn't fulfill the request", expect: :flash_error do
@@ -378,17 +378,17 @@ describe RequestsController do
 
   describe "GET 'owned_index'", autorequest: true, requires: :confirmed_current_user do
     let(:expected_assigns) do
-      { owner: eq(user),
+      { owner: eq(current_user),
         requests: match_array(expected_requests) }
     end
     let(:expected_requests) do
       request_types.shuffle.map do |type|
-        create(type, user: user)
+        create(type, user: current_user)
       end
     end
     let(:excluded_requests) do
       create(request_types.sample) # not belonging to user
-      create(past_request_types.sample, user: user)
+      create(past_request_types.sample, user: current_user)
     end
     let(:evaluate_before_http_request) { expected_requests; excluded_requests }
 
@@ -447,7 +447,7 @@ describe RequestsController do
     let(:pending_requests) do
       # Create 2 to 4 pending requests
       Array.new(2 + rand(3)) do
-        create(:received_offer_request, user: user)
+        create(:received_offer_request, user: current_user)
       end
     end
 
@@ -456,7 +456,7 @@ describe RequestsController do
       non_pending_request_types =
         request_types.reject {|t| t == :received_offer_request} +
         past_request_types
-      rand(10).times { create(non_pending_request_types.sample, user: user) }
+      rand(10).times { create(non_pending_request_types.sample, user: current_user) }
 
       # Requests from other users
       rand(10).times { create((request_types + past_request_types).sample) }
@@ -472,7 +472,7 @@ describe RequestsController do
 
     context "when only one pending request" do
       let(:pending_requests) do
-        [create(:received_offer_request, user: user)]
+        [create(:received_offer_request, user: current_user)]
       end
 
       it "redirects to the pending request" do
@@ -489,7 +489,7 @@ describe RequestsController do
     context "when seeking_offers" do
 
       context "when the current_user is the request owner" do
-        let(:request) { create(:seeking_offers_request, user: user) }
+        let(:request) { create(:seeking_offers_request, user: current_user) }
 
       end
 
