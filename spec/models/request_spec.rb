@@ -29,7 +29,6 @@ describe Request do
     requests.product(requests).each do |sender, receiver|
       next if sender == receiver
       create(:availability, user: receiver.user, date: sender.date, shift: sender.shift)
-      puts "#{sender.inspect} sending offer to #{receiver.inspect}"
       expect(sender.send_swap_offer_to(receiver)).to_not be_truthy
     end
   end

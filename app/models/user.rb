@@ -168,7 +168,6 @@ class User < ActiveRecord::Base
   end
 
   def requested_availabilities
-    puts "******** requested_availabilities for #{self}"
     availabilities_for(receivers_availability: :free, senders_availability: :potential)
   end
 
@@ -187,17 +186,14 @@ class User < ActiveRecord::Base
       if relation_or_requests[0].is_a? Request
         relation_or_requests
       else
-        # Would work with all; limiting to active is an optimization
-        puts "******** calling matching_requests for #{self}'s #{requests.active.count} active requests"
         requests.matching_requests(relation_or_requests)
         # ^ need to include a newly created request here
       end
-    puts "******** mapping #{self}'s #{matches.count} matches to availabilities"
+
     matches.map {|r| availability_for(r) }.uniq(&:start)
   end
 
   def availability_for(shifttime)
-    puts "******** availability_for for #{shifttime} for #{self}"
     availabilities.find_or_initialize_by(shifttime.shifttime_attrs)
   end
 

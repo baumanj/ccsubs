@@ -31,7 +31,6 @@ shared_context "do request in before", autorequest: true do
     end
 
     expect(flash[:error]).to expect_flash_error_to
-    puts "flash[:error]: #{flash[:error]}" if flash[:error]
 
     expected_assigns.merge!(
       current_user: eq(subject.current_user),
