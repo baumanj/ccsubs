@@ -481,5 +481,24 @@ describe RequestsController do
     end
   end
 
-  describe "#destroy" do it end
+  describe "DELETE 'destroy'", autorequest: true, requires: :confirmed_current_user do
+    let(:request) { create(:request) }
+    let(:params) { { id: request.id } }
+    # let(:expected_assigns) { { request: eq(request) } }
+
+    context "when seeking_offers" do
+
+      context "when the current_user is the request owner" do
+        let(:request) { create(:seeking_offers_request, user: user) }
+
+      end
+
+    end
+
+    it "fails unless the request is in the seeking_offers state"
+    it "fails if the request is in the past"
+    it "fails unless requested by the owner or an admin"
+    it "removes the request record"
+  end
+
 end
