@@ -4,7 +4,10 @@ This is a web application for facilitating exchanging shift assignments.
 
 ## TODO:
 ### Next steps
+* Update help
+* Allow admins to look at user swap history
 * All hands on deck email
+* Use CSV to change active users (upload full list rather than just new)
 * Add gravatar to request detail
 * Send staff email notifications about shift changes
 * Alert staff and volunteer 48 hours in advance about shifts that look like they won't be covered and remind volunteer to call in the absence
@@ -17,6 +20,8 @@ This is a web application for facilitating exchanging shift assignments.
 * Disallow doing two consecutive shifts
 * Make it clear who is logged in (gravitar)
 * auto log out at end of shift if on crisis line computer
+* Daily pending request nag
+* (Admin) view historical requests
 ### Future
 * Change Request model name to something less confusing with HTTP request (Ask? CoverageRequest?)
 * Add poteintial matches to RequestsController#show for other users' requests
