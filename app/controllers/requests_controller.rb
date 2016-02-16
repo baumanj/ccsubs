@@ -100,9 +100,14 @@ class RequestsController < ApplicationController
   end
 
   def destroy
-    @request.destroy
-    flash[:success] = "Request deleted"
-    redirect_to params[:redirect_to] || :back
+    if @request.seeking_offers?
+      @request.destroy
+      flash[:success] = "Request deleted"
+      redirect_to params[:redirect_to] || :back
+    else
+      flash[:error] = "Request cannot be deleted in the #{@request.state} state"
+      redirect_to @request
+    end
   end
 
   private
