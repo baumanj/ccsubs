@@ -488,7 +488,6 @@ describe RequestsController do
     let(:expected_assigns) { { request: eq(ask) } }
 
     context "when seeking_offers" do
-
       context "when the current_user is the request owner" do
         let(:ask) { create(:seeking_offers_request, user: current_user) }
 
@@ -496,10 +495,38 @@ describe RequestsController do
           expect(assigns[:request]).to be_destroyed
         end
       end
-
     end
 
-    it "fails unless the request is in the seeking_offers state"
+    request_types.each do |request_type|
+      if request_type == :seeking_offers_request
+
+        context "when the current_user is the request owner" do
+          let(:ask) { create(:seeking_offers_request, user: current_user) }
+
+          it "removes the request record" do
+            expect(assigns[:request]).to be_destroyed
+          end
+        end
+
+        context "when the current_user is an admin", requires: :admin do
+          let(:ask) { create(:seeking_offers_request, user: current_user) }
+
+          it "removes the request record" do
+            expect(assigns[:request]).to be_destroyed
+          end
+        end
+
+        context "when the current user is neither the owner nor an admin", expect: :flash_error do
+          it "doesn't remove request record" do
+            expect(ask).to be_persisted
+          end
+        end
+
+      else
+        it "fails unless the request is in the seeking_offers state"
+      end
+    end
+
     it "fails if the request is in the past"
     it "fails unless requested by the owner or an admin"
   end
