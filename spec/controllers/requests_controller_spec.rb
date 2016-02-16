@@ -501,7 +501,7 @@ describe RequestsController do
       if request_type == :seeking_offers_request
 
         context "when the current_user is the request owner" do
-          let(:ask) { create(:seeking_offers_request, user: current_user) }
+          let(:ask) { create(request_type, user: current_user) }
 
           it "removes the request record" do
             expect(assigns[:request]).to be_destroyed
@@ -509,7 +509,7 @@ describe RequestsController do
         end
 
         context "when the current_user is an admin", requires: :admin do
-          let(:ask) { create(:seeking_offers_request, user: current_user) }
+          let(:ask) { create(request_type, user: current_user) }
 
           it "removes the request record" do
             expect(assigns[:request]).to be_destroyed
@@ -523,12 +523,26 @@ describe RequestsController do
         end
 
       else
-        it "fails unless the request is in the seeking_offers state"
+        context "when the request is a #{request_type}", expect: :flash_error do
+          let(:ask) { create(request_type, user: current_user) }
+
+          it "doesn't remove request record" do
+            expect(ask).to be_persisted
+          end
+        end
       end
     end
 
-    it "fails if the request is in the past"
-    it "fails unless requested by the owner or an admin"
+    past_request_types.each do |past_request_type|
+      context "when the request is a #{past_request_type}", expect: :flash_error do
+        let(:ask) { create(past_request_type, user: current_user) }
+
+        it "doesn't remove request record" do
+          expect(ask).to be_persisted
+        end
+      end
+    end
+
   end
 
 end
