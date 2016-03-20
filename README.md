@@ -23,6 +23,7 @@ This is a web application for facilitating exchanging shift assignments.
 * Daily pending request nag
 * (Admin) view historical requests
 ### Future
+* https://elements.heroku.com/addons/sparkpost
 * Change Request model name to something less confusing with HTTP request (Ask? CoverageRequest?)
 * Add poteintial matches to RequestsController#show for other users' requests
 * Don't use Time.now (https://github.com/bbatsov/rails-style-guide#time-now)
