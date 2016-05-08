@@ -34,7 +34,7 @@ class Request < ActiveRecord::Base
 
     # Seeking offers <-> no availability
     if seeking_offers? != availability.nil?
-      errors.add(:availability, "must #{seeking_offers? ? "not be" : "be"} set if the state is #{state}")
+      errors.add(:availability, "must #{seeking_offers? ? "not be" : "be"} set if the state is #{state}: #{inspect}")
     end
 
     # We can't check the seeking offers state here because we can't remove the connection between the
