@@ -17,10 +17,10 @@ Ccsubs::Application.configure do
   host = 'localhost:3000'
   config.action_mailer.default_url_options = { host: host }
   config.action_mailer.delivery_method = :smtp
-  user_name = Bundler.with_clean_env { `heroku config:get MANDRILL_USERNAME --app ccsubs`.strip }
-  password = Bundler.with_clean_env { `heroku config:get MANDRILL_APIKEY --app ccsubs`.strip }
+  user_name = Bundler.with_clean_env { `heroku config:get SENDGRID_USERNAME --app ccsubs`.strip }
+  password = Bundler.with_clean_env { `heroku config:get SENDGRID_PASSWORD --app ccsubs`.strip }
   config.action_mailer.smtp_settings = {
-    address: 'smtp.mandrillapp.com',
+    address: 'smtp.sendgrid.net',
     port: '587',
     domain: 'heroku.com',
     authentication: 'plain',
