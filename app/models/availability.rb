@@ -38,16 +38,17 @@ class Availability < ActiveRecord::Base
       # 2. Bob can DEFINITELY send a swap request for one or more or self's
       #    requests because they're both available. In fact, self will likely
       #    have already send one. This is more specific and should come first.
-      #    :offerable_swaps
+      #    :full_match
 
       # We want to categorize matches for Bob as the sender
-      matching_requests = others_req.categorize_matches(self.user, [:offerable_swaps, :ask_sender_match])
+      matching_requests = others_req.categorize_matches(self.user, [:full_match, :ask_sender_match])
+      require 'byebug'; byebug
       UserMailer.active_user = user # For preview mode
-      if matching_requests[:offerable_swaps].any?
+      if matching_requests[:full_match].any?
           # Just let Bob know; self.user will be notified on their dashboard
-          UserMailer.notify_offerable_swaps(others_req, matching_requests[:offerable_swaps]).deliver
+          UserMailer.notify_full_matches(others_req, matching_requests[:full_match]).deliver
       elsif matching_requests[:ask_sender_match].any?
-        UserMailer.notify_potential_matches(others_req, matching_requests[:potential_matches]).deliver
+        UserMailer.notify_potential_matches(others_req, matching_requests[:ask_sender_match]).deliver
       end
     end
     # v2: only send a notification email if there have been new matching availabilities

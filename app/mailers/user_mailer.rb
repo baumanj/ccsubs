@@ -11,16 +11,18 @@ class UserMailer < ActionMailer::Base
   end
 
   # Never send email to real addresses unless running in production
+  # - In development, always send to @shumi.org
+  # - In test, no emails are actually sent, but use the real headers
   # If not running the main app (e.g. ccsubs-preview) send mail to the current user instead of the
   # regular recipient, but keep the name of the real recipient to indicate who would receive what.
   def mail(headers)
     to_user = headers[:to]
     name = to_user.name
-    if Rails.env.production?
+    if Rails.env.development?
+      email = "jon.#{to_user.email.sub('@', '.at.')}@shumi.org"
+    else
       headers[:subject] = "[#{ENV['APP_NAME']}] #{headers[:subject]}"
       email = ENV['APP_NAME'] == 'ccsubs' ? to_user.email : @@active_user.email
-    else
-      email = "jon.#{to_user.email.sub('@', '.at.')}@shumi.org"
     end
     name = name.gsub('(', '\(').gsub!(')', '\)')
     headers[:to] = "#{name} <#{email}>"
@@ -40,7 +42,7 @@ class UserMailer < ActionMailer::Base
          subject: "Sub/Swap #{@req}: potential match found"
   end
 
-  def notify_offerable_swaps(req, matching_requests)
+  def notify_full_matches(req, matching_requests)
     @req = req
     @available_user = matching_requests.first.user
     @suggested_swaps = matching_requests

@@ -221,6 +221,8 @@ class Request < ActiveRecord::Base
   end
 
   MATCH_TYPE_MAP = {
+    # The sender isn't necessarily explicity available, but they have no conflict and can indiciate
+    # an implicit availability by offering a swap
     offerable_swaps:    {senders_availability:   [:free, :potential],
                          receivers_availability:  :free},
 
@@ -228,6 +230,10 @@ class Request < ActiveRecord::Base
     # These are the ones we bother to even include in the sender's availability status page
     potential_matches:  {senders_availability:   [:free, :potential, :busy],
                          receivers_availability: [:free, :potential]},
+
+    # Both the sender and receiver are free; either could initiate
+    full_match:         {senders_availability:   :free,
+                         receivers_availability: :free},
 
     # The sender could send now, but if we had more info from the sender, the receiver could initiate
     ask_sender_match:   {senders_availability:   :potential,
