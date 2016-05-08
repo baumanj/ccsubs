@@ -26,6 +26,6 @@ describe Availability do # without any subject, just calls Availability.new ?
     a, b = create_list(:seeking_offers_request, 2)
     bobs_availability = build(:availability, user: b.user, date: a.date, shift: a.shift)
     expect { bobs_availability.save }.to change { ActionMailer::Base.deliveries.count }.by(1)
-    expect(ActionMailer::Base.deliveries.last).to eq(UserMailer.notify_potential_matches(a, [b]))
+    expect(ActionMailer::Base.deliveries).to contain_exactly(UserMailer.notify_potential_matches(a, [b]))
   end
 end
