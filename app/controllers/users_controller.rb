@@ -148,7 +148,11 @@ class UsersController < ApplicationController
   def update_availability
     @user = User.find(params[:id])
     message = "Set #{changed_availability_string}"
-    if @user.update(user_params)
+    # Omit availabilities that the user hasn't specified 'Yes' or 'No'
+    specified_availabilities = user_params[:availabilities_attributes].reject {|_, a| a[:free].nil? }
+    up = ActionController::Parameters.new(availabilities_attributes: specified_availabilities)
+    up.permit! # We already filtered in user_params
+    if @user.update(up)
       flash[:success] = message
       redirect_to availabilities_path
     else
@@ -177,13 +181,10 @@ class UsersController < ApplicationController
 
     def changed_availability_string
       values = user_params.fetch(:availabilities_attributes, {}).values
-      true_values, false_values = values.partition {|v| v[:free] == "true" }
-      s = "#{true_values.count} #{'shift'.pluralize(true_values.count)} free"
-      if false_values.empty?
-        s
-      else
-        s + " and #{false_values.count} #{'shift'.pluralize(false_values.count)} busy"
-      end
+      true_values = values.select {|v| v[:free] == "true" }
+      false_values = values.select {|v| v[:free] == "false" }
+      "#{true_values.count} #{'shift'.pluralize(true_values.count)} free and " \
+      "#{false_values.count} #{'shift'.pluralize(false_values.count)} busy"
     end
 
     def availabilities_from_user_params
@@ -193,10 +194,9 @@ class UsersController < ApplicationController
     end
 
     def user_params
-      u = params.require(:user)
-      u.permit(:name, :email, :password, :password_confirmation, :disabled, :vic, :confirmation_token,
-               availabilities_attributes: [:id, :date, :shift, :free],
-               requests_attributes: [:date, :shift])
+      params.require(:user).permit(:name, :email, :password, :password_confirmation, :disabled, :vic, :confirmation_token,
+                                   availabilities_attributes: [:id, :date, :shift, :free],
+                                   requests_attributes: [:date, :shift])
     end
 
 end
