@@ -42,7 +42,6 @@ class Availability < ActiveRecord::Base
 
       # We want to categorize matches for Bob as the sender
       matching_requests = others_req.categorize_matches(self.user, [:full_match, :ask_sender_match])
-      require 'byebug'; byebug
       UserMailer.active_user = user # For preview mode
       if matching_requests[:full_match].any?
           # Just let Bob know; self.user will be notified on their dashboard
