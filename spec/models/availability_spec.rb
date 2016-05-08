@@ -26,6 +26,17 @@ describe Availability do # without any subject, just calls Availability.new ?
     a, b = create_list(:seeking_offers_request, 2)
     bobs_availability = build(:availability, user: b.user, date: a.date, shift: a.shift)
     expect { bobs_availability.save }.to change { ActionMailer::Base.deliveries.count }.by(1)
-    expect(ActionMailer::Base.deliveries).to contain_exactly(UserMailer.notify_potential_matches(a, [b]))
+    expect(ActionMailer::Base.deliveries.last).to eq(UserMailer.notify_potential_matches(a, [b]))
+  end
+
+  it "notifies full matches" do
+    # Alice has a request A, Bob has a request B and Alice is available for B
+    # When Bob saves a new availability for A, Alice should receive an email
+    a = create(:seeking_offers_request)
+    alices_availability = create(:availability, user: a.user)
+    b = create(:seeking_offers_request, date: alices_availability.date, shift: alices_availability.shift)
+    bobs_availability = build(:availability, user: b.user, date: a.date, shift: a.shift)
+    expect { bobs_availability.save }.to change { ActionMailer::Base.deliveries.count }.by(1)
+    expect(ActionMailer::Base.deliveries.last).to eq(UserMailer.notify_full_matches(a, [b]))
   end
 end
