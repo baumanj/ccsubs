@@ -28,7 +28,7 @@
                 pending_requests_path(current_user) %>
           </div>
         <% end%>
-        <% unless @no_dashboard || true # FIX ME %>
+        <% unless @no_dashboard %>
           <%= render 'layouts/availability_questions' %>
           <%= render 'layouts/swap_suggestions' %>
         <% end %>

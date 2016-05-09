@@ -172,7 +172,7 @@ class Request < ActiveRecord::Base
         matched_key = match_type_keys.find do |match_type_key|
           self.match(receivers_request, MATCH_TYPE_MAP[match_type_key])
         end
-        matching_requests_hash[matched_key] << receivers_request
+        matching_requests_hash[matched_key] << receivers_request if matched_key
       end
     end
   end
