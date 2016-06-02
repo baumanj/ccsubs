@@ -5,9 +5,11 @@ This is a web application for facilitating exchanging shift assignments.
 ## TODO:
 ### Next steps
 * Update help
-* Allow admins to look at user swap history
-* All hands on deck email
+* All hands on deck email (disable users missing from CSV)
 * Use CSV to change active users (upload full list rather than just new)
+* Render availability query page as calendar
+* Link to user's request page for admins
+* Allow admins to look at user swap history
 * Add gravatar to request detail
 * Send staff email notifications about shift changes
 * Alert staff and volunteer 48 hours in advance about shifts that look like they won't be covered and remind volunteer to call in the absence
