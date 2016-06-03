@@ -4,7 +4,10 @@ This is a web application for facilitating exchanging shift assignments.
 
 ## TODO:
 ### Next steps
-* Update help
+* Fix these errors:
+2016-06-03T14:51:03.498439+00:00 app[web.1]: E, [2016-06-03T14:51:03.498336 #3] ERROR -- : worker=0 PID:6 timeout (26s > 25s), killing
+2016-06-03T14:51:03.513928+00:00 app[web.1]: E, [2016-06-03T14:51:03.513832 #3] ERROR -- : reaped #<Process::Status: pid 6 SIGKILL (signal 9)> worker=0
+2016-06-03T14:51:03.522833+00:00 app[web.1]: I, [2016-06-03T14:51:03.522651 #15]  INFO -- : worker=0 ready
 * All hands on deck email (disable users missing from CSV)
 * Use CSV to change active users (upload full list rather than just new)
 * Render availability query page as calendar

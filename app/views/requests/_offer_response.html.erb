@@ -1,7 +1,7 @@
 <div class="alert alert-warning">
   <p>
     <%= receivers_request.fulfilling_user %> has offered to swap with you for
-    <% linked_req = (receivers_request == @request) ? receivers_request : receivers_request.fulfilling_swap %>
+    <% linked_req = (receivers_request == @request) ? receivers_request.fulfilling_swap : receivers_request %>
     <%= link_to linked_req, linked_req %>
   </p>
 
