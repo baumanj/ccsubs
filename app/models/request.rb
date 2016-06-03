@@ -226,6 +226,11 @@ class Request < ActiveRecord::Base
     offerable_swaps:    {senders_availability:   [:free, :potential],
                          receivers_availability:  :free},
 
+    # The sender needs to indicate whether they're available to either rule out a swap or to trigger
+    # a query of the receiver's availability
+    uncertain_avail:    {senders_availability:   [:potential],
+                         receivers_availability: [:free, :potential]},
+
     # The sender can make this into an ask_receiver_match match through their own actions
     # These are the ones we bother to even include in the sender's availability status page
     potential_matches:  {senders_availability:   [:free, :potential, :busy],
@@ -246,6 +251,10 @@ class Request < ActiveRecord::Base
 
   def potential_matches
     matching_requests(MATCH_TYPE_MAP[:potential_matches])
+  end
+
+  def uncertain_avail
+    matching_requests(MATCH_TYPE_MAP[:uncertain_avail])
   end
 
   def active_slow?

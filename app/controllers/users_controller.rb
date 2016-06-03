@@ -154,7 +154,7 @@ class UsersController < ApplicationController
     up.permit! # We already filtered in user_params
     if @user.update(up)
       flash[:success] = message
-      redirect_to availabilities_path
+      redirect_to params[:redirect_to] || availabilities_path
     else
       @errors = @user.errors
       @suggested_availabilities = availabilities_from_user_params
