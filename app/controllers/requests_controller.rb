@@ -176,7 +176,7 @@ class RequestsController < ApplicationController
     end
 
     def check_owner
-      unless @request.user == current_user
+      unless current_user_can_edit?(@request)
         flash[:error] = "Only the request owner can do that."
         redirect_to @request
       end
