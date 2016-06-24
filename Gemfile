@@ -41,6 +41,11 @@ end
 
 group :development do
   gem 'byebug'
+  # For great profiling
+  gem 'rack-mini-profiler'
+  gem 'flamegraph'
+  gem 'stackprof'
+  gem 'memory_profiler'
 end
 
 group :development, :test do
