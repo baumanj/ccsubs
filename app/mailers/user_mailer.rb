@@ -10,15 +10,16 @@ class UserMailer < ActionMailer::Base
     @@active_user = user
   end
 
-  # Never send email to real addresses unless running in production
-  # - In development, always send to @shumi.org
+  # Never send email to real addresses unless running in production on heroku
+  # - In development or locally-run production, always send to @shumi.org
   # - In test, no emails are actually sent, but use the real headers
   # If not running the main app (e.g. ccsubs-preview) send mail to the current user instead of the
   # regular recipient, but keep the name of the real recipient to indicate who would receive what.
   def mail(headers)
     to_user = headers[:to]
     name = to_user.name
-    if Rails.env.development?
+    local_production = Rails.env.production? && ENV['DYNO'].nil?
+    if Rails.env.development? || local_production
       email = "jon.#{to_user.email.sub('@', '.at.')}@shumi.org"
     else
       headers[:subject] = "[#{ENV['APP_NAME']}] #{headers[:subject]}"

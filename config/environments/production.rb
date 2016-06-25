@@ -1,5 +1,6 @@
 Ccsubs::Application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
+  running_on_heroku = ENV['DYNO'] ? true : false
 
   # Code is not reloaded between requests.
   config.cache_classes = true
@@ -20,7 +21,7 @@ Ccsubs::Application.configure do
   # config.action_dispatch.rack_cache = true
 
   # Disable Rails's static asset server (Apache or nginx will already do this).
-  config.serve_static_assets = false
+  config.serve_static_assets = !running_on_heroku
 
   # Compress JavaScripts and CSS.
   config.assets.js_compressor = :uglifier
@@ -40,7 +41,7 @@ Ccsubs::Application.configure do
   # config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect' # for nginx
 
   # Force all access to the app over ssl, use Strict-Transport-Security, and use secure cookies.
-  config.force_ssl = ENV['DYNO'] ? true : false # Force SSL only on Heroku production
+  config.force_ssl = running_on_heroku
 
   # Set to :debug to see everything in the log.
   config.log_level = :info
@@ -61,11 +62,21 @@ Ccsubs::Application.configure do
   # application.js, application.css, and all non-JS/CSS in app/assets folder are already added.
   # config.assets.precompile += %w( search.js )
 
+  if running_on_heroku
+    host = "#{ENV['APP_NAME']}.herokuapp.com"
+    config.action_mailer.default_url_options = { host: host, protocol: 'https' }
+    user_name = ENV['SENDGRID_USERNAME']
+    password = ENV['SENDGRID_PASSWORD']
+  else
+    host = 'localhost:3000'
+    config.action_mailer.default_url_options = { host: host }
+    user_name = Bundler.with_clean_env { `heroku config:get SENDGRID_USERNAME --app ccsubs`.strip }
+    password = Bundler.with_clean_env { `heroku config:get SENDGRID_PASSWORD --app ccsubs`.strip }
+  end
+
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
   config.action_mailer.raise_delivery_errors = true
-  host = "#{ENV['APP_NAME']}.herokuapp.com"
-  config.action_mailer.default_url_options = { host: host, protocol: 'https' }
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
     address: 'smtp.sendgrid.net',
@@ -73,8 +84,8 @@ Ccsubs::Application.configure do
     domain: 'heroku.com',
     authentication: :plain,
     # enable_starttls_auto: true,
-    user_name: ENV['SENDGRID_USERNAME'],
-    password: ENV['SENDGRID_PASSWORD']
+    user_name: user_name,
+    password: password
   }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to

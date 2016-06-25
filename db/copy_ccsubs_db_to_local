@@ -1,7 +1,10 @@
 #!/bin/bash
+
+RAILS_ENV=${1:-development}
+
 set -o errexit
 set -o xtrace
 heroku pg:backups capture --app ccsubs
 curl -o /tmp/ccsubs.dump `heroku pg:backups public-url --app ccsubs`
-pg_restore --verbose --clean --no-acl --no-owner -h localhost -d ccsubs_development /tmp/ccsubs.dump
-"`dirname $0`"/../bin/rake db:migrate
+pg_restore --verbose --clean --no-acl --no-owner -h localhost -d ccsubs_"$RAILS_ENV" /tmp/ccsubs.dump
+RAILS_ENV="$RAILS_ENV" "`dirname $0`"/../bin/rake db:migrate

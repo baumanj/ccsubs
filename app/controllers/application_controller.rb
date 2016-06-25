@@ -4,4 +4,6 @@ class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
   include ApplicationHelper
   include SessionsHelper
+
+  before_action { Rack::MiniProfiler.authorize_request unless ENV['DYNO'] }
 end

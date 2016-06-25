@@ -39,13 +39,16 @@ group :doc do
   gem 'sdoc', require: false
 end
 
-group :development do
-  gem 'byebug'
+group :development, :production do
   # For great profiling
   gem 'rack-mini-profiler'
   gem 'flamegraph'
   gem 'stackprof'
   gem 'memory_profiler'
+end
+
+group :development do
+  gem 'byebug'
 end
 
 group :development, :test do
