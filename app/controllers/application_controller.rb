@@ -5,5 +5,9 @@ class ApplicationController < ActionController::Base
   include ApplicationHelper
   include SessionsHelper
 
-  before_action { Rack::MiniProfiler.authorize_request unless ENV['DYNO'] }
+  before_action do
+    unless Rails.env.test?
+      Rack::MiniProfiler.authorize_request unless heroku? && !staging?
+    end
+  end
 end

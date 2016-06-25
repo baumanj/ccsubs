@@ -15,4 +15,12 @@ module ApplicationHelper
   def app_name
     ENV['APP_NAME'] || "#{Rails.env} CCsubs"
   end
+
+  def heroku?
+    !ENV['DYNO'].nil?
+  end
+
+  def staging?
+    heroku? && ENV['APP_NAME'] == "ccsubs-preview"
+  end
 end

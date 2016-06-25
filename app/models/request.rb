@@ -190,10 +190,12 @@ class Request < ActiveRecord::Base
     end
   end
 
-  # Match all the active requests in the current scope against all active requests
+  # Find all the active requests which match active requests in the current scope
+  # The current scope it typically a certain user's requests
   def self.matching_requests(match_type)
-    active.flat_map do |my_request|
-      my_request.matching_requests(match_type)
+    match_type = MATCH_TYPE_MAP[match_type] || match_type
+    Request.unscoped.all.active.order(:date, :shift).select do |receivers_request|
+      active.find {|my_request| my_request.match(receivers_request, match_type) }
     end
   end
 
@@ -207,9 +209,7 @@ class Request < ActiveRecord::Base
   end
 
   # self is the sender's request
-  def match(receivers_request, senders_availability: nil, receivers_availability: nil)
-    raise ArgumentError if receivers_availability.nil? || senders_availability.nil? # need ruby 2.1
-
+  def match(receivers_request, senders_availability:, receivers_availability:)
     senders_availability_for_receivers_request =
       user.availability_state_for(receivers_request,
                                   looking_for_swaps: new_record?)
