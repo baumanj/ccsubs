@@ -11,4 +11,8 @@ module ApplicationHelper
     UserMailer.active_user = current_user
     UserMailer
   end
+
+  def app_name
+    ENV['APP_NAME'] || "#{Rails.env} CCsubs"
+  end
 end
