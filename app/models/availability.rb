@@ -30,6 +30,8 @@ class Availability < ActiveRecord::Base
   # Nofity other users about this availability we've just added
   # on update to free as well?
   after_save if: :active? do
+    future_requests = Request.future.to_a
+    future_availabilities = Availability.future.to_a
     Request.active.where_shifttime(self).each do |others_req|
       # This other person (Bob) wants to know about two situations:
       # 1. Bob can send a swap reqest for one or more of self's requests IF
@@ -41,7 +43,8 @@ class Availability < ActiveRecord::Base
       #    :full_match
 
       # We want to categorize matches for Bob as the sender
-      matching_requests = others_req.categorize_matches(self.user, [:full_match, :ask_sender_match])
+      matching_requests = others_req.categorize_matches(self.user, [:full_match, :ask_sender_match],
+                                                        future_requests, future_availabilities)
       UserMailer.active_user = user # For preview mode
       if matching_requests[:full_match].any?
           # Just let Bob know; self.user will be notified on their dashboard

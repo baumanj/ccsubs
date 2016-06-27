@@ -166,11 +166,16 @@ class Request < ActiveRecord::Base
   end
 
   # self is the senders request
-  def categorize_matches(receiver, match_type_keys)
+  def categorize_matches(receiver, match_type_keys, future_requests, future_availabilities)
     Hash[match_type_keys.map {|k| [k, []] }].tap do |matching_requests_hash|
       receiver.requests.active.each do |receivers_request|
         matched_key = match_type_keys.find do |match_type_key|
-          self.match(receivers_request, MATCH_TYPE_MAP[match_type_key])
+          match_type = MATCH_TYPE_MAP[match_type_key]
+          self.match(receivers_request,
+                     senders_availability: match_type[:senders_availability],
+                     receivers_availability: match_type[:receivers_availability],
+                     preloaded_requests: future_requests,
+                     preloaded_availabilities: future_availabilities)
         end
         matching_requests_hash[matched_key] << receivers_request if matched_key
       end
@@ -194,27 +199,42 @@ class Request < ActiveRecord::Base
   # The current scope it typically a certain user's requests
   def self.matching_requests(match_type)
     match_type = MATCH_TYPE_MAP[match_type] || match_type
+    future_requests = Request.future.to_a
+    future_availabilities = Availability.future.to_a
     Request.unscoped.all.active.order(:date, :shift).select do |receivers_request|
-      active.find {|my_request| my_request.match(receivers_request, match_type) }
+      active.find do |my_request|
+        my_request.match(receivers_request,
+                         senders_availability: match_type[:senders_availability],
+                         receivers_availability: match_type[:receivers_availability],
+                         preloaded_requests: future_requests,
+                         preloaded_availabilities: future_availabilities)
+      end
     end
   end
 
   # Match self against all other active requests for match_type
   def matching_requests(match_type)
     match_type = MATCH_TYPE_MAP[match_type] || match_type
+    future_requests = Request.future.to_a
+    future_availabilities = Availability.future.to_a
     # Would work with all; limiting to active is an optimization
     Request.unscoped.all.active.order(:date, :shift).select do |receivers_request|
-      match(receivers_request, match_type)
+      match(receivers_request,
+            senders_availability: match_type[:senders_availability],
+            receivers_availability: match_type[:receivers_availability],
+            preloaded_requests: future_requests,
+            preloaded_availabilities: future_availabilities)
     end
   end
 
   # self is the sender's request
-  def match(receivers_request, senders_availability:, receivers_availability:)
+  # preloaded_{requests,availabilities} are ugly, but necessary to avoid hundreds of SQL queries
+  def match(receivers_request, senders_availability:, receivers_availability:,
+            preloaded_requests:, preloaded_availabilities:)
     senders_availability_for_receivers_request =
-      user.availability_state_for(receivers_request,
-                                  looking_for_swaps: new_record?)
+      user.availability_state_for(receivers_request, preloaded_requests, preloaded_availabilities)
     receivers_availability_for_my_request =
-      receivers_request.user.availability_state_for(self)
+      receivers_request.user.availability_state_for(self, preloaded_requests, preloaded_availabilities)
 
     [*receivers_availability].include?(receivers_availability_for_my_request) &&
       [*senders_availability].include?(senders_availability_for_receivers_request)

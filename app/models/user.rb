@@ -114,34 +114,28 @@ class User < ActiveRecord::Base
   #       pending or accepted request to cover S already.
   #
   # Potential: None of the above; we have no information from U about S.
-  def availability_state_for(shifttime, looking_for_swaps: requests.active.any?)
+  def availability_state_for(shifttime, preloaded_requests, preloaded_availabilities)
+
+    # raise unless requests.active.any? # XXX remove
 
     if shifttime.start.past?
       return :past
-    elsif !looking_for_swaps && requests.active.none?
-      return :uninterested
-    elsif requests.find_by_shifttime(shifttime)
+    # elsif requests.active.none? # These are filtered out earlier; avoid the queries
+    #   return :uninterested
+    elsif preloaded_requests.find {|r| r.user_id == self.id && r.shifttime_attrs == shifttime.shifttime_attrs }
       return :requesting
     end
 
-    availability = availabilities.find_by_shifttime(shifttime)
+    availability = preloaded_availabilities.find {|a| a.user_id == self.id && a.shifttime_attrs == shifttime.shifttime_attrs }
     if availability.nil? || availability.free.nil?
       return :potential
     elsif availability.request
-        return :subbing
+      # We could eliminate an SQL query here if availabilities tied to pending requests were not free,
+      # or if we denormalized such that availabilities had a foreign key to their requests
+      return :subbing
     else
       return availability.free? ? :free : :busy
     end
-  end
-
-  # True iff positively available; false if unknown
-  def available?(shifttime)
-    availability_state_for(shifttime) == :free
-  end
-
-  # True iff positively unavailable; false if unknown
-  def unavailable?(shifttime)
-    !available?(shifttime) && availability_state_for(shifttime) != :potential
   end
 
   def conflict_for(shifttime)
