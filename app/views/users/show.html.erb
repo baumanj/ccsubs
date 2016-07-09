@@ -6,6 +6,9 @@
   <dt>Name</dt> <dd><%= @user.name %></dd>
   <dt>Email</dt> <dd><%= @user.email %>
     [<%= @user.confirmed? ? "confirmed" : "unconfirmed" %>]</dd>
+  <% if current_user.admin? %>
+    <%= link_to "View #{@user}'s requests", owned_requests_path(@user) %>
+  <% end %>
 </dl>
 
 <%= link_to "Edit profile", edit_user_path(@user), class: "btn btn-lg btn-primary" %>
