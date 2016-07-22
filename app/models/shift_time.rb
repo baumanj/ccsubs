@@ -91,7 +91,7 @@ module ShiftTime
   SHIFT_NAMES = SHIFT_OFFSETS.map do |offset_range|
     tr = ShiftTime.time_range(offset_range, Date.today)
     times = [tr.begin, tr.end]
-    times.map {|t| t.strftime("%-l#{':%M' unless t.min.zero?}") }.join("-")
+    times.map {|t| t.strftime("%-l#{':%M' unless t.min.zero?}%P") }.join("-")
   end
 
   DATE_FORMAT = "%A, %B %e"
