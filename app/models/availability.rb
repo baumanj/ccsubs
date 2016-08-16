@@ -66,6 +66,17 @@ class Availability < ActiveRecord::Base
     end
   end
 
+  def self.destroy_oldest_past
+    max_availabilities = 7000 # Heroku limit is 10,000 rows, keep some for users and requests
+    num_to_delete = Availability.count - max_availabilities
+    if num_to_delete > 0
+      destroyed = self.past.reorder(:created_at).limit(num_to_delete).destroy_all
+      puts "Destroyed #{destroyed.count} oldest availabilities"
+    else
+      puts "Only #{Availability.count} availabilities; no need to destroy any"
+    end
+  end
+
   # def self.with_includes
   #   # does left outer join
   #   # SELECT COUNT(DISTINCT "users"."id") FROM "users" LEFT OUTER JOIN "requests" ON "requests"."user_id" = "users"."id" WHERE ("requests"."id" IS NOT NULL)
