@@ -58,10 +58,9 @@ class Availability < ActiveRecord::Base
   end
 
   before_destroy do
-    puts "**** BEFORE DESTROY for #{self.inspect}"
     if locked?
-      puts "Can not be deleted while tied to a pending offer"
-      errors.add(:availability, "Can not be deleted while tied to a pending offer")
+      puts "#{self} Can not be deleted while tied to a request"
+      errors.add(:availability, "Can not be deleted while tied to a request")
       false
     end
   end
@@ -70,7 +69,7 @@ class Availability < ActiveRecord::Base
     max_availabilities = 7000 # Heroku limit is 10,000 rows, keep some for users and requests
     num_to_delete = Availability.count - max_availabilities
     if num_to_delete > 0
-      destroyed = self.past.reorder(:created_at).limit(num_to_delete).destroy_all
+      destroyed = self.past.reorder(:created_at).limit(num_to_delete).each(&:delete)
       puts "Destroyed #{destroyed.count} oldest availabilities"
     else
       puts "Only #{Availability.count} availabilities; no need to destroy any"
