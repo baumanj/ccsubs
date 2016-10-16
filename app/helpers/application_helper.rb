@@ -20,6 +20,10 @@ module ApplicationHelper
     !ENV['DYNO'].nil?
   end
 
+  def local_production?
+    Rails.env.production? && !heroku?
+  end
+
   def staging?
     heroku? && ENV['APP_NAME'] == "ccsubs-preview"
   end

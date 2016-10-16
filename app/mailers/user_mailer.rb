@@ -16,17 +16,13 @@ class UserMailer < ActionMailer::Base
   # If not running the main app (e.g. ccsubs-preview) send mail to the current user instead of the
   # regular recipient, but keep the name of the real recipient to indicate who would receive what.
   def mail(headers)
-    to_user = headers[:to]
-    name = to_user.name
-    local_production = Rails.env.production? && ENV['DYNO'].nil?
-    if Rails.env.development? || local_production
-      email = "jon.#{to_user.email.sub('@', '.at.')}@shumi.org"
-    else
+    if !Rails.env.development? && !local_production?
       headers[:subject] = "[#{ENV['APP_NAME']}] #{headers[:subject]}"
-      email = ENV['APP_NAME'] == 'ccsubs' ? to_user.email : @@active_user.email
     end
-    name = name.gsub('(', '\(').gsub!(')', '\)')
-    headers[:to] = "#{name} <#{email}>"
+
+    [:to, :cc, :bcc].each do |header_name|
+      headers[header_name] = [*headers[header_name]].map {|u| user_to_address(u) }
+    end
     super
   end
 
@@ -102,4 +98,17 @@ class UserMailer < ActionMailer::Base
     @user = user
     mail to: user, subject: "Reset your ccsubs password"
   end
+
+  private
+
+    def user_to_address(user)
+      if Rails.env.development? || local_production?
+        email = "jon.#{user.email.sub('@', '.at.')}@shumi.org"
+      else
+        email = ENV['APP_NAME'] == 'ccsubs' ? user.email : @@active_user.email
+      end
+      name = user.name.gsub('(', '\(').gsub(')', '\)')
+      "#{name} <#{email}>"
+    end
+
 end
