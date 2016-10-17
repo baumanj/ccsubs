@@ -2,11 +2,11 @@ class UserMailer < ActionMailer::Base
   include ApplicationHelper
 
   VOLUNTEER_SERVICES = if Rails.env.production?
-    "volunteerservices@crisisclinic.org"
+    "ccsubs <volunteerservices@crisisclinic.org>"
   else
     "baumanj+volunteerservices@gmail.com" 
   end
-  default from: "ccsubs <#{VOLUNTEER_SERVICES}>"
+  default from: VOLUNTEER_SERVICES
 
   def self.active_user=(user)
     @@active_user = user
@@ -23,13 +23,13 @@ class UserMailer < ActionMailer::Base
     end
 
     [:to, :cc, :bcc].each do |header_name|
-      headers[header_name] = [*headers[header_name]].map {|u| user_to_address(u) }
+      headers[header_name] = [*headers[header_name]].map {|x| get_address(x) }
     end
     super
   end
 
   def all_hands_email(users, subject, body)
-    mail(bcc: users, subject: subject) do |format|
+    mail(to: VOLUNTEER_SERVICES, bcc: users, subject: subject) do |format|
       format.text { render plain: body }
     end
   end
@@ -109,13 +109,21 @@ class UserMailer < ActionMailer::Base
 
   private
 
-    def user_to_address(user)
-      if Rails.env.development? || local_production?
-        email = "jon.#{user.email.sub('@', '.at.')}@shumi.org"
+    def get_address(input)
+      if input.class == String
+        email = input
+        name = ''
       else
-        email = ENV['APP_NAME'] == 'ccsubs' ? user.email : @@active_user.email
+        email = input.email
+        name = input.name
       end
-      name = user.name.gsub('(', '\(').gsub(')', '\)')
+
+      if Rails.env.development? || local_production?
+        email = "jon.#{email.sub('@', '.at.')}@shumi.org"
+      else
+        email = ENV['APP_NAME'] == 'ccsubs' ? email : @@active_user.email
+      end
+      name = name.gsub('(', '\(').gsub(')', '\)')
       "#{name} <#{email}>"
     end
 
