@@ -1,4 +1,6 @@
 class UserMailer < ActionMailer::Base
+  include ApplicationHelper
+
   VOLUNTEER_SERVICES = if Rails.env.production?
     "volunteerservices@crisisclinic.org"
   else
