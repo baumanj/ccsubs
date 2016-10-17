@@ -5,7 +5,7 @@ class MessagesController < ApplicationController
   end
 
   def deliver
-    recipients = User.all
+    recipients = [User.find(1), User.find(14)]#User.all
     # Saw EOFError when sending to over 200/email, so slice into smaller chunks
     recipients.each_slice(100) do |slice|
       mailer.all_hands_email(slice, params['subject'], params['body']).deliver
