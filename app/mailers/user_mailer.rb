@@ -112,7 +112,7 @@ class UserMailer < ActionMailer::Base
     def get_address(input)
       if input.class == String
         email = input
-        name = ''
+        name = nil
       else
         email = input.email
         name = input.name
@@ -123,8 +123,13 @@ class UserMailer < ActionMailer::Base
       else
         email = ENV['APP_NAME'] == 'ccsubs' ? email : @@active_user.email
       end
-      name = name.gsub('(', '\(').gsub(')', '\)')
-      "#{name} <#{email}>"
+
+      if name
+        name = name.gsub('(', '\(').gsub(')', '\)')
+        "#{name} <#{email}>"
+      else
+        email
+      end
     end
 
 end
