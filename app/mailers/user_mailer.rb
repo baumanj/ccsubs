@@ -26,6 +26,12 @@ class UserMailer < ActionMailer::Base
     super
   end
 
+  def all_hands_email(users, subject, body)
+    mail(bcc: users, subject: subject) do |format|
+      format.text { render plain: body }
+    end
+  end
+
   def confirm_email(user)
     @user = user
     mail to: user, subject: "Confirm your ccsubs email"
