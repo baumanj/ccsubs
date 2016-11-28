@@ -1,0 +1,41 @@
+<% provide(:title, 'Default availability') %>
+
+<h1>Your default availabilty</h1>
+
+<div class="col-md-8 col-md-offset-2 alert alert-info">
+  Enter whether you are typically available for the given shifts on a weekly basis.
+  This will make it faster to indicate whether you are available for specific shifts
+  in the future faster by defaulting to the appropriate value.
+</div>
+
+<div class="row">
+  <div class="col-md-6 col-md-offset-3">
+
+    <%= form_for(@user, url: update_default_availability_url(@user)) do |f| %>
+      <%= render 'shared/error_messages' %>
+
+      <%= f.fields_for :default_availabilities, @default_availabilities do |default_availability_fields| %>
+        <%= default_availability_fields.hidden_field :cwday %>
+        <%= default_availability_fields.hidden_field :shift %>
+        <div class="row">
+          <div class="col-md-6"><%= default_availability_fields.object %></div>
+          <div class="col-md-6">
+            <%= default_availability_fields.label 'Yes' do %>
+              <%= default_availability_fields.radio_button :free, true %>Yes
+            <% end %>
+            <%= default_availability_fields.label 'No' do %>
+              <%= default_availability_fields.radio_button :free, false %>No
+            <% end %>
+            <%= default_availability_fields.label 'Maybe' do %>
+              <!-- Strangely, the empty string works for nil, but nil doesn't -->
+              <%= default_availability_fields.radio_button :free, "" %>Maybe
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <%= f.submit "Update", class: "btn btn-large btn-primary" %>
+    <% end %>
+
+  </div>
+</div>

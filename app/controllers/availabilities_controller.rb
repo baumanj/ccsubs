@@ -16,6 +16,11 @@ class AvailabilitiesController < ApplicationController
     @suggested_availabilities = @user.suggested_availabilities
   end
 
+  def edit_default
+    @user = current_user
+    @default_availabilities = DefaultAvailability.find_for_edit(@user)
+  end
+
   private
 
     def availability_params

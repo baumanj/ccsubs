@@ -162,6 +162,19 @@ class UsersController < ApplicationController
     end
   end
 
+  def update_default_availability
+    @user = User.find(params[:id])
+    if @user.update(user_params)
+      # raise
+      flash[:success] = "Updated #{user_params[:default_availabilities_attributes].size} default availabilities"
+      redirect_to params[:redirect_to] || edit_default_availability_path
+    else
+      @errors = @user.errors
+      @default_availabilities = default_availabilities_from_user_params
+      render 'availabilities/edit_default'
+    end
+  end
+
   if Rails.env.development?
     def delete_all_availability
       User.find(params[:id]).availabilities.destroy_all
@@ -193,9 +206,16 @@ class UsersController < ApplicationController
       end
     end
 
+    def default_availabilities_from_user_params
+      user_params[:default_availabilities_attributes].values.map do |attributes|
+        DefaultAvailability.find_or_initialize_by(attributes)
+      end
+    end
+
     def user_params
       params.require(:user).permit(:name, :email, :password, :password_confirmation, :disabled, :vic, :confirmation_token,
                                    availabilities_attributes: [:id, :date, :shift, :free],
+                                   default_availabilities_attributes: [:id, :cwday, :shift, :free],
                                    requests_attributes: [:date, :shift])
     end
 

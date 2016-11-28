@@ -3,10 +3,12 @@ Ccsubs::Application.routes.draw do
   post '/messages/deliver', to: 'messages#deliver'
 
   resources :availabilities, only: [:create, :index]
+  get '/availabilities/edit_default', to: 'availabilities#edit_default', as: :edit_default_availability
   get '/availabilities/:id', to: 'availabilities#index'
   post '/users/upload_csv', to: 'users#upload_csv', as: :upload_csv
   get '/users/new_list', to: 'users#new_list', as: :new_user_list
   patch '/users/update/availability/:id', to: 'users#update_availability', as: :update_availability
+  patch '/users/update/default_availability/:id', to: 'users#update_default_availability', as: :update_default_availability
   if Rails.env.development?
     delete '/users/delete/all/availability/:id', to: 'users#delete_all_availability', as: :delete_all_availability
   end
