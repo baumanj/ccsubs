@@ -6,6 +6,7 @@ class Availability < ActiveRecord::Base
   has_one :request
   
   enum shift: ShiftTime::SHIFT_NAMES
+  attr_accessor :from_default # If this instance was populated from a DefaultAvailability
 
   validates :user, presence: true
   validates_with ShiftTimeValidator

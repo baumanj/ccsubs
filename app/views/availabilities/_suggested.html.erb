@@ -1,7 +1,7 @@
 <%= f.fields_for :availabilities, availabilities do |availability_fields| %>
   <%= availability_fields.hidden_field :date %>
   <%= availability_fields.hidden_field :shift %>
-  <div class="row">
+  <div class="row <%= "alert-warning" if availability_fields.object.from_default %>">
     <div class="col-md-6"><%= availability_fields.object %></div>
     <div class="col-md-6">
       <%= availability_fields.label 'Yes' do %>

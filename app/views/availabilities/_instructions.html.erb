@@ -1,6 +1,22 @@
 <div class="col-md-8 col-md-offset-2 alert alert-info">
-	These shifts have requests from volunteers who may be able to swap with you.
-	Indicate the ones you're available for, then click the "Update" button.
-  You don't have to answer for every shift, but the more you answer, the
-  more likely it is that your request will be fulfilled.
+  These shifts have requests from volunteers who may be able to swap with you.
+  Indicate the ones you're available for, then hit the "Update" button.
+
+  <% if @suggested_availabilities.any?(&:from_default) %>
+    <br />
+    <br />
+    Availability for shifts <span class="alert-warning">that look like this</span>
+    have been populated based on your selections for your default availability
+    to save you lots of repetitive data entry. Please confirm that the preselected
+    values are accurate for these specific shifts and correct them if necessary
+    before hitting the "Update" button. If you would like to change your default
+    weekly availability, <%= link_to "follow this link", edit_default_availability_path %>.
+  <% elsif @suggested_availabilities.any? {|a| a.free.nil? } %>
+    You don't have to answer for every shift, but the more you answer, the
+    more likely it is that your request will be fulfilled.
+    <br />
+    <br />
+    If you want to save time when indicating your availability, you can
+    <%= link_to "set your weekly default availability", edit_default_availability_path %>.
+  <% end %>
 </div>

@@ -13,7 +13,15 @@ class AvailabilitiesController < ApplicationController
 
   def index
     @user = current_user
-    @suggested_availabilities = @user.suggested_availabilities
+    @suggested_availabilities = @user.suggested_availabilities.each do |a|
+      if a.free.nil?
+        default = @user.default_availability_for(a)
+        if !default.free.nil?
+          a.free = default.free
+          a.from_default = true
+        end
+      end
+    end
   end
 
   def edit_default

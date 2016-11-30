@@ -192,6 +192,10 @@ class User < ActiveRecord::Base
     availabilities.find_or_initialize_by(shifttime.shifttime_attrs)
   end
 
+  def default_availability_for(shifttime)
+    default_availabilities.find_or_initialize_by_shifttime(shifttime)
+  end
+
   def self.with_active_requests_check
     fast = with_active_requests.to_a.sort
     slow = with_active_requests_slow.sort
