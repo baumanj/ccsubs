@@ -25,5 +25,6 @@
   </div>
 
 <% else %>
-    <h2>There aren't any other active requests at the moment to add availability for</h2>
+    <h2>There aren't any other active requests at the moment to add availability for. You can
+    <%= link_to "set your weekly default availability", edit_default_availability_path %>.</h2>
 <% end %>
