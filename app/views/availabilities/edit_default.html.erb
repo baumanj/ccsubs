@@ -20,15 +20,15 @@
         <div class="row">
           <div class="col-md-6"><%= default_availability_fields.object %></div>
           <div class="col-md-6">
-            <%= default_availability_fields.label 'Yes' do %>
-              <%= default_availability_fields.radio_button :free, true %>Yes
+            <%= default_availability_fields.label 'Always' do %>
+              <%= default_availability_fields.radio_button :free, true %>Always
             <% end %>
-            <%= default_availability_fields.label 'No' do %>
-              <%= default_availability_fields.radio_button :free, false %>No
+            <%= default_availability_fields.label 'Never' do %>
+              <%= default_availability_fields.radio_button :free, false %>Never
             <% end %>
-            <%= default_availability_fields.label 'Maybe' do %>
+            <%= default_availability_fields.label 'Sometimes' do %>
               <!-- Strangely, the empty string works for nil, but nil doesn't -->
-              <%= default_availability_fields.radio_button :free, "" %>Maybe
+              <%= default_availability_fields.radio_button :free, "" %>Sometimes
             <% end %>
           </div>
         </div>
