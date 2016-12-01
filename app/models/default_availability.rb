@@ -19,6 +19,18 @@ class DefaultAvailability < ActiveRecord::Base
     self.find_or_initialize_by(cwday: shifttime.date.cwday, shift: shifttime.class.shifts[shifttime.shift])
   end
 
+  def self.apply(availabilities)
+    availabilities.each do |a|
+      if a.free.nil?
+        default = a.user.default_availability_for(a)
+        if !default.free.nil?
+          a.free = default.free
+          a.from_default = true
+        end
+      end
+    end
+  end
+
   def to_s
     s = "#{cwday}, #{shift}"
     Rails.env.development? ? "#{s} [#{id}]" : s

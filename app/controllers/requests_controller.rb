@@ -29,7 +29,7 @@ class RequestsController < ApplicationController
           @availabilities_for_requests_to_swap_with = @request.user.availabilities_for(@requests_to_swap_with)
           render 'choose_swap'
         elsif @request.uncertain_avail.any?
-          @suggested_availabilities = @request.user.availabilities_for(:potential_matches)
+          @suggested_availabilities = DefaultAvailability.apply(@request.user.availabilities_for(:potential_matches))
           render 'specify_availability'
         end
       else
