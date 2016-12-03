@@ -32,7 +32,7 @@ class DefaultAvailability < ActiveRecord::Base
   end
 
   def to_s
-    s = "#{cwday}, #{shift}"
+    s = "#{cwday.pluralize}, #{shift}"
     Rails.env.development? ? "#{s} [#{id}]" : s
   end
 end
