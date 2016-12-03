@@ -189,8 +189,10 @@ class Request < ActiveRecord::Base
     past.received_offer.each do |request|
       other_request = request.fulfilling_swap
       if other_request.start.future? && request.decline_pending_swap
-        UserMailer.notify_swap_decline(decliners_request: request,
-                                       offerers_request: other_request).deliver
+        if request.decline_pending_swap
+          UserMailer.notify_swap_decline(decliners_request: request,
+                                         offerers_request: other_request).deliver
+        end
       end
     end
   end
