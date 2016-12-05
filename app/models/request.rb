@@ -197,6 +197,12 @@ class Request < ActiveRecord::Base
     end
   end
 
+  def self.nag_unresponded_offer_owners(days_old)
+    Request.received_offer.where('updated_at < ?', days_old.to_i.days.ago).each do |request|
+      UserMailer.send_unresponded_offer_nag(request).deliver
+    end
+  end
+
   # Find all the active requests which match active requests in the current scope
   # The current scope it typically a certain user's requests
   def self.matching_requests(match_type)

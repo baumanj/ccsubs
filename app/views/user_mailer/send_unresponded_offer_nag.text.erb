@@ -1,0 +1,4 @@
+Hey <%= @req.user %>,
+<%= @offerer %> offered to swap with you for your <%= @req %> shift <%= time_ago_in_words(@req.updated_at) %> ago. Please don't keep them in suspense!
+
+Accept if you agree to cover their <%= @req.fulfilling_swap %> shift. You can accept or decline this offer here: <%= request_url(@req) %>. Until you accept or decline this offer, you won't receive other offers for this request.

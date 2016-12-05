@@ -77,6 +77,16 @@ class UserMailer < ActionMailer::Base
          subject: "Sub/Swap #{@received_offer_request}: swap offered! [ACTION REQUIRED]"
   end
 
+  def send_unresponded_offer_nag(req)
+    @req = req
+    @nagee = @req.user
+    @offerer = @req.fulfilling_user
+    mail to: @nagee,
+         subject: "Sub/Swap #{@req}: swap offer will expire soon!",
+         cc: VOLUNTEER_SERVICES
+  end
+
+
   def notify_swap_accept(req)
     @req = req
     @accepter = req.user
