@@ -14,10 +14,22 @@
 	<li>After adding a swap request, you can view it under "Account" > "<%= link_to "My requests", requests_path(owner: current_user) %>" in the menu bar. Click on the date and time of the request to see details of any other volunteers who have availability to swap. If there are any, you can click the "Offer to swap" button and the volunteer will receive an email that will allow them to accept or decline your swap offer. In order to ensure orderly swaps, once an offer has been made to swap for a certain shift, no other offers involiving those volunteers' shifts can be made until the requstest is accepted or declined. When this happens the volunteer who made the request will receive an email notification.</li>
 </ol>
 
-<h2>Editing requests</h2>
+<h2>Specifying typical availablity</h2>
+<ul>
+	<li>Since most volunteers have a weekly schedule with shifts that they are regularly available to swap for and others that they are never available to swap for, you can specify which shifts you are typically available for to reduce the effort involved in specifying availability for specific shifts.</li>
+	<li>For example, if you are typically available for Monday, 8am-12:30pm shifts and typically not available for Tuesday, 9pm-1am shifts you can indicate this on your <%= link_to "My typical availability", edit_default_availability_path %> page, accessible under the <i>Your Name</i> menu.</li>
+	<li>Subsequently when the system requests information about your availability for specific shifts,
+		the default responses corresponding to your typical availability will be pre-selected. Please be sure
+		to double check that the default responses are accurate for the specific shifts in question and update
+		them if not. Changing a response for a specific shift will not change your typical availablity for that
+		shift in the system.</li>
+	<li>For example, after requesting shift coverage, the system may ask if you are available for Monday, December 19th, 8am-12:30pm and Tuesday December 20th, 9pm-1am. With the typical availabilities from the previous example, the Monday shift would default to "Yes" and the Tuesday shift would default to "No". If you are not available for this particular Monday shift, you must change the response to "No" before selecting "Update".</li>
+</ul>
+
+<h2>Deleting corverage requests</h2>
 <p>If you made a mistake and need to delete a request, it is simple to do so.</p>
 <ol>
-	<li>Find the request you need to change under "Account" > "<%= link_to "My requests" %> in the menu bar. If the "Account" menu isn't present, it means you need to <%= link_to "sign in", signin_path %>.</li>
+	<li>Find the request you need to change under <i>Your Name</i> > "<%= link_to "My requests" %> in the menu bar. If the <i>Your Name</i> menu isn't present, it means you need to <%= link_to "sign in", signin_path %>.</li>
 	<li>To delete a request, click the <button type="button" class="btn btn-default btn-xs" aria-label="Left Align" title="Delete"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button> button next to the request in the list.</li>
 </ol>
 
