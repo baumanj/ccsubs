@@ -25,6 +25,7 @@ class UserMailer < ActionMailer::Base
     [:to, :cc, :bcc].each do |header_name|
       headers[header_name] = [*headers[header_name]].map {|x| get_address(x) }
     end
+
     super
   end
 
@@ -135,7 +136,7 @@ class UserMailer < ActionMailer::Base
       end
 
       if name
-        name = name.gsub('(', '\(').gsub(')', '\)')
+        name = name.gsub('(', '').gsub(')', '')
         "#{name} <#{email}>"
       else
         email
