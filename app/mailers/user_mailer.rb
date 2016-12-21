@@ -135,12 +135,7 @@ class UserMailer < ActionMailer::Base
         email = ENV['APP_NAME'] == 'ccsubs' ? email : @@active_user.email
       end
 
-      if name
-        name = name.gsub('(', '').gsub(')', '')
-        "#{name} <#{email}>"
-      else
-        email
-      end
+      name ? "\"#{name}\" <#{email}>" : email
     end
 
 end
