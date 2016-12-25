@@ -3,7 +3,7 @@
 <% end %>
 <small>Click to edit profile picture on gravatar.com</small>
 <dl>
-  <dt>Name</dt> <dd><%= @user.name %></dd>
+  <dt>Name</dt> <dd><%= @user.name %> <%= "[disabled]" if @user.disabled? %></dd>
   <dt>Email</dt> <dd><%= @user.email %>
     [<%= @user.confirmed? ? "confirmed" : "unconfirmed" %>]</dd>
   <% if current_user.admin? %>

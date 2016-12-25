@@ -3,15 +3,38 @@
 <p><%= link_to "Create new user", new_user_path %></p>
 <p><%= link_to "Upload new user list", new_user_list_path %></p>
 
-<h1>All users</h1>
+<h1>Admins</h1>
 
 <ul class="users">
-  <% @users.each do |user| %>
+  <% @admins.each do |user| %>
     <li>
       <%= image_tag user.gravatar_url(size: 25, d: :identicon) %>
       <%= link_to user, user %>
-      <%= "ADMIN" if user.admin?%>
       <%= "✨" if user.created_at > 1.day.ago %>
+      <%= "[disabled]" if user.disabled? %>
+    </li>
+  <% end %>
+</ul>
+
+<h1>Active users</h1>
+
+<ul class="users">
+  <% @enabled_users.each do |user| %>
+    <li>
+      <%= image_tag user.gravatar_url(size: 25, d: :identicon) %>
+      <%= link_to user, user %>
+      <%= "✨" if user.created_at > 1.day.ago %>
+    </li>
+  <% end %>
+</ul>
+
+<h1>Disabled users</h1>
+
+<ul class="users">
+  <% @disabled_users.each do |user| %>
+    <li>
+      <%= link_to user, user %>
+      <%= "👋" if user.updated_at > 1.day.ago %>
     </li>
   <% end %>
 </ul>

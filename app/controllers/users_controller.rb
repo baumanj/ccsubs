@@ -5,6 +5,8 @@ class UsersController < ApplicationController
   before_action :check_authorization, except: [:reset_password]
   before_action :require_admin, only: [:new, :create, :index]
 
+  EXPECTED_CSV_HEADERS = ['name', 'vic', 'email']
+
   def new
     @user = User.new
   end
@@ -31,25 +33,40 @@ class UsersController < ApplicationController
       render 'new_list'
     else
       user_array = CSV.parse(params[:csv].read)
-      user_array.shift # discard header row
-      vics = User.pluck(:vic)
+      headers = user_array.shift.compact # discard header row
+      unless headers.size == EXPECTED_CSV_HEADERS.size
+          flash[:error] = "Expected CSV to have 3 columns (#{EXPECTED_CSV_HEADERS.join(', ')}); found #{headers.size} (#{headers.join(', ')})"
+          render 'new_list'
+          return
+      end
+      vics = User.pluck(:vic).compact
       new_users = []
       user_array.each do |name, vic, email|
         unless vics.include? vic.to_i
           new_users << { name: name, email: email, vic: vic, password: vic }
         end
       end
+
+      # We don't handle the case where an existing disabled user is reenabled (yet)
+      input_vics = user_array.map {|x| x[1].to_i }
+      enabled_vics = User.where(disabled: false).pluck(:vic).compact
+      to_disable = enabled_vics - input_vics
+
       User.transaction do
         begin
           new_users = User.create!(new_users)
+          # update_all goes directly to the DB, so doesn't change 'updated_at' automatically
+          num_disabled = User.where(vic: to_disable).update_all(disabled: true, updated_at: DateTime.current)
           if new_users.any?
             flash[:success] = "Added #{new_users.size} users: #{new_users.map(&:name).join(', ')}"
             if flash[:success].size > (ActionDispatch::Cookies::MAX_COOKIE_SIZE / 4)
               size = flash[:success].size
               flash[:success] = "Added #{new_users.size} users"
             end
+            flash[:success] += ". Disabled #{num_disabled} users" unless num_disabled.zero?
           else
             flash[:notice] = "No new users added"
+            flash[:notice] += ". #{num_disabled} users disabled" unless num_disabled.zero?
           end
           redirect_to users_path
         rescue ActiveRecord::RecordInvalid => invalid
@@ -183,7 +200,8 @@ class UsersController < ApplicationController
   end
 
   def index
-    @users = User.all
+    @admins, non_admins = User.order(:name).partition(&:admin)
+    @disabled_users, @enabled_users = non_admins.partition(&:disabled)
   end
 
   def show
