@@ -28,9 +28,15 @@ class RequestsController < ApplicationController
         if @requests_to_swap_with.any?
           @availabilities_for_requests_to_swap_with = @request.user.availabilities_for(@requests_to_swap_with)
           render 'choose_swap'
-        elsif @request.uncertain_avail.any?
-          @suggested_availabilities = DefaultAvailability.apply(@request.user.availabilities_for(:potential_matches))
-          render 'specify_availability'
+        else
+          if params[:from] == 'notification'
+            flash.now[:notice] = "Sorry, that shift is no longer accepting swap offers"
+          end
+
+          if @request.uncertain_avail.any?
+            @suggested_availabilities = DefaultAvailability.apply(@request.user.availabilities_for(:potential_matches))
+            render 'specify_availability'
+          end
         end
       else
         @requests_to_swap_with = current_user.offerable_swaps(@request)

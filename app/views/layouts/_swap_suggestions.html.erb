@@ -3,7 +3,7 @@
     <h2>You have swapportunities! Click on your
       <%= "request".pluralize(current_user.offerable_swaps.length) %> below.</h2>
     <% current_user.offerable_swaps.each do |req| %>
-      <p><%= link_to req, req %></p>
+      <p><%= link_to req, request_path(req, from: :notification) %></p>
     <% end %>
   </div>
 <% end %>

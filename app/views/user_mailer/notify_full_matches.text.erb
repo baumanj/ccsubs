@@ -1,2 +1,2 @@
 Hey <%= @req.user %>,
-Good news! <%= @available_user %> has indicated they have availability matching your request for coverage on <%= @req %>. You have indicated availability for their <%= "request".pluralize(@suggested_swaps.length) %> on <%= @suggested_swaps.to_sentence %>. You may have already received a swap offer. If not, you can make your offer here: <%= request_url(@req) %>.
+Good news! <%= @available_user %> has indicated they have availability matching your request for coverage on <%= @req %>. You have indicated availability for their <%= "request".pluralize(@suggested_swaps.length) %> on <%= @suggested_swaps.to_sentence %>. You may have already received a swap offer. If not, you can make your offer here: <%= request_url(@req, from: :notification) %>.
