@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161128210625) do
+ActiveRecord::Schema.define(version: 20170121012213) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -40,6 +40,14 @@ ActiveRecord::Schema.define(version: 20161128210625) do
 
   add_index "default_availabilities", ["user_id", "shift", "cwday"], name: "index_default_availabilities_on_user_id_and_shift_and_cwday", unique: true, using: :btree
   add_index "default_availabilities", ["user_id"], name: "index_default_availabilities_on_user_id", using: :btree
+
+  create_table "messages", force: true do |t|
+    t.integer  "shift",      null: false
+    t.datetime "date",       null: false
+    t.text     "body"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "requests", force: true do |t|
     t.integer  "user_id"

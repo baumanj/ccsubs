@@ -1,18 +1,21 @@
-<% provide(:title, 'New message') %>
-<h1>Send a message to all users</h1>
+<% provide(:title, 'New emergency coverage request') %>
+<h1>Send a emergency coverage request to all volunteers</h1>
 
 <div class="row">
   <div class="col-md-6 col-md-offset-3">
-    <%= form_tag({action: :deliver}) do %>
-      <%= render 'shared/error_messages' %>
 
-      <%= label_tag :subject %>
-      <%= text_field_tag :subject %>
+    <%= render 'shared/error_messages' %>
 
-      <%= label_tag :body %>
-      <%= text_area_tag :body %>
+    <%= form_for(@message, url: deliver_message_url) do |f| %>
+      <%= render partial: 'shared/shift_time', locals: {f: f} %>
 
-      <%= submit_tag "Send", class: "btn btn-large btn-primary" %>
+      <%= f.label :body %>
+      <%= f.text_area :body %>
+
+      <p>The following boilerplate will be added to the end of your message:</p>
+      <div class="col-md-12 col-md-offset-0  alert alert-info"><%= @message.class::BOILERPLATE %></div>
+
+      <%= f.submit "Send", class: "btn btn-large btn-primary" %>
     <% end %>
   </div>
 </div>
