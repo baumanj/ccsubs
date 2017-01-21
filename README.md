@@ -4,11 +4,20 @@ This is a web application for facilitating exchanging shift assignments.
 
 ## TODO:
 ### Next steps
-* All hands on deck email (disable users missing from CSV)
-* Use CSV to change active users (upload full list rather than just new)
+* Boilerplate for broadcast email
+* noreply address for broadcast email
+* Smart exclusions for broadcast email and shift tracking
+* Reply-to address for broadcast email (don't show email to recipient)
+* On-call tracking
+  * Need info about what a volunteer's default shift
+  * 1 for every shift
+  * 1 shift/month/volunteer (there won't be enought room for everyone)
+  * Need to add phone number
+  * Another layer of admin-like privs
+  * Volunteers need availability view
+  * Staff needs month-level view
 * Render availability query page as calendar
 * Put availabilities where Availability.match? is true at the top of the list
-* Link to user's request page for admins
 * Allow admins to look at user swap history
 * Add gravatar to request detail
 * Send staff email notifications about shift changes
@@ -17,12 +26,8 @@ This is a web application for facilitating exchanging shift assignments.
 * Better handle availability/request conflicts
 * Speed up availability pages (https://github.com/bbatsov/rails-style-guide#find-each)
 * Allow admins to look at all others availabilty for a given shift to help Travis
-* Notification to volunteer services for sub/swap requests that haven't been fulfilled when the shift is only one or two days away.
 * Know when shifts are low (get shift information)
 * Disallow doing two consecutive shifts
-* Make it clear who is logged in (gravitar)
-* auto log out at end of shift if on crisis line computer
-* Daily pending request nag
 * (Admin) view historical requests
 ### Future
 * https://elements.heroku.com/addons/sparkpost
@@ -55,13 +60,16 @@ This is a web application for facilitating exchanging shift assignments.
 * From an admin view of a user, links to their requests and availability pages.
 * Automatically decline a request when the date of the earlier shift has passed; only consider a request pending when both shifts are in the future.
 * Add tracking of when an swap offer was made. Nag the recipient if they don't respond in a couple days.
-* Add an error for entering redundant availability
-* Enter multiple availabilities faster
 * Remove availability upon offer decline (and notify user)
 * Make it clearer how to see who's available to swap with you (docs); improve workflow
 * Add stats on % of requests actually getting filled
 
 ## Done
+* Link to user's request page for admins
+* Make it clear who is logged in (gravitar)
+* auto log out at end of shift if on crisis line computer
+* Daily pending request nag* Use CSV to change active users (upload full list rather than just new)
+* All hands on deck email (disable users missing from CSV)
 * Put suggested availabilities on the request creation page!
 * Remove superfluous "details box" on request view
 * Suggest adding availabilities corresponding to outstanding requests
