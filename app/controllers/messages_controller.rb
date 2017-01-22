@@ -15,6 +15,7 @@ class MessagesController < ApplicationController
       recipients = User.where(disabled: false) - unavailable_users
       mailer.all_hands_email(recipients, @message.subject, @message.body_with_boilerplate).deliver
       flash[:success] = "Sent '#{@message.subject}' email to #{recipients.count} users"
+      flash[:success] += " (excluding #{unavailable_users.count} who are unavailable)" if unavailable_users.any?
       redirect_to messages_new_path
     else
       flash.now[:error] = "Message couldn't be created. Please check the errors and retry."
