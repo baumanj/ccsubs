@@ -9,7 +9,7 @@
     <%= form_for(@message, url: deliver_message_url) do |f| %>
       <%= render partial: 'shared/shift_time', locals: {f: f} %>
 
-      <%= f.label :body %>
+      <%= f.label :body %> (optional)
       <%= f.text_area :body %>
 
       <p>The following boilerplate will be added to the end of your message:</p>

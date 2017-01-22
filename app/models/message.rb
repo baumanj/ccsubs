@@ -3,7 +3,6 @@ class Message < ActiveRecord::Base
   enum shift: ShiftTime::SHIFT_NAMES
   validates :date, presence: true
   validates :shift, presence: true
-  validates :body, presence: true
 
   validate do
     if start && ShiftTime.shift_end(start).past?
@@ -21,6 +20,6 @@ Please do not email back! (The CCsubs email is not connected to phone room staff
   end
 
   def body_with_boilerplate
-    [body.strip, BOILERPLATE].join("\n\n")
+    [body.strip, BOILERPLATE].join("\n\n").strip
   end
 end

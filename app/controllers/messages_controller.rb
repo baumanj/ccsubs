@@ -7,9 +7,12 @@ class MessagesController < ApplicationController
 
   def deliver
     @message = Message.new(message_params)
-    # raise
     if @message.save
-      recipients = User.where(disabled: false)
+      unavailable_users =
+        Availability.where_shifttime(@message).where(free: false).map(&:user) +
+        Request.where_shifttime(@message).map(&:user)
+        # TODO add users for whom this is their default shift
+      recipients = User.where(disabled: false) - unavailable_users
       mailer.all_hands_email(recipients, @message.subject, @message.body_with_boilerplate).deliver
       flash[:success] = "Sent '#{@message.subject}' email to #{recipients.count} users"
       redirect_to messages_new_path
