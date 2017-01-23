@@ -1,5 +1,5 @@
 class MessagesController < ApplicationController
-  before_action :require_admin
+  before_action :require_staff_or_admin
 
   def new
     @message = Message.new

@@ -44,6 +44,10 @@ class User < ActiveRecord::Base
     SecureRandom.urlsafe_base64
   end
 
+  def staff_or_admin?
+    staff? || admin?
+  end
+
   def to_s
     Rails.env.development? ? "#{name} [#{id}]" : name
   end

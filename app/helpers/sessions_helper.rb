@@ -84,6 +84,12 @@ module SessionsHelper
     end
   end
 
+  def require_staff_or_admin
+    unless signed_in? && current_user.staff_or_admin?
+      redirect_to root_url, notice: "You don't have the rights to do that."
+    end
+  end
+
   private
 
     def find_user_by_cookie_unless_expired
