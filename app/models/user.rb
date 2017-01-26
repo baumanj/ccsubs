@@ -1,6 +1,7 @@
 class User < ActiveRecord::Base
 
   MAX_LOGIN_ATTEMPTS = 10
+  enum volunteer_type: [ 'Regular Shift', 'Alternating', 'Sub Only' ]
 
   attr_accessor :confirmation_token
   has_secure_password
