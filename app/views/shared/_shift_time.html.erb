@@ -1,6 +1,6 @@
 
-<%= f.label :start, "Date" %>
+<%= f.label :start, local_assigns.fetch(:date_text, "Date") %>
 <%= f.text_field :date, data: { provide: 'datepicker' }, class: 'datepicker' %>
-<%= f.label :shift, "Time" %>
+<%= f.label :shift, local_assigns.fetch(:time_text, "Time") %>
 <%= f.select :shift, ShiftTime::SHIFT_NAMES,
             { prompt: 'Select shift'} %>
