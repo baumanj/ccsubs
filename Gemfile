@@ -1,8 +1,12 @@
 source 'https://rubygems.org'
-ruby '2.2.4'
+ruby '2.3.3'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '4.1.5'
+gem 'rails', '4.2.5'
+
+# NoMethodError: undefined method `last_comment' for #<Rake::Application:0x007ff8f19f9808>
+# http://stackoverflow.com/questions/35893584/nomethoderror-undefined-method-last-comment-after-upgrading-to-rake-11
+gem 'rake', '< 11.0'
 
 gem 'bootstrap-sass', '3.2.0.0'
 
