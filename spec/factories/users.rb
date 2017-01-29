@@ -13,7 +13,11 @@ FactoryGirl.define do
   factory :user do
     name { Faker::Name.name }
     email { Faker::Internet.email }
+    volunteer_type { User.volunteer_types.keys.sample }
+    home_phone { Faker::PhoneNumber.phone_number }
+    cell_phone { Faker::PhoneNumber.phone_number }
     admin false
+    staff false
     vic { Faker::Number.vic }
     password Faker::Internet.password(min_length = 5)
     confirmed false

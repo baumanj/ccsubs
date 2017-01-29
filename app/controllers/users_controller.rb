@@ -3,9 +3,9 @@ require 'csv'
 class UsersController < ApplicationController
   before_action :require_signin, except: [:reset_password, :update_password]
   before_action :check_authorization, except: [:reset_password]
-  before_action :require_admin, only: [:new, :create, :index]
+  before_action :require_admin, only: [:new, :create, :index, :new_list, :upload_csv]
 
-  EXPECTED_CSV_HEADERS = ['name', 'vic', 'email']
+  EXPECTED_CSV_HEADERS = ['name', 'volunteer_type', 'vic', 'home_phone', 'cell_phone', 'email']
 
   def new
     @user = User.new
@@ -32,42 +32,54 @@ class UsersController < ApplicationController
       flash[:error] = "Please specify a CSV file"
       render 'new_list'
     else
-      user_array = CSV.parse(params[:csv].read)
-      headers = user_array.shift.compact # discard header row
+      csv_rows = CSV.parse(params[:csv].read)
+      headers = csv_rows.none? ? [] : csv_rows.shift.compact # discard header row
       unless headers.size == EXPECTED_CSV_HEADERS.size
-          flash[:error] = "Expected CSV to have 3 columns (#{EXPECTED_CSV_HEADERS.join(', ')}); found #{headers.size} (#{headers.join(', ')})"
-          render 'new_list'
-          return
+        flash[:error] = "Expected CSV to have #{EXPECTED_CSV_HEADERS.size} columns (#{EXPECTED_CSV_HEADERS.join(', ')}); found #{headers.size} (#{headers.join(', ')})"
+        render 'new_list'
+        return
       end
-      vics = User.pluck(:vic).compact
+
+      existing_users = User.where.not(vic: nil).index_by(&:vic)
       new_users = []
-      user_array.each do |name, vic, email|
-        unless vics.include? vic.to_i
-          new_users << { name: name, email: email, vic: vic, password: vic }
+      input_vics = []
+      users_to_update = {} # id => attributes hash
+      csv_rows.each do |name, volunteer_type, vic, home_phone, cell_phone, email|
+        input_vics << vic.to_i
+        csv_attributes = {
+            name: name,
+            volunteer_type: volunteer_type,
+            home_phone: home_phone,
+            cell_phone: cell_phone,
+            disabled: false,
+        }
+
+        user = existing_users[vic.to_i]
+        if user
+          user.attributes = csv_attributes # don't save; just use to test for change
+          users_to_update[user.id] = csv_attributes if user.changed?
+        else
+          csv_attributes.merge!(
+            email: email,
+            vic: vic,
+            password: vic
+          )
+          new_users << csv_attributes
         end
       end
 
-      # We don't handle the case where an existing disabled user is reenabled (yet)
-      input_vics = user_array.map {|x| x[1].to_i }
       enabled_vics = User.where(disabled: false).pluck(:vic).compact
-      to_disable = enabled_vics - input_vics
+      vics_to_disable = enabled_vics - input_vics
 
       User.transaction do
         begin
+          User.update(users_to_update.keys, users_to_update.values)
           new_users = User.create!(new_users)
           # update_all goes directly to the DB, so doesn't change 'updated_at' automatically
-          num_disabled = User.where(vic: to_disable).update_all(disabled: true, updated_at: DateTime.current)
-          if new_users.any?
-            flash[:success] = "Added #{new_users.size} users: #{new_users.map(&:name).join(', ')}"
-            if flash[:success].size > (ActionDispatch::Cookies::MAX_COOKIE_SIZE / 4)
-              size = flash[:success].size
-              flash[:success] = "Added #{new_users.size} users"
-            end
-            flash[:success] += ". Disabled #{num_disabled} users" unless num_disabled.zero?
-          else
-            flash[:notice] = "No new users added"
-            flash[:notice] += ". #{num_disabled} users disabled" unless num_disabled.zero?
-          end
+          num_disabled = User.where(vic: vics_to_disable).update_all(disabled: true, updated_at: DateTime.current)
+          flash[:success] = "Added #{new_users.size} #{'user'.pluralize(new_users.size)}. " +
+            "Updated #{users_to_update.size} #{'user'.pluralize(users_to_update.size)}. " +
+            "Disabled #{num_disabled} #{'user'.pluralize(num_disabled)}."
           redirect_to users_path
         rescue ActiveRecord::RecordInvalid => invalid
           flash[:error] = "Upload failed because not all new users could be created!"
