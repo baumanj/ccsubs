@@ -60,11 +60,11 @@ module ShiftTime
     end
 
     def future
-      after(Time.now)
+      after(Time.current)
     end
 
     def past
-      before(Time.now)
+      before(Time.current)
     end
 
     def active_check
@@ -124,7 +124,7 @@ module ShiftTime
     slice(:shift, :date)
   end
 
-  def self.shift_end(time=Time.now)
+  def self.shift_end(time=Time.current)
     time_ranges = time_to_shift_time_ranges(time)
     time_range = time_ranges.find {|time_range| time_range.cover?(time) }
     time_range.nil? ? time_ranges.first.begin : time_range.end
@@ -154,7 +154,7 @@ module ShiftTime
   def shift_is_between_now_and_a_year_from_now
     if start.nil?
       errors.add(:start, "time must be specified.")
-    elsif start < DateTime.now
+    elsif start < Time.current
       errors.add(:start, "time must be in the future.")
     elsif start > 1.year.from_now
       errors.add(:start, "time must be within a year.")

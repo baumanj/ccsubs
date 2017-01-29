@@ -34,7 +34,6 @@ This is a web application for facilitating exchanging shift assignments.
 * https://blog.heroku.com/archives/2016/3/2/migrating_from_the_mandrill_add_on
 * Change Request model name to something less confusing with HTTP request (Ask? CoverageRequest?)
 * Add poteintial matches to RequestsController#show for other users' requests
-* Don't use Time.now (https://github.com/bbatsov/rails-style-guide#time-now)
 * Update user fixture to test vics with 4 digits
 * Updrade to ruby 2.1
 * Clean up mailers
