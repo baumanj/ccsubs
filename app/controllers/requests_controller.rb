@@ -73,7 +73,7 @@ class RequestsController < ApplicationController
     if @request.fulfill_by_sub(current_user)
       emails = [mailer.notify_sub(@request, current_user),
                 mailer.remind_sub(@request, current_user)]
-      emails.each &:deliver
+      emails.each &:deliver_now
       flash[:success] = "Thanks! We send #{@request.user} an email to let them know the good news."
     else
       flash[:error] = @request.errors.full_messages.join(". ")
@@ -157,17 +157,17 @@ class RequestsController < ApplicationController
     end
 
     def notify_swap_offered
-      mailer.notify_swap_offer(from: @request, to: @request.fulfilling_swap).deliver
+      mailer.notify_swap_offer(from: @request, to: @request.fulfilling_swap).deliver_now
       flash[:success] = "We sent #{@request.fulfilling_user} an email to let them know about your offer"
     end
 
     def notify_swap_accepted
-      [mailer.notify_swap_accept(@request), mailer.remind_swap_accept(@request)].each &:deliver
+      [mailer.notify_swap_accept(@request), mailer.remind_swap_accept(@request)].each &:deliver_now
       flash[:success] = "We sent #{@request.fulfilling_user} an email to let them know you accepted"
     end
 
     def notify_swap_declined(offer_request)
-      mailer.notify_swap_decline(decliners_request: @request, offerers_request: offer_request).deliver
+      mailer.notify_swap_decline(decliners_request: @request, offerers_request: offer_request).deliver_now
       flash[:success] = "We sent #{offer_request.user} an email to let them know you declined"
     end
 

@@ -49,9 +49,9 @@ class Availability < ActiveRecord::Base
       UserMailer.active_user = user # For preview mode
       if matching_requests[:full_match].any?
           # Just let Bob know; self.user will be notified on their dashboard
-          UserMailer.notify_full_matches(others_req, matching_requests[:full_match]).deliver
+          UserMailer.notify_full_matches(others_req, matching_requests[:full_match]).deliver_now
       elsif matching_requests[:ask_sender_match].any?
-        UserMailer.notify_potential_matches(others_req, matching_requests[:ask_sender_match]).deliver
+        UserMailer.notify_potential_matches(others_req, matching_requests[:ask_sender_match]).deliver_now
       end
     end
     # v2: only send a notification email if there have been new matching availabilities

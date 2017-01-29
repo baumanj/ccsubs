@@ -83,7 +83,7 @@ class UsersController < ApplicationController
     @user = User.find(params[:id])
     @user.update_confirmation_token
     flash[:success] = "Confirmation email sent to #{@user.email}"
-    mailer.confirm_email(@user).deliver
+    mailer.confirm_email(@user).deliver_now
     redirect_to @user
   end
 
@@ -140,7 +140,7 @@ class UsersController < ApplicationController
       elsif resend_confirmation
         @user.update_confirmation_token
         flash[:success] += ". Confirmation email sent to #{@user.email}"
-        mailer.confirm_email(@user).deliver
+        mailer.confirm_email(@user).deliver_now
       end
       redirect_to @user
     else

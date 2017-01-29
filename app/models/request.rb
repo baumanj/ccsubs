@@ -191,7 +191,7 @@ class Request < ActiveRecord::Base
       if other_request.start.future? && request.decline_pending_swap
         if request.decline_pending_swap
           UserMailer.notify_swap_decline(decliners_request: request,
-                                         offerers_request: other_request).deliver
+                                         offerers_request: other_request).deliver_now
         end
       end
     end
@@ -199,7 +199,7 @@ class Request < ActiveRecord::Base
 
   def self.nag_unresponded_offer_owners(days_old)
     Request.received_offer.where('updated_at < ?', days_old.to_i.days.ago).each do |request|
-      UserMailer.send_unresponded_offer_nag(request).deliver
+      UserMailer.send_unresponded_offer_nag(request).deliver_now
     end
   end
 

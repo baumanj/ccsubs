@@ -12,7 +12,7 @@ class SessionsController < ApplicationController
       if params[:commit] == 'Reset password'
         if user.confirmed?
           user.update_confirmation_token
-          mailer.reset_password(user).deliver
+          mailer.reset_password(user).deliver_now
           flash.now[:success] = "Sent reset email to #{user.email}"
         else
           flash.now[:error] = 'Cannot send reset email to unconfirmed email address'
