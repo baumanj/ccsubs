@@ -47,7 +47,9 @@ describe User do
   end
 
   describe "with a password that's too short" do
-    minimum_length = described_class.validators_on(:password).find {|v| v.kind == :length }.options[:minimum]
+    minimum_length = described_class.validators_on(:password)
+      .find {|v| v.kind == :length && v.options.include?(:minimum) }
+      .options[:minimum]
     before { @user.password = @user.password_confirmation = "a" * (minimum_length - 1) }
     it { should be_invalid }
   end

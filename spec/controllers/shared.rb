@@ -35,8 +35,7 @@ shared_context "do request in before", autorequest: true do
 
     expected_assigns.merge!(
       current_user: eq(subject.current_user),
-      marked_for_same_origin_verification: eq(true).or(eq(false)),
-      _optimized_routes: eq(true)
+      marked_for_same_origin_verification: eq(true).or(eq(false))
     )
     assigns.each do |var_name, value|
       expect(value).to expected_assigns[var_name.to_sym]

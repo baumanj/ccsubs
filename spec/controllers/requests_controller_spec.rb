@@ -111,8 +111,6 @@ describe RequestsController do
     shared_examples "an action that just finds the request record" do
       it "finds the request record and renders 'show'" do
         expect(assigns).to contain_exactly(
-          ["_optimized_routes", true],
-          ["request", ask],
           ["current_user", subject.current_user],
           ["marked_for_same_origin_verification", true])
       end
