@@ -15,9 +15,9 @@ shared_context "do request in before", autorequest: true do
   let(:expect_flash_error_to) { be_nil }
 
   before do
-    evaluate_before_http_request
     subject.current_user = current_user
     request.env["HTTP_REFERER"] = root_url
+    evaluate_before_http_request
     send(method.downcase, action, params)
 
     if response.redirect?
