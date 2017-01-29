@@ -9,6 +9,7 @@ shared_context "do request in before", autorequest: true do
 
   let(:params) { {} }
   let(:evaluate_before_http_request) { }
+  let(:evaluate_after_http_request) { }
   let(:rendered_template) { }
   let(:rendered_templates) { [rendered_template] if rendered_template }
   let(:expected_assigns) { {} }
@@ -18,7 +19,9 @@ shared_context "do request in before", autorequest: true do
     subject.current_user = current_user
     request.env["HTTP_REFERER"] = root_url
     evaluate_before_http_request
+    @time_before_http_request = Time.current
     send(method.downcase, action, params)
+    evaluate_after_http_request
 
     if response.redirect?
       defaut_template = nil
