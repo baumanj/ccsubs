@@ -9,6 +9,15 @@
   <% if current_user.admin? %>
     <%= link_to "View #{@user}'s requests", owned_requests_path(@user) %>
   <% end %>
+  <% if @user.volunteer_type %>
+    <dt>Volunteer type</dt> <dd><%= @user.volunteer_type %></dd>
+  <% end %>
+  <% if @user.home_phone %>
+    <dt>Home phone</dt> <dd><%= @user.home_phone %></dd>
+  <% end %>
+  <% if @user.cell_phone %>
+    <dt>Cell phone</dt> <dd><%= @user.cell_phone %></dd>
+  <% end %>
 </dl>
 
 <%= link_to "Edit profile", edit_user_path(@user), class: "btn btn-lg btn-primary" %>

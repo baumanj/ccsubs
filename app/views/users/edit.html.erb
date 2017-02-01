@@ -6,8 +6,6 @@
     <%= form_for(@user) do |f| %>
       <%= render 'shared/error_messages' %>
 
-      <%= f.label :name %>
-      <%= f.text_field :name %>
 
       <%= f.label :email %>
       <%= f.text_field :email %>
@@ -24,7 +22,24 @@
       <% end %>
 
       <%= f.submit "Save changes", class: "btn btn-large btn-primary" %>
+
     <% end %>
+    <br />
+    <p>The following fields aren't editable because they are stored in
+      the volunteer database. If you need to modify them, please contact
+      <a href="mailto:volunteerservices@crisisclinic.org">volunteerservices@crisisclinic.org</a>.
+    </p>
+    <%= label_tag :name %>
+    <div><%= @user.name %></div><br />
+
+    <%= label_tag :volunteer_type %>
+    <div><%= @user.volunteer_type || "none" %></div><br />
+
+    <%= label_tag :home_phone %>
+    <div><%= @user.home_phone || "none" %></div><br />
+
+    <%= label_tag :cell_phone %>
+    <div><%= @user.cell_phone || "none" %></div><br />
   </div>
 </div>
 
