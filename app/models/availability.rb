@@ -67,7 +67,14 @@ class Availability < ActiveRecord::Base
   end
 
   def self.destroy_oldest_past
-    max_availabilities = 7000 # Heroku limit is 10,000 rows, keep some for users and requests
+    Rails.application.eager_load! # probably only necessary in dev
+    num_other_rows = (ActiveRecord::Base.descendants - [Availability]).map(&:count).reduce(&:+)
+    # Heroku limit is 10,000 rows, keep some for users and requests
+    alert_threshold = 6500
+    max_availabilities = [9500 - num_other_rows, alert_threshold].max
+    if max_availabilities == alert_threshold
+      UserMailer.alert("max_availabilities: #{max_availabilities}; time to adjust").deliver_now
+    end
     num_to_delete = Availability.count - max_availabilities
     if num_to_delete > 0
       destroyed = self.past.reorder(:created_at).limit(num_to_delete).each(&:delete)

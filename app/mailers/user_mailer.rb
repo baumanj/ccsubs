@@ -35,6 +35,12 @@ class UserMailer < ActionMailer::Base
     end
   end
 
+  def alert(body)
+    mail(to: User.first, subject: "Alert!") do |format|
+      format.text { render plain: body }
+    end
+  end
+
   def confirm_email(user)
     @user = user
     mail to: user, subject: "Confirm your ccsubs email"
