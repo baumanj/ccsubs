@@ -1,6 +1,11 @@
 require "spec_helper"
 
-describe UserMailer do
+describe UserMailer, :type => :mailer do
+
+  before do
+    UserMailer.active_user = create(:user)
+  end
+
   describe "confirm_email"
   #   let(:mail) { UserMailer.confirm_email }
 
@@ -29,4 +34,11 @@ describe UserMailer do
   #   end
   # end
 
+  # describe "all_hands_email"
+  #   let(:mail) { UserMailer.all_hands_email(['jon@shumi.org'], "test sub", "test bod") }
+
+  #   it "does soemthing" do
+  #     puts mail.subject
+  #     puts mail.body
+  #   end
 end
