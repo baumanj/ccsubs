@@ -11,12 +11,12 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170124010313) do
+ActiveRecord::Schema.define(version: 20170203175454) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "availabilities", force: true do |t|
+  create_table "availabilities", force: :cascade do |t|
     t.integer  "user_id"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -29,7 +29,7 @@ ActiveRecord::Schema.define(version: 20170124010313) do
   add_index "availabilities", ["user_id", "shift", "date"], name: "index_availabilities_on_user_id_and_shift_and_date", unique: true, using: :btree
   add_index "availabilities", ["user_id"], name: "index_availabilities_on_user_id", using: :btree
 
-  create_table "default_availabilities", force: true do |t|
+  create_table "default_availabilities", force: :cascade do |t|
     t.integer  "user_id"
     t.integer  "cwday"
     t.integer  "shift"
@@ -41,45 +41,45 @@ ActiveRecord::Schema.define(version: 20170124010313) do
   add_index "default_availabilities", ["user_id", "shift", "cwday"], name: "index_default_availabilities_on_user_id_and_shift_and_cwday", unique: true, using: :btree
   add_index "default_availabilities", ["user_id"], name: "index_default_availabilities_on_user_id", using: :btree
 
-  create_table "messages", force: true do |t|
+  create_table "messages", force: :cascade do |t|
     t.integer  "shift",      null: false
-    t.datetime "date",       null: false
     t.text     "body"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.date     "date",       null: false
   end
 
-  create_table "requests", force: true do |t|
+  create_table "requests", force: :cascade do |t|
     t.integer  "user_id"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "text"
-    t.integer  "shift",                          null: false
-    t.date     "date",                           null: false
-    t.integer  "state",              default: 0, null: false
+    t.string   "text",               limit: 255
+    t.integer  "shift",                                      null: false
+    t.date     "date",                                       null: false
+    t.integer  "state",                          default: 0, null: false
     t.integer  "fulfilling_swap_id"
     t.integer  "availability_id"
   end
 
   add_index "requests", ["user_id", "shift", "date"], name: "index_requests_on_user_id_and_shift_and_date", unique: true, using: :btree
 
-  create_table "users", force: true do |t|
-    t.string   "name"
-    t.string   "email"
+  create_table "users", force: :cascade do |t|
+    t.string   "name",                  limit: 255
+    t.string   "email",                 limit: 255
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "password_digest"
-    t.string   "remember_token"
-    t.boolean  "admin",                 default: false
+    t.string   "password_digest",       limit: 255
+    t.string   "remember_token",        limit: 255
+    t.boolean  "admin",                             default: false
     t.integer  "vic"
-    t.boolean  "disabled",              default: false
-    t.integer  "failed_login_attempts", default: 0
-    t.string   "confirmation_digest"
-    t.boolean  "confirmed",             default: false
-    t.boolean  "staff",                 default: false, null: false
+    t.boolean  "disabled",                          default: false
+    t.integer  "failed_login_attempts",             default: 0
+    t.string   "confirmation_digest",   limit: 255
+    t.boolean  "confirmed",                         default: false
+    t.boolean  "staff",                             default: false, null: false
     t.integer  "volunteer_type"
-    t.string   "home_phone"
-    t.string   "cell_phone"
+    t.string   "home_phone",            limit: 255
+    t.string   "cell_phone",            limit: 255
   end
 
   add_index "users", ["email"], name: "index_users_on_email", unique: true, using: :btree
