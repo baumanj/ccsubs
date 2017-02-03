@@ -19,6 +19,10 @@ class DefaultAvailability < ActiveRecord::Base
     self.find_or_initialize_by(cwday: shifttime.date.cwday, shift: shifttime.class.shifts[shifttime.shift])
   end
 
+  def self.where_shifttime(shifttime)
+    self.where(attrs_from_shifttime(shifttime))
+  end
+
   def self.apply(availabilities)
     availabilities.each do |a|
       if a.free.nil?
@@ -35,4 +39,10 @@ class DefaultAvailability < ActiveRecord::Base
     s = "#{cwday.pluralize}, #{shift}"
     Rails.env.development? ? "#{s} [#{id}]" : s
   end
+
+  private
+
+    def self.attrs_from_shifttime(shifttime)
+      { cwday: shifttime.date.cwday, shift: shifttime.class.shifts[shifttime.shift] }
+    end
 end
