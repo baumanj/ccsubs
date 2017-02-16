@@ -70,7 +70,7 @@ class Availability < ActiveRecord::Base
     Rails.application.eager_load! # probably only necessary in dev
     num_other_rows = (ActiveRecord::Base.descendants - [Availability]).map(&:count).reduce(&:+)
     # Heroku limit is 10,000 rows, keep some for users and requests
-    alert_threshold = 6500
+    alert_threshold = 6000
     max_availabilities = [9500 - num_other_rows, alert_threshold].max
     if max_availabilities == alert_threshold
       UserMailer.alert("max_availabilities: #{max_availabilities}; time to adjust").deliver_now
