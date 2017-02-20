@@ -9,6 +9,7 @@ class User < ActiveRecord::Base
   has_many :requests, -> { extending ShiftTime::ClassMethods }
   has_many :availabilities, -> { extending ShiftTime::ClassMethods }
   has_many :default_availabilities
+  has_many :on_calls, -> { extending ShiftTime::ClassMethods }
   accepts_nested_attributes_for :requests, :availabilities, :default_availabilities
 
   # allow_nil so that users can edit their profile w/o entering password

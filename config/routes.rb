@@ -1,4 +1,8 @@
 Ccsubs::Application.routes.draw do
+  get 'on_calls/edit(/:date)', to: 'on_calls#edit', as: :edit_on_call
+  get 'on_calls(/:date)', to: 'on_calls#index', as: :on_calls
+  resources :on_calls, only: [:create, :update]
+
   get '/messages/new', to: 'messages#new'
   post '/messages/deliver', to: 'messages#deliver', as: :deliver_message
 

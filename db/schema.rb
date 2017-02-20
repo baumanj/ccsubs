@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170203203315) do
+ActiveRecord::Schema.define(version: 20170213025020) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -48,6 +48,18 @@ ActiveRecord::Schema.define(version: 20170203203315) do
     t.datetime "updated_at"
     t.date     "date",       null: false
   end
+
+  create_table "on_calls", force: :cascade do |t|
+    t.date     "date",               null: false
+    t.integer  "shift",              null: false
+    t.integer  "user_id",            null: false
+    t.datetime "created_at",         null: false
+    t.datetime "updated_at",         null: false
+    t.boolean  "prior_availability"
+  end
+
+  add_index "on_calls", ["shift", "date"], name: "index_on_calls_on_shift_and_date", unique: true, using: :btree
+  add_index "on_calls", ["user_id"], name: "index_on_calls_on_user_id", using: :btree
 
   create_table "requests", force: :cascade do |t|
     t.integer  "user_id"
@@ -89,4 +101,5 @@ ActiveRecord::Schema.define(version: 20170203203315) do
   add_index "users", ["remember_token"], name: "index_users_on_remember_token", using: :btree
   add_index "users", ["vic"], name: "index_users_on_vic", unique: true, using: :btree
 
+  add_foreign_key "on_calls", "users"
 end

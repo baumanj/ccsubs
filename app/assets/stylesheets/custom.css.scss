@@ -49,14 +49,12 @@ h1, h2, h3, h4, h5, h6 {
 
 h1 {
   font-size: 3em;
-  letter-spacing: -2px;
   margin-bottom: 30px;
   text-align: left;
 }
 
 h2 {
   font-size: 1.2em;
-  letter-spacing: -1px;
   margin-bottom: 30px;
   text-align: left;
   font-weight: normal;
@@ -178,6 +176,39 @@ div.active {
 
 .match {
   font-weight: bold;
+}
+
+.month-header a, .month-header div div {
+  @extend .btn;
+  @extend .btn-default;
+  font-size: 100%;
+  font-weight: 500;
+}
+
+.day {
+  border: 1px solid lightgray;
+}
+
+.day input {
+  text-align: left;
+  padding-left: 2em;
+}
+
+.day ol {
+  padding-left: 3em;
+  padding-top: 2px;
+}
+
+.square {
+  border-radius: 0;
+}
+
+.day-number {
+  float: left;
+  width: 1.5em;
+  padding: 2px;
+  border-right:  1px solid lightgray;
+  border-bottom: 1px solid lightgray;
 }
 
 /* miscellaneous */

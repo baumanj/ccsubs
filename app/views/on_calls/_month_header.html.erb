@@ -1,0 +1,10 @@
+<h1 class="month-header">
+  <div class="btn-group" role="group">
+    <%= link_to "<", send(path_func, date.prev_month) %>
+    <div class="btn"><%= date.strftime(date.year == Date.current.year ? '%B' : '%B %Y') %></div>
+    <%= link_to ">", send(path_func, date.next_month) %>
+  </div>
+  <div class="btn-group">
+    <%= label %>
+  </div>
+</h1>

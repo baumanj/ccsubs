@@ -17,10 +17,12 @@ class Availability < ActiveRecord::Base
 
     if free?
       if request && request.fulfilled? == free?
-        errors.add(:request, "Must be #{free? ? "not be" : "be"} fulfilled if free? is #{free?}")
+        errors.add(:request, "must be #{free? ? "not be" : "be"} fulfilled if free? is #{free?}")
+      elsif user.on_calls.find_by(shifttime_attrs)
+        errors.add(:free, "can't be true if you're on call for that shift (#{self}")
       end
     elsif free.nil?
-      errors.add(:free, "Must be indicated 'Yes' or 'No'")
+      errors.add(:free, "must be indicated 'Yes' or 'No'")
     end
 
     # if (s = user.availability_state_for(self)) != :potential
