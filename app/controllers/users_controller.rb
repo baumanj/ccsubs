@@ -243,7 +243,8 @@ class UsersController < ApplicationController
     end
 
     def user_params
-      params.require(:user).permit(:name, :email, :password, :password_confirmation, :disabled, :vic, :confirmation_token,
+      params.require(:user).permit(:name, :email, :password, :password_confirmation, :disabled,
+                                   :vic, :confirmation_token, :first_day_of_week_preference,
                                    availabilities_attributes: [:id, :date, :shift, :free],
                                    default_availabilities_attributes: [:id, :cwday, :shift, :free],
                                    requests_attributes: [:date, :shift])

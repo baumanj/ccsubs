@@ -10,6 +10,9 @@
       <%= f.label :email %>
       <%= f.text_field :email %>
 
+      <%= f.label :first_day_of_week_preference %>
+      <%= f.select :first_day_of_week_preference, User.first_day_of_week_preferences.keys %>
+
       <%= f.label :password %>
       <%= f.password_field :password %>
 
