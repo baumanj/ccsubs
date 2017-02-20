@@ -1,7 +1,9 @@
 class User < ActiveRecord::Base
 
   MAX_LOGIN_ATTEMPTS = 10
+
   enum volunteer_type: [ 'Regular Shift', 'Alternating', 'Sub Only' ]
+  enum first_day_of_week_preference: Date::DAYNAMES
 
   attr_accessor :confirmation_token
   has_secure_password

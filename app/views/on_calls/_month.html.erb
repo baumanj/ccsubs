@@ -1,11 +1,12 @@
 
 <table class="month">
   <tr>
-    <% Date::DAYNAMES.rotate(1).each do |d| %>
+    <% first_day_of_week_i = User.first_day_of_week_preferences[current_user.first_day_of_week_preference] %>
+    <% Date::DAYNAMES.rotate(first_day_of_week_i).each do |d| %>
       <th class="col-md-1"><%= d %></th>
     <% end %>
   </tr>
-  <% date = @date_range.first - (@date_range.first.cwday - 1) %>
+  <% date = @date_range.first - (@date_range.first.cwday - first_day_of_week_i) %>
   <% @date_range.map(&:cweek).uniq.each do %>
     <tr>
       <% 7.times do %>

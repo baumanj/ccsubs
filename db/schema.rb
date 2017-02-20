@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170213025020) do
+ActiveRecord::Schema.define(version: 20170220225202) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -76,24 +76,25 @@ ActiveRecord::Schema.define(version: 20170213025020) do
   add_index "requests", ["user_id", "shift", "date"], name: "index_requests_on_user_id_and_shift_and_date", unique: true, using: :btree
 
   create_table "users", force: :cascade do |t|
-    t.string   "name",                  limit: 255
-    t.string   "email",                 limit: 255
+    t.string   "name",                         limit: 255
+    t.string   "email",                        limit: 255
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "password_digest",       limit: 255
-    t.string   "remember_token",        limit: 255
-    t.boolean  "admin",                             default: false
+    t.string   "password_digest",              limit: 255
+    t.string   "remember_token",               limit: 255
+    t.boolean  "admin",                                    default: false
     t.integer  "vic"
-    t.boolean  "disabled",                          default: false
-    t.integer  "failed_login_attempts",             default: 0
-    t.string   "confirmation_digest",   limit: 255
-    t.boolean  "confirmed",                         default: false
-    t.boolean  "staff",                             default: false, null: false
+    t.boolean  "disabled",                                 default: false
+    t.integer  "failed_login_attempts",                    default: 0
+    t.string   "confirmation_digest",          limit: 255
+    t.boolean  "confirmed",                                default: false
+    t.boolean  "staff",                                    default: false, null: false
     t.integer  "volunteer_type"
-    t.string   "home_phone",            limit: 255
-    t.string   "cell_phone",            limit: 255
+    t.string   "home_phone",                   limit: 255
+    t.string   "cell_phone",                   limit: 255
     t.integer  "regular_shift"
     t.integer  "regular_cwday"
+    t.integer  "first_day_of_week_preference",             default: 0,     null: false
   end
 
   add_index "users", ["email"], name: "index_users_on_email", unique: true, using: :btree
