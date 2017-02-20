@@ -7,11 +7,26 @@ module Faker
       end
     end
   end
+
+  class Name
+    def self.unique_name
+      @previously_selected ||= Set.new
+      100.times do
+        new_name = name
+        if !@previously_selected.include?(new_name)
+          @previously_selected.add(new_name)
+          return new_name
+        end
+      end
+
+      raise "Couldn't find unique name after many tries"
+    end
+  end
 end
 
 FactoryGirl.define do
   factory :user do
-    name { Faker::Name.name }
+    name { Faker::Name.unique_name }
     email { Faker::Internet.email }
     volunteer_type { User.volunteer_types.keys.sample }
     home_phone { Faker::PhoneNumber.phone_number }
