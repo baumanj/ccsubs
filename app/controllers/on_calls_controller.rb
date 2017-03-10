@@ -20,6 +20,7 @@ class OnCallsController < ApplicationController
       OnCall.destroy_all(user: @on_call.user, date: @on_call.date.all_month)
       @on_call.save!
       flash[:success] = "On call for #{@on_call.date.strftime('%B')} saved"
+      mailer.confirm_on_call_signup(@on_call).deliver_now
       redirect_to edit_on_call_path(@on_call.date)
     else
       @errors = @on_call.errors

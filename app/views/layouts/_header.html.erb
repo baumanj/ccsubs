@@ -14,6 +14,8 @@
           <% end %>
           <% if current_user.staff_or_admin? %>
             <li><%= link_to "On-call schedule", on_calls_path %></li>
+          <% else %>
+            <li><%= link_to "On-call signup", edit_on_call_path %></li>
           <% end %>
           <% if !current_user.staff? %>
             <li><%= link_to "New request", new_request_path %></li>
@@ -28,9 +30,6 @@
               <li><%= link_to "Swap availability",
                 availabilities_path %></li>
               <li><%= link_to "Typical availability", edit_default_availability_path %></li>
-              <% if !current_user.staff_or_admin? %>
-                <li><%= link_to "On-call signup", edit_on_call_path %></li>
-              <% end %>
               <li class="divider"></li>
               <li>
                 <%= link_to "Sign out", signout_path, method: "delete" %>

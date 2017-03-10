@@ -217,6 +217,9 @@ class UsersController < ApplicationController
   end
 
   def show
+    unless current_user.staff_or_admin?
+      redirect_to edit_user_path(params[:id])
+    end
     @user = User.find(params[:id])
   end
 

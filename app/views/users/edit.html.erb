@@ -4,8 +4,14 @@
 <div class="row">
   <div class="col-md-6 col-md-offset-3">
     <%= form_for(@user) do |f| %>
-      <%= render 'shared/error_messages' %>
+      <%= link_to("http://www.gravatar.com/#{@user.gravatar_id}/") do %>
+        <%= image_tag @user.gravatar_url(d: :identicon) %>
+      <% end %>
+      <small>Click to edit profile picture on gravatar.com</small>
 
+      <hr />
+
+      <%= render 'shared/error_messages' %>
 
       <%= f.label :email %>
       <%= f.text_field :email %>
@@ -27,7 +33,9 @@
       <%= f.submit "Save changes", class: "btn btn-large btn-primary" %>
 
     <% end %>
-    <br />
+
+    <hr />
+
     <p>The following fields aren't editable because they are stored in
       the volunteer database. If you need to modify them, please contact
       <a href="mailto:volunteerservices@crisisclinic.org">volunteerservices@crisisclinic.org</a>.

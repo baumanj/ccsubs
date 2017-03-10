@@ -3,13 +3,13 @@
 <%= render 'shared/error_messages' %>
 
 <%= render partial: 'month_header',
-           locals: { label: 'on-call signup', date: @date_range.first, path_func: :edit_on_call_path } %>
+           locals: { date: @date_range.first, path_func: :edit_on_call_path } %>
 
 <h2>
   Key:
-  <div class="square btn btn-large btn-primary btn-success disabled">Your current selection</div>
-  <div class="square btn btn-large btn-primary disabled">Unavailable</div>
-  <div class="square btn btn-large btn-primary">Available</div>
+  <div class="selected-oncall disabled">Your current selection</div>
+  <div class="unavailable-oncall disabled">Unavailable</div>
+  <div class="available-oncall">Available</div>
 </h2>
 
 <%= render layout: 'month' do |date| %>
@@ -17,8 +17,13 @@
     <%= form_for(oc) do |f| %>
       <%= f.hidden_field :date %>
       <%= f.hidden_field :shift %>
-      <%= f.submit oc.shift, class: "square btn btn-large btn-primary #{'btn-success' if oc.user == current_user}",
-                             disabled: oc.persisted? || oc.start.past? %>
+      <% if oc.user == current_user %>
+        <%= f.submit oc.shift, class: "selected-oncall", disabled: true %>
+      <% elsif oc.persisted? || oc.start.past? %>
+        <%= f.submit oc.shift, class: "unavailable-oncall", disabled: true %>
+      <% else %>
+        <%= f.submit oc.shift, class: "available-oncall" %>
+      <% end %>
     <% end %>
   <% end %>
 <% end %>

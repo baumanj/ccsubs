@@ -178,6 +178,10 @@ div.active {
   font-weight: bold;
 }
 
+.month-header {
+  text-align: center;
+}
+
 .month-header a, .month-header div div {
   @extend .btn;
   @extend .btn-default;
@@ -209,6 +213,24 @@ div.active {
   padding: 2px;
   border-right:  1px solid lightgray;
   border-bottom: 1px solid lightgray;
+}
+
+.unavailable-oncall {
+  @extend .btn;
+  @extend .square;
+  @extend .btn-danger;
+}
+
+.available-oncall {
+  @extend .btn;
+  @extend .square;
+  @extend .btn-primary;
+}
+
+.selected-oncall {
+  @extend .btn;
+  @extend .square;
+  @extend .btn-success;
 }
 
 /* miscellaneous */

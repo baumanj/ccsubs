@@ -119,6 +119,12 @@ class UserMailer < ActionMailer::Base
          subject: "Sub/Swap #{offerers_request}: swap with #{@decliner} declined 😭"
   end
 
+  def confirm_on_call_signup(on_call)
+    @on_call = on_call
+    mail to: @on_call.user,
+         subject: "On-call signup for #{@on_call} confirmed"
+  end
+
   def reset_password(user)
     @user = user
     mail to: user, subject: "Reset your ccsubs password"
