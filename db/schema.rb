@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170220225202) do
+ActiveRecord::Schema.define(version: 20170311184125) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -48,6 +48,16 @@ ActiveRecord::Schema.define(version: 20170220225202) do
     t.datetime "updated_at"
     t.date     "date",       null: false
   end
+
+  create_table "on_call_reminders", force: :cascade do |t|
+    t.integer  "month",      null: false
+    t.integer  "year",       null: false
+    t.text     "user_ids",   null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  add_index "on_call_reminders", ["month", "year"], name: "index_on_call_reminders_on_month_and_year", unique: true, using: :btree
 
   create_table "on_calls", force: :cascade do |t|
     t.date     "date",               null: false

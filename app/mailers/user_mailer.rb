@@ -125,6 +125,13 @@ class UserMailer < ActionMailer::Base
          subject: "On-call signup for #{@on_call} confirmed"
   end
 
+  def remind_on_call_signup(users, date)
+    @date_string = date.strftime("%B")
+    @url = edit_on_call_url(date)
+    mail bcc: users,
+         subject: "On-call signup reminder for #{@date_string}"
+  end
+
   def reset_password(user)
     @user = user
     mail to: user, subject: "Reset your ccsubs password"

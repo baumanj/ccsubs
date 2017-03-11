@@ -44,4 +44,15 @@ class OnCall < ActiveRecord::Base
     end
   end
 
+  def self.send_reminder
+    next_month_date = Date.current.next_month.beginning_of_month
+    next_month_params = {month: next_month_date.month, year: next_month_date.year }
+
+    unless OnCallReminder.find_by(next_month_params)
+      users = users_to_nag(next_month_date.all_month)
+      UserMailer.remind_on_call_signup(users, next_month_date).deliver_now
+      user_ids_string = YAML::dump(users.map(&:id))
+      OnCallReminder.create!(next_month_params.merge(user_ids: user_ids_string))
+    end
+  end
 end

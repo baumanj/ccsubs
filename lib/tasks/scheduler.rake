@@ -10,3 +10,7 @@ end
 task :destroy_oldest_past_availabilities => :environment do
   Availability.destroy_oldest_past
 end
+
+task :send_on_call_reminder => :environment do
+  OnCall.send_reminder
+end
