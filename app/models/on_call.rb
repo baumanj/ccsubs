@@ -40,7 +40,7 @@ class OnCall < ActiveRecord::Base
     if on_calls.count == date_range.count * OnCall.shifts.size
       return []
     else
-      return User.where(volunteer_type: "Regular Shift") - on_calls.map(&:user)
+      return User.where(volunteer_type: "Regular Shift", disabled: false) - on_calls.map(&:user)
     end
   end
 

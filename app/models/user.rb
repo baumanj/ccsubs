@@ -1,4 +1,6 @@
 class User < ActiveRecord::Base
+  # Maybe change this later
+  # default_scope { where(disabled: false) }
 
   MAX_LOGIN_ATTEMPTS = 10
 
