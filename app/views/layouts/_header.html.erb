@@ -16,8 +16,8 @@
             <li><%= link_to "On-call schedule", on_calls_path %></li>
           <% else %>
             <li><%= link_to "On-call signup", edit_on_call_path %></li>
-          <% end %>
- -->          <% if !current_user.staff? %>
+          <% end %> -->
+          <% if !current_user.staff? %>
             <li><%= link_to "New request", new_request_path %></li>
           <% end %>
           <li class="dropdown">
