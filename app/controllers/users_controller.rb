@@ -2,7 +2,7 @@ require 'csv'
 
 class UsersController < ApplicationController
   before_action :require_signin, except: [:reset_password, :update_password]
-  before_action :check_authorization, except: [:reset_password]
+  before_action :check_authorization, except: [:reset_password, :show]
   before_action :require_admin, only: [:new, :create, :index, :new_list, :upload_csv]
 
   EXPECTED_CSV_HEADERS = ['name', 'volunteer_type', 'vic', 'home_phone', 'cell_phone', 'email']
