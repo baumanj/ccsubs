@@ -120,7 +120,17 @@ class UserMailer < ActionMailer::Base
   end
 
   def confirm_on_call_signup(on_call)
+    @description = "We only call you in if a regular shift member is sick or has an emergency but need to count on your help if that happens. If you have not received a call from the phone room 45 minutes into the on-call shift time you signed up for, you are free to assume that you are not needed!"
     @on_call = on_call
+    @cal = Icalendar::Calendar.new
+    @cal.event do |e|
+      e.dtstart = Icalendar::Values::DateTime.new @on_call.start, 'tzid' => 'America/Los_Angeles'
+      e.dtend = Icalendar::Values::DateTime.new @on_call.end, 'tzid' => 'America/Los_Angeles'
+      e.summary = "Crisis Clinic on-call"
+      e.description = @description
+      e.ip_class    = "PRIVATE"
+    end
+    attachments['calendar_event.ics'] = { mime_type: 'text/calendar', content: @cal.to_ical }
     mail to: @on_call.user,
          subject: "On-call signup for #{@on_call} confirmed"
   end

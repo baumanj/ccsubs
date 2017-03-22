@@ -136,6 +136,10 @@ module ShiftTime
     end
   end
 
+  def end
+    ShiftTime::shift_end(start) if start
+  end
+
   def active?
     self.class.active.include?(self)
   end
