@@ -73,7 +73,9 @@ class UserMailer < ActionMailer::Base
   def remind_sub(req, fulfilling_user)
     @req = req
     @fulfilling_user = fulfilling_user
-    mail to: @fulfilling_user, subject: "Sub/Swap #{@req}: you have agreed to sub"
+    attach_ical @req.to_ical(summary: "Crisis Clinic Shift", description: "You agreed to sub for this shift because you're awesome")
+    mail to: @fulfilling_user,
+         subject: "Sub/Swap #{@req}: you have agreed to sub"
   end
 
   def notify_swap_offer(from: nil, to: nil)
@@ -93,11 +95,11 @@ class UserMailer < ActionMailer::Base
          cc: VOLUNTEER_SERVICES
   end
 
-
   def notify_swap_accept(req)
     @req = req
     @accepter = req.user
     @acceptee = req.fulfilling_user
+    attach_ical @req.to_ical(summary: "Crisis Clinic Shift", description: "You agreed to cover this shift in exchange for #{@req.fulfilling_swap}")
     mail to: @acceptee,
          subject: "Sub/Swap #{@req}: #{@acceptee} swapping for #{@accepter} covering #{@req.fulfilling_swap}",
          cc: VOLUNTEER_SERVICES
@@ -107,8 +109,17 @@ class UserMailer < ActionMailer::Base
     @req = req
     @accepter = req.user
     @acceptee = req.fulfilling_user
+    attach_ical @req.fulfilling_swap.to_ical(summary: "Crisis Clinic Shift", description: "You agreed to cover this shift in exchange for #{@req}")
     mail to: @accepter,
          subject: "Sub/Swap #{@req}: swap from #{@acceptee} accepted for #{@req.fulfilling_swap}"
+  end
+
+  def confirm_on_call_signup(on_call)
+    @description = "We only call you in if a regular shift member is sick or has an emergency but need to count on your help if that happens. If you have not received a call from the phone room 45 minutes into the on-call shift time you signed up for, you are free to assume that you are not needed!"
+    @on_call = on_call
+    attach_ical @on_call.to_ical(summary: "Crisis Clinic on-call", description: @description)
+    mail to: @on_call.user,
+         subject: "On-call signup for #{@on_call} confirmed"
   end
 
   def notify_swap_decline(decliners_request: req, offerers_request: offer_req)
@@ -116,23 +127,7 @@ class UserMailer < ActionMailer::Base
     @decliner = decliners_request.user
     @declinee = offerers_request.user
     mail to: @declinee,
-         subject: "Sub/Swap #{offerers_request}: swap with #{@decliner} declined 😭"
-  end
-
-  def confirm_on_call_signup(on_call)
-    @description = "We only call you in if a regular shift member is sick or has an emergency but need to count on your help if that happens. If you have not received a call from the phone room 45 minutes into the on-call shift time you signed up for, you are free to assume that you are not needed!"
-    @on_call = on_call
-    @cal = Icalendar::Calendar.new
-    @cal.event do |e|
-      e.dtstart = Icalendar::Values::DateTime.new @on_call.start, 'tzid' => 'America/Los_Angeles'
-      e.dtend = Icalendar::Values::DateTime.new @on_call.end, 'tzid' => 'America/Los_Angeles'
-      e.summary = "Crisis Clinic on-call"
-      e.description = @description
-      e.ip_class    = "PRIVATE"
-    end
-    attachments['calendar_event.ics'] = { mime_type: 'text/calendar', content: @cal.to_ical }
-    mail to: @on_call.user,
-         subject: "On-call signup for #{@on_call} confirmed"
+         subject: "Sub/Swap #{offerers_request}: swap with #{@decliner} declined "
   end
 
   def remind_on_call_signup(users, date)
@@ -148,6 +143,10 @@ class UserMailer < ActionMailer::Base
   end
 
   private
+
+    def attach_ical(ical)
+      attachments['ccsubs.ics'] = { mime_type: 'text/calendar', content: ical }
+    end
 
     def get_address(input)
       if input.class == String

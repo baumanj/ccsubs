@@ -149,6 +149,27 @@ module ShiftTime
     Rails.env.development? ? "#{s} [#{id}]" : s
   end
 
+  def to_ical(summary:, description:)
+    require 'icalendar/tzinfo'
+
+    cal = Icalendar::Calendar.new
+
+    tzid = 'America/Los_Angeles'
+    tz = TZInfo::Timezone.get tzid
+    timezone = tz.ical_timezone self.start
+    cal.add_timezone timezone
+
+    cal.event do |e|
+      e.dtstart = Icalendar::Values::DateTime.new self.start, 'tzid' => tzid
+      e.dtend = Icalendar::Values::DateTime.new self.end, 'tzid' => tzid
+      e.summary = summary
+      e.description = description
+      e.ip_class    = "PRIVATE"
+    end
+
+    cal.to_ical
+  end
+
   def no_schedule_conflicts
     if self.class.find_by(slice(:user, :date, :shift))
       errors.add(:shift, "can't be the same as your own existing #{self.class.to_s.humanize(capitalize: false)}")
