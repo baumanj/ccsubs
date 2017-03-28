@@ -23,4 +23,5 @@
   <%= render partial: 'request_list',
       locals: {title: 'Shifts to cover', requests: @owner.upcoming_coverage} %>
 
+  <%= link_to 'Show past requests', owned_requests_path(@owner, past: true) %>
 </div>

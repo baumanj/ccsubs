@@ -100,8 +100,8 @@ ActiveRecord::Schema.define(version: 20170311184125) do
     t.boolean  "confirmed",                                default: false
     t.boolean  "staff",                                    default: false, null: false
     t.integer  "volunteer_type"
-    t.string   "home_phone",                   limit: 255
-    t.string   "cell_phone",                   limit: 255
+    t.string   "home_phone"
+    t.string   "cell_phone"
     t.integer  "regular_shift"
     t.integer  "regular_cwday"
     t.integer  "first_day_of_week_preference",             default: 0,     null: false

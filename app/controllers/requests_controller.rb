@@ -88,7 +88,7 @@ class RequestsController < ApplicationController
 
   def owned_index
     @owner = User.find(user_id)
-    @requests = @owner.requests.on_or_after(Date.today)
+    @requests = params[:past] ? @owner.requests.past : @owner.requests.on_or_after(Date.today)
   end
 
   def fulfilled

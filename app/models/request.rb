@@ -302,7 +302,10 @@ class Request < ActiveRecord::Base
   end
     
   def fulfilling_user
-    (availability || fulfilling_swap).user unless seeking_offers?
+    unless seeking_offers?
+      fulfillment = (availability || fulfilling_swap)
+      fulfillment ? fulfillment.user : "Unknown user"
+    end
   end
 
   def inspect

@@ -94,8 +94,6 @@ module ShiftTime
     times.map {|t| t.strftime("%-l#{':%M' unless t.min.zero?}%P") }.join("-")
   end
 
-  DATE_FORMAT = "%A, %B %e"
-
   def self.next_shift(time=Time.current)
     current_shift = time_to_shift(time)
     if current_shift.nil?
@@ -145,7 +143,9 @@ module ShiftTime
   end
 
   def to_s
-    s = "#{date.strftime(DATE_FORMAT)}, #{shift}"
+    date_format = "%A, %B %e"
+    date_format += ", %Y" if date.year != Date.current.year
+    s = "#{date.strftime(date_format)}, #{shift}"
     Rails.env.development? ? "#{s} [#{id}]" : s
   end
 

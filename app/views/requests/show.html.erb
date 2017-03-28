@@ -4,7 +4,7 @@
 <h1><%= @request %></h1>
 
 <% if @request.start.past? && !@request.received_offer? %>
-  <p>This request's start time has passed.</p>
+  <p>This request was not fulfulled. It was created <%= distance_of_time_in_words(@request.created_at, @request.start) %> before the shift.</p>
 <% elsif @request.fulfilled? %>
   <%= render 'fulfilled_request' %>
 <% elsif current_user == @request.user %>
