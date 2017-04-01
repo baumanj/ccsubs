@@ -182,17 +182,22 @@ class Request < ActiveRecord::Base
     end
   end
 
-  # If there are any requests which have received a swap offer, but whose time
-  # has passed, decline them so the offering requests go back to the
+  # If there are any requests which have a pending offer, but whose time
+  # has passed, decline them so the counterpart requests go back to the
   # seeking_offers state.
   def self.decline_past_offers
     past.received_offer.each do |request|
       other_request = request.fulfilling_swap
       if other_request.start.future? && request.decline_pending_swap
-        if request.decline_pending_swap
-          UserMailer.notify_swap_decline(decliners_request: request,
-                                         offerers_request: other_request).deliver_now
-        end
+        UserMailer.notify_swap_decline(decliners_request: request,
+                                       offerers_request: other_request).deliver_now
+      end
+    end
+
+    past.sent_offer.each do |request|
+      other_request = request.fulfilling_swap
+      if other_request.start.future?
+        other_request.decline_pending_swap
       end
     end
   end
