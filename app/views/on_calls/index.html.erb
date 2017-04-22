@@ -6,7 +6,7 @@
 <%= render layout: 'month' do |date| %>
   <ol>
   <% @on_calls_for_date[date].each do |oc| %>
-    <li><%= link_to_if oc.user, oc.user, oc.user %></li>
+    <li><%= link_to oc.user, oc.user, title: oc.user.phone if oc.user %></li>
   <% end %>
   </ol>
 <% end %>

@@ -58,6 +58,10 @@ class User < ActiveRecord::Base
     Rails.env.development? ? "#{name} [#{id}]" : name
   end
 
+  def phone
+    cell_phone && home_phone ? "C: #{cell_phone} H: #{home_phone}" : cell_phone || home_phone
+  end
+
   def User.digest(token)
     Digest::SHA1.hexdigest(token.to_s)
   end
