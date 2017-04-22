@@ -4,11 +4,10 @@ This is a web application for facilitating exchanging shift assignments.
 
 ## TODO:
 ### Next steps
-* Boilerplate for broadcast email
-* noreply address for broadcast email
 * Smart exclusions for broadcast email and shift tracking
-* Reply-to address for broadcast email (don't show email to recipient)
 * On-call tracking
+  * Nicer errors
+  * No error on redundant submission for same volunteer
   * Need info about what a volunteer's default shift
   * 1 for every shift
   * 1 shift/month/volunteer (there won't be enought room for everyone)
