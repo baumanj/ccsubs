@@ -32,7 +32,13 @@ class OnCallsController < ApplicationController
   private
 
     def set_date_range_and_on_calls
-      @date_range = params.fetch(:date, Date.current).to_date.all_month
+      date = params.fetch(:date, Date.current).to_date
+      if date < OnCall::FIRST_VALID_DATE
+        date = OnCall::FIRST_VALID_DATE
+        flash[:alert] = "Online on-call signup is not availble before #{OnCall::FIRST_VALID_DATE}"
+        redirect_to edit_on_call_path(OnCall::FIRST_VALID_DATE)
+      end
+      @date_range = date.all_month
       @on_calls_for_date = Hash.new {|hash, key| hash[key] = [] }
 
       # Add existing on-calls

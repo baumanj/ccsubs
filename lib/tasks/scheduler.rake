@@ -12,5 +12,5 @@ task :destroy_oldest_past_availabilities => :environment do
 end
 
 task :send_on_call_reminder => :environment do
-  OnCall.send_reminder
+  OnCallReminder.send_reminders
 end

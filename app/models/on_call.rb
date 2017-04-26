@@ -3,6 +3,7 @@ class OnCall < ActiveRecord::Base
 
   belongs_to :user
 
+  FIRST_VALID_DATE = Date.new(2017, 6, 1)
   enum shift: ShiftTime::SHIFT_NAMES
 
   validates :user, presence: true
@@ -12,27 +13,37 @@ class OnCall < ActiveRecord::Base
 
   validate do
     shift_is_between_now_and_a_year_from_now
+
     if user.requests.find_by_shifttime(self)
       errors.add(:shift, "can't be the same as your request for coverage")
+    end
+
+    if self.date < FIRST_VALID_DATE
+      errors.add(:date, "can't be before #{OnCall::FIRST_VALID_DATE.strftime("%B %-d")}")
+    end
+
+    if OnCall.where.not(id: self.id).exists?(user: user, date: date.all_month)
+      errors.add(:date, "can't be the same month as existing signup")
     end
   end
 
   # If you're on call, you can't be available to sub
   before_create do
     availability = user.availabilities.find_or_initialize_by(shifttime_attrs)
-    prior_availability = availability.new_record? ? nil : availability.free
-    availability.update(free: false, implicitly_created: availability.new_record?)
+    self.prior_availability = availability.new_record? ? nil : availability.free
+    availability.update!(free: false, implicitly_created: availability.new_record?)
+    true # to avoid https://apidock.com/rails/ActiveRecord/RecordNotSaved
   end
 
-  before_destroy do
-    unless prior_availability.nil?
-      availability = user.availabilities.find_by(shifttime_attrs)
-      if availability.implicitly_created?
-        availability.destroy!
-      else
-        availability.update(free: prior_availability)
-      end
+  after_destroy do
+    availability = user.availabilities.find_by(shifttime_attrs)
+    if availability.implicitly_created?
+      availability.destroy!
+    else
+      availability.update!(free: self.prior_availability)
     end
+    # unless prior_availability.nil?
+    # end
   end
 
   def self.users_to_nag(date_range)
@@ -40,19 +51,8 @@ class OnCall < ActiveRecord::Base
     if on_calls.count == date_range.count * OnCall.shifts.size
       return []
     else
-      return User.where(volunteer_type: "Regular Shift", disabled: false) - on_calls.map(&:user)
+      return User.where(volunteer_type: User.volunteer_types['Regular Shift'], disabled: false) - on_calls.map(&:user)
     end
   end
 
-  def self.send_reminder
-    next_month_date = Date.current.next_month.beginning_of_month
-    next_month_params = {month: next_month_date.month, year: next_month_date.year }
-
-    unless OnCallReminder.find_by(next_month_params)
-      users = users_to_nag(next_month_date.all_month)
-      UserMailer.remind_on_call_signup(users, next_month_date).deliver_now
-      user_ids_string = YAML::dump(users.map(&:id))
-      OnCallReminder.create!(next_month_params.merge(user_ids: user_ids_string))
-    end
-  end
 end
