@@ -48,5 +48,13 @@ FactoryGirl.define do
         admin true
       end
     end
+
+    factory :regular_shift_volunteer do
+      volunteer_type User.volunteer_types['Regular Shift']
+    end
+
+    factory :non_regular_shift_volunteer do
+      volunteer_type { (User.volunteer_types.keys - ["Regular Shift"]).sample }
+    end
   end
 end

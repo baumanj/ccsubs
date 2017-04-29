@@ -42,8 +42,6 @@ class OnCall < ActiveRecord::Base
     else
       availability.update!(free: self.prior_availability)
     end
-    # unless prior_availability.nil?
-    # end
   end
 
   def self.users_to_nag(date_range)
