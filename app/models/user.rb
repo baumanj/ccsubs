@@ -210,6 +210,12 @@ class User < ActiveRecord::Base
     default_availabilities.find_or_initialize_by_shifttime(shifttime)
   end
 
+  def self.like(conditions)
+    conditions.reduce(self.all) do |relation, (column, value)|
+      relation.where("#{connection.quote_column_name(column)} LIKE ?", "%#{value}%")
+    end
+  end
+
   def self.with_active_requests_check
     fast = with_active_requests.to_a.sort
     slow = with_active_requests_slow.sort
