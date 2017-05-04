@@ -10,7 +10,11 @@ class OnCallsController < ApplicationController
   end
 
   def edit
-    set_date_range_and_on_calls
+    if current_user.staff_or_admin?
+      redirect_to on_call_path(params[:date])
+    else
+      set_date_range_and_on_calls
+    end
   end
 
   def create
@@ -36,7 +40,7 @@ class OnCallsController < ApplicationController
       if date < OnCall::FIRST_VALID_DATE
         date = OnCall::FIRST_VALID_DATE
         flash[:alert] = "Online on-call signup is not availble before #{OnCall::FIRST_VALID_DATE}"
-        redirect_to edit_on_call_path(OnCall::FIRST_VALID_DATE)
+        redirect_to on_call_path(OnCall::FIRST_VALID_DATE)
       end
       @date_range = date.all_month
       @on_calls_for_date = Hash.new {|hash, key| hash[key] = [] }
