@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170424000127) do
+ActiveRecord::Schema.define(version: 20170504055323) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -50,11 +50,12 @@ ActiveRecord::Schema.define(version: 20170424000127) do
   end
 
   create_table "on_call_reminders", force: :cascade do |t|
-    t.integer  "month",      null: false
-    t.integer  "year",       null: false
-    t.text     "user_ids",   null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.integer  "month",         null: false
+    t.integer  "year",          null: false
+    t.text     "user_ids",      null: false
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
+    t.string   "mailer_method", null: false
   end
 
   create_table "on_calls", force: :cascade do |t|

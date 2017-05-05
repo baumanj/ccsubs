@@ -6,5 +6,6 @@ FactoryGirl.define do
     month { date.month }
     year { date.year }
     user_ids "MyText"
+    mailer_method "MyMailer"
   end
 end

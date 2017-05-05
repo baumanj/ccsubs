@@ -1,5 +1,5 @@
 class OnCallReminder < ActiveRecord::Base
-  Template = Struct.new(:email, :date_offset)
+  Template = Struct.new(:mailer_method, :date_offset)
 
   TEMPLATES = [
     Template['remind_on_call_signup', -1.month],
@@ -16,21 +16,27 @@ class OnCallReminder < ActiveRecord::Base
     end
   end
 
-  def self.send_reminders(today = Date.current)
-    [today, today.next_month].map(&:beginning_of_month).each do |date|
-      next if date < OnCall::FIRST_VALID_DATE
+  def users
+    User.find(YAML.load(user_ids))
+  end
 
-      sent_reminders = OnCallReminder.where(month: date.month, year: date.year)
+  def self.send_reminders(today: Date.current, templates: self::TEMPLATES)
+    date = today.next_month.beginning_of_month
 
-      if sent_reminders.size < TEMPLATES.size
-        next_reminder = TEMPLATES[sent_reminders.size]
+    return if date < OnCall::FIRST_VALID_DATE
 
-        if today >= (date + next_reminder.date_offset)
-          users = OnCall.users_to_nag(date.all_month)
-          user_ids_string = YAML.dump(users.map(&:id))
-          UserMailer.send(next_reminder.email, users, date).deliver_now
-          OnCallReminder.create!(month: date.month, year: date.year, user_ids: user_ids_string)
-        end
+    sent_reminders = OnCallReminder.where(month: date.month, year: date.year)
+
+    if sent_reminders.size < templates.size
+      next_reminder = templates[sent_reminders.size]
+
+      if today >= (date + next_reminder.date_offset)
+        users = OnCall.users_to_nag(date.all_month)
+        user_ids_string = YAML.dump(users.map(&:id))
+        UserMailer.send(next_reminder.mailer_method, users, date).deliver_now if users.any?
+        OnCallReminder.create!(month: date.month, year: date.year,
+                               mailer_method: next_reminder.mailer_method,
+                               user_ids: user_ids_string)
       end
     end
   end
