@@ -54,8 +54,8 @@ RSpec.describe OnCall, type: :model do
   context "for a given date range" do
     let(:date_range) { d = Faker::Date::in_the_on_call_range; (d)...(d.next_day) }
 
-    context "when you're a regular shift volunteer" do
-      let!(:you) { create(:regular_shift_volunteer) }
+    context "when you're a recurring shift volunteer" do
+      let!(:you) { create(:recurring_shift_volunteer) }
 
       it "nags if haven't signed up for a shift in the date range" do
         create(:on_call, user: you, date: date_range.last.next_day)
@@ -76,15 +76,15 @@ RSpec.describe OnCall, type: :model do
     end
 
     context "when you're a disabled user" do
-      let!(:you) { create(:regular_shift_volunteer, disabled: true) }
+      let!(:you) { create(:recurring_shift_volunteer, disabled: true) }
 
       it "doen't nag if haven't signed up for a shift in the date range" do
         expect(OnCall.users_to_nag(date_range)).to_not include(you)
       end
     end
 
-    context "when you're not a regular shift volunteer" do
-      let!(:you) { create(:non_regular_shift_volunteer) }
+    context "when you're not a recurring shift volunteer" do
+      let!(:you) { create(:non_recurring_shift_volunteer) }
 
       it "doen't nag if haven't signed up for a shift in the date range" do
         expect(OnCall.users_to_nag(date_range)).to_not include(you)

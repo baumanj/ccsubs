@@ -49,12 +49,12 @@ FactoryGirl.define do
       end
     end
 
-    factory :regular_shift_volunteer do
-      volunteer_type User.volunteer_types['Regular Shift']
+    factory :recurring_shift_volunteer do
+      volunteer_type { User.volunteer_types.fetch_values('Regular Shift', 'Alternating').sample }
     end
 
-    factory :non_regular_shift_volunteer do
-      volunteer_type { (User.volunteer_types.keys - ["Regular Shift"]).sample }
+    factory :non_recurring_shift_volunteer do
+      volunteer_type { (User.volunteer_types.values - User.volunteer_types.fetch_values('Regular Shift', 'Alternating')).sample }
     end
   end
 end
