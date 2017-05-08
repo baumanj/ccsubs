@@ -18,11 +18,11 @@ class OnCallsController < ApplicationController
   end
 
   def create
-    @on_call = OnCall.new(on_call_params.merge(user: current_user))
+    @on_call =
+      OnCall.where(date: on_call_params[:date].to_date.all_month, user: current_user).first ||
+      OnCall.new(user: current_user)
 
-    if @on_call.valid?
-      OnCall.destroy_all(user: @on_call.user, date: @on_call.date.all_month)
-      @on_call.save!
+    if @on_call.update(on_call_params)
       flash[:success] = "On call for #{@on_call.date.strftime('%B')} saved"
       mailer.confirm_on_call_signup(@on_call).deliver_now
       redirect_to edit_on_call_path(@on_call.date)
