@@ -26,7 +26,7 @@ RSpec.describe Message, type: :model do
       current_time = shift_range.end + 30.minutes
       expect(shift_range).to_not cover(current_time)
       allow(Time).to receive(:current).and_return(current_time)
-      expect { create(:message, date: Date.today, shift: shift) }.to raise_error(ActiveRecord::RecordInvalid)
+      expect { create(:message, date: shift_range.begin.to_date, shift: shift) }.to raise_error(ActiveRecord::RecordInvalid)
     end
   end
 

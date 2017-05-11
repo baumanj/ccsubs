@@ -189,6 +189,12 @@ describe RequestsController do
     end
 
     context "when request does not belong to current_user" do
+      let(:expected_assigns) do
+        { request: eq(ask),
+          requests_to_swap_with: be_empty,
+          conflict: be_nil }
+      end
+
       it "does not belong to current_user" do
         expect(assigns[:request].user).to_not eq(subject.current_user)
       end
@@ -202,13 +208,54 @@ describe RequestsController do
         let(:expected_assigns) do
           { request: eq(ask),
             requests_to_swap_with: contain_exactly(current_user_request),
-            availabilities_for_requests_to_swap_with: be_any }
+            availabilities_for_requests_to_swap_with: be_any,
+            conflict: be_nil }
         end
 
         it "lets the current_user choose which of their requests to offer as a swap" do
           availabilities = assigns[:availabilities_for_requests_to_swap_with]
           expect(availabilities.size).to eq(1)
           expect(availabilities.first.start).to eq(current_user_request.start)
+        end
+      end
+
+      context "when current_user is not available for the request" do
+        let(:conflict) { create(:availability, user: current_user, free: false) }
+        let(:ask) { create(:request, date: conflict.date, shift: conflict.shift) }
+        let(:expected_assigns) do
+          { request: eq(ask),
+            conflict: eq(conflict) }
+        end
+
+        it "assigns the conflicting availability" do
+        end
+      end
+
+      context "when current_user has a conflicting request" do
+        let(:conflict) { create(:request, user: current_user) }
+        let(:ask) { create(:request, date: conflict.date, shift: conflict.shift) }
+        let(:expected_assigns) do
+          { request: eq(ask),
+            conflict: eq(conflict) }
+        end
+
+        it "assigns the conflicting request" do
+        end
+      end
+
+      context "when current_user is covering a conflicting request" do
+        let(:conflict) do
+          availability = create(:availability, user: current_user)
+          create(:fulfilled_request, date: availability.date, shift: availability.shift, availability: availability)
+          availability
+        end
+        let(:ask) { create(:request, date: conflict.date, shift: conflict.shift) }
+        let(:expected_assigns) do
+          { request: eq(ask),
+            conflict: eq(conflict) }
+        end
+
+        it "assigns the conflicting availability" do
         end
       end
 

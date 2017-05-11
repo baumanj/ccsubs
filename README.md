@@ -4,6 +4,7 @@ This is a web application for facilitating exchanging shift assignments.
 
 ## TODO:
 ### Next steps
+* Remove AvailabilitiesController::create
 * Smart exclusions for broadcast email and shift tracking
 * On-call tracking
   * Nicer errors

@@ -6,14 +6,20 @@
     <p>
       You can't cover this shift because you
       <% if @conflict.is_a? Request %>
-        have <%= link_to "your own request", @conflict %>
+        have <%= link_to "your own request", @conflict %> at that time.
       <% elsif @conflict.request %>
-        are covering <%= link_to "#{@conflict.request.user}'s shift", @conflict.request %>
+        are covering <%= link_to "#{@conflict.request.user}'s shift", @conflict.request %> at that time.
       <% else %>
-        <!-- offer a chance to fix the availability if so -->
-        have indicated <%= link_to "you're not available", availabilities_path %>
+        previously indicated you were not available.
+        <div class="row">
+          <div class="col-md-6 col-md-offset-3">
+            <%= form_for(@conflict, html: {class: 'col-md-6 col-md-offset-3'}) do |f| %>
+              <%= f.hidden_field :free, value: true %>
+              <%= f.submit "Actually, I am available", class: "btn btn-large btn-primary" %>
+            <% end %>
+          </div>
+        </div>
       <% end %>
-      at that time.
     </p>
 
   <% else %>

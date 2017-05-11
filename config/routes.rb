@@ -6,7 +6,7 @@ Ccsubs::Application.routes.draw do
   get '/messages/new', to: 'messages#new'
   post '/messages/deliver', to: 'messages#deliver', as: :deliver_message
 
-  resources :availabilities, only: [:create, :index]
+  resources :availabilities, only: [:create, :index, :update]
   get '/availabilities/edit_default', to: 'availabilities#edit_default', as: :edit_default_availability
   get '/availabilities/:id', to: 'availabilities#index'
   post '/users/upload_csv', to: 'users#upload_csv', as: :upload_csv

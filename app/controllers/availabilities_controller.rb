@@ -11,6 +11,18 @@ class AvailabilitiesController < ApplicationController
     redirect_to :back
   end
 
+  def update
+    @availability = Availability.find(params[:id])
+
+    if current_user_can_edit?(@availability) && @availability.update!(params.require(:availability).permit(:free))
+      flash[:success] = "Availability updated"
+    else
+      flash[:error] = "Only the request owner can do that."
+    end
+
+    redirect_to :back
+  end
+
   def index
     @user = current_user
     @suggested_availabilities = DefaultAvailability.apply(@user.suggested_availabilities)
@@ -24,7 +36,7 @@ class AvailabilitiesController < ApplicationController
   private
 
     def availability_params
-      p = params.require(:availability).permit(:user_id, :date, :shift, :free)
+      params.require(:availability).permit(:user_id, :date, :shift, :free)
     end
 
 end

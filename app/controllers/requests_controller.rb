@@ -38,6 +38,8 @@ class RequestsController < ApplicationController
             render 'specify_availability'
           end
         end
+      elsif @conflict = current_user.conflict_for(@request)
+        # Nothing to do, @conflict is already assigned
       else
         @requests_to_swap_with = current_user.offerable_swaps(@request)
         if @requests_to_swap_with.any?
