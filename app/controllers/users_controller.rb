@@ -122,7 +122,7 @@ class UsersController < ApplicationController
 
   def update_password
     @user = User.find(params[:id])
-    if @user.update(user_params)
+    if @user.update(user_params.merge(disabled: false))
       # Each link can only be used once
       @user.update_confirmation_token
       flash[:success] = "Update successful"
