@@ -231,6 +231,13 @@ class User < ActiveRecord::Base
     joins(:requests).merge(Request.unscoped.active).distinct
   end
 
+  def self.check_phone
+    users_without_phone = User.where(home_phone: nil, cell_phone: nil, disabled: false).where.not(volunteer_type: nil)
+    if users_without_phone.any?
+      UserMailer.alert("Users with no phone:\n#{users_without_phone.pluck(:name).join('\n')}").deliver_now
+    end
+  end
+
   private
 
     def create_remember_token

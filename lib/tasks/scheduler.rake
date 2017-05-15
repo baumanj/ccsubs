@@ -14,3 +14,7 @@ end
 task :send_on_call_reminder => :environment do
   OnCallReminder.send_reminders
 end
+
+task :check_for_missing_phone => :environment do
+  User.check_phone
+end
