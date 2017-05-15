@@ -14,7 +14,7 @@ class AvailabilitiesController < ApplicationController
   def update
     @availability = Availability.find(params[:id])
 
-    if current_user_can_edit?(@availability) && @availability.update!(params.require(:availability).permit(:free))
+    if current_user_can_edit?(@availability) && @availability.update!(free_param)
       flash[:success] = "Availability updated"
     else
       flash[:error] = "Only the request owner can do that."
@@ -37,6 +37,10 @@ class AvailabilitiesController < ApplicationController
 
     def availability_params
       params.require(:availability).permit(:user_id, :date, :shift, :free)
+    end
+
+    def free_param
+      params.require(:availability).permit(:free)
     end
 
 end

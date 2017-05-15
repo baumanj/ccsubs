@@ -2,10 +2,14 @@ require 'controllers/shared'
 
 describe AvailabilitiesController do
 
-  describe "GET 'index'", autorequest: true, requires: :login do
-    let(:expected_assigns) do
-      { user: eq(subject.current_user),
-        suggested_availabilities: be_an(Array) }
+  describe "POST 'create'", autorequest: true, requires: :login do
+    let(:availability_attrs) { attributes_for(:availability, user_id: create(:user).id) }
+    let(:params) do
+      { availability: availability_attrs }
+    end
+
+    it "creates a new availability with the supplied parameters", rendered: nil do
+      expect(Availability.find_by(availability_attrs)).to eq(Availability.last)
     end
   end
 
@@ -31,4 +35,22 @@ describe AvailabilitiesController do
     end
 
   end
+
+  describe "GET 'index'", autorequest: true, requires: :login do
+    let(:expected_assigns) do
+      { user: eq(subject.current_user),
+        suggested_availabilities: be_an(Array) }
+    end
+  end
+
+  describe "GET 'edit_default'", autorequest: true, requires: :login do
+    let(:expected_assigns) do
+      { user: eq(current_user),
+        default_availabilities: be_any }
+    end
+
+    it "assigns @user and @default_availabilities" do
+    end
+  end
+
 end
