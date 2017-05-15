@@ -161,19 +161,6 @@ class UsersController < ApplicationController
     end
   end
 
-  # def create_request
-  #   @user = User.find(params[:id])
-  #   @user.assign_attributes(user_params)
-  #   @request = @user.requests.find &:new_record?
-  #   if @user.save
-  #     redirect_to @request, flash: { success: "Request created" }
-  #   else
-  #     @errors = @user.errors
-  #     @suggested_availabilities = availabilities_from_user_params
-  #     render 'requests/specify_availability'
-  #   end
-  # end
-
   def update_availability
     @user = User.find(params[:id])
     message = "Set #{changed_availability_string}"
