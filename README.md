@@ -7,10 +7,6 @@ This is a web application for facilitating exchanging shift assignments.
 * Smart exclusions for broadcast email and shift tracking
 * On-call tracking
   * Need info about what a volunteer's default shift
-  * Need to add phone number
-  * Another layer of admin-like privs
-  * Volunteers need availability view
-  * Staff needs month-level view
 * Render availability query page as calendar
 * Put availabilities where Availability.match? is true at the top of the list
 * Allow admins to look at user swap history
@@ -25,12 +21,9 @@ This is a web application for facilitating exchanging shift assignments.
 * Disallow doing two consecutive shifts
 * (Admin) view historical requests
 ### Future
-* https://elements.heroku.com/addons/sparkpost
-* https://blog.heroku.com/archives/2016/3/2/migrating_from_the_mandrill_add_on
 * Change Request model name to something less confusing with HTTP request (Ask? CoverageRequest?)
 * Add poteintial matches to RequestsController#show for other users' requests
 * Update user fixture to test vics with 4 digits
-* Updrade to ruby 2.1
 * Clean up mailers
 * Metaprogramming around Request::MATCH_TYPE_MAP
 * Allow admin to do all different actions as different users

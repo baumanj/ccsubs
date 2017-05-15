@@ -194,7 +194,6 @@ class UsersController < ApplicationController
   def update_default_availability
     @user = User.find(params[:id])
     if @user.update(user_params)
-      # raise
       flash[:success] = "Updated typical availability"
       redirect_to params[:redirect_to] || edit_default_availability_path
     else
