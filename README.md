@@ -4,14 +4,9 @@ This is a web application for facilitating exchanging shift assignments.
 
 ## TODO:
 ### Next steps
-* Remove AvailabilitiesController::create
 * Smart exclusions for broadcast email and shift tracking
 * On-call tracking
-  * Nicer errors
-  * No error on redundant submission for same volunteer
   * Need info about what a volunteer's default shift
-  * 1 for every shift
-  * 1 shift/month/volunteer (there won't be enought room for everyone)
   * Need to add phone number
   * Another layer of admin-like privs
   * Volunteers need availability view

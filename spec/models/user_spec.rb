@@ -70,6 +70,22 @@ describe User do
     end
   end
 
+  describe "when no phone number is provided for a new user" do
+    before do
+      @user = build(:user, cell_phone: nil, home_phone: nil)
+    end
+    it { should be_invalid }
+  end
+
+  describe "when no phone number is provided for an exising user" do
+    before do
+      @user = create(:user)
+      @user.cell_phone = nil
+      @user.home_phone = nil
+    end
+    it { should be_valid }
+  end
+
   it "logs in and out correctly"
 
 end
