@@ -62,7 +62,6 @@ class Availability < ActiveRecord::Base
 
   before_destroy do
     if locked?
-      puts "#{self} Can not be deleted while tied to a request"
       errors.add(:availability, "Can not be deleted while tied to a request")
       false
     end

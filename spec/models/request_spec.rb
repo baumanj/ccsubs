@@ -11,6 +11,21 @@ describe Request do
     expect(create(:request)).to be_valid
   end
 
+  it "deletes conflicting availability not tied to sub/swap on create" do
+    [true, false].each do |free|
+      a = create(:availability, free: free)
+      expect(create(:request, user: a.user, date: a.date, shift: a.shift )).to be_valid
+      expect(a.user.availabilities.where_shifttime(a)).to be_empty
+    end
+  end
+
+  it "fails creation if conflicting availability is tied to sub/swap" do
+    subber = create(:user)
+    r = create(:request)
+    r.fulfill_by_sub(subber)
+    expect { create(:request, user: subber, date: r.date, shift: r.shift) }.to raise_error(ActiveRecord::RecordInvalid)
+  end
+
   it "accepts a swap offer" do
     expect(@requests.first.send_swap_offer_to(@requests.second)).to be_truthy
     @requests.each do |r|

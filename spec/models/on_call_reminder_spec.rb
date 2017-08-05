@@ -75,15 +75,16 @@ RSpec.describe OnCallReminder, type: :model do
       end
 
       it "reminds users only before they've signed up" do
-        create(:on_call, date: OnCall::FIRST_VALID_DATE, user: volunter_who_signed_up_before_first_reminder)
+        first_of_next_month = Date.today.next_month.at_beginning_of_month
+        create(:on_call, date: first_of_next_month, user: volunter_who_signed_up_before_first_reminder)
 
-        first_reminder = OnCallReminder.send_reminders(templates: templates, today: 3.weeks.ago(OnCall::FIRST_VALID_DATE))
+        first_reminder = OnCallReminder.send_reminders(templates: templates, today: 3.weeks.ago(first_of_next_month))
         expect(first_reminder.users).to_not include(volunter_who_signed_up_before_first_reminder)
         expect(first_reminder.users).to include(volunter_who_signed_up_after_first_reminder, volunter_who_signed_up_after_second_reminder)
 
-        create(:on_call, date: OnCall::FIRST_VALID_DATE.next_day, user: volunter_who_signed_up_after_first_reminder)
+        create(:on_call, date: first_of_next_month.next_day, user: volunter_who_signed_up_after_first_reminder)
 
-        second_reminder = OnCallReminder.send_reminders(templates: templates, today: 1.week.ago(OnCall::FIRST_VALID_DATE))
+        second_reminder = OnCallReminder.send_reminders(templates: templates, today: 1.week.ago(first_of_next_month))
         expect(second_reminder.users).to_not include(volunter_who_signed_up_before_first_reminder, volunter_who_signed_up_after_first_reminder)
         expect(second_reminder.users).to include(volunter_who_signed_up_after_second_reminder)
       end

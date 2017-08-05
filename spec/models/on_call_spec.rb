@@ -6,8 +6,14 @@ RSpec.describe OnCall, type: :model do
     expect { create(:on_call, date: OnCall::FIRST_VALID_DATE.prev_day) }.to raise_error(ActiveRecord::RecordInvalid)
   end
 
-  it "accepts a shift on the first valid date" do
-    expect(create(:on_call, date: OnCall::FIRST_VALID_DATE)).to be_valid
+  it "rejects a sign-up for a shift that started in the past" do
+    date, shift = ShiftTime.last_started_date_and_shift
+    expect { create(:on_call, date: date, shift: shift) }.to raise_error(ActiveRecord::RecordInvalid)
+  end
+
+  it "accepts a signup for the next shift to start" do
+    date, shift = ShiftTime.next_date_and_shift
+    expect(create(:on_call, date: date, shift: shift)).to be_valid
   end
 
   it "rejects a shift more than a year from now" do
@@ -21,7 +27,7 @@ RSpec.describe OnCall, type: :model do
   end
 
   it "rejects a second sign-up for the same user in a month" do
-    dates = [OnCall::FIRST_VALID_DATE, Date.today].max.all_month.to_a.sample(2)
+    dates = Date.today.next_month.all_month.to_a.sample(2)
     first = create(:on_call, date: dates.first)
     expect { create(:on_call, date: dates.second, user: first.user) }.to raise_error(ActiveRecord::RecordInvalid)
   end
@@ -52,7 +58,7 @@ RSpec.describe OnCall, type: :model do
   end
 
   context "for a given date range" do
-    let(:date_range) { d = Faker::Date::in_the_on_call_range; (d)...(d.next_day) }
+    let(:date_range) { d = Faker::Date::in_the_next_year; (d)...(d.next_day) }
 
     context "when you're a recurring shift volunteer" do
       let!(:you) { create(:recurring_shift_volunteer) }

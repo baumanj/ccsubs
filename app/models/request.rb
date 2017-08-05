@@ -71,7 +71,7 @@ class Request < ActiveRecord::Base
   end
 
   def no_availabilities_conflicts(availabilities=user.availabilities)
-    if availabilities.find {|a| a.start == self.start && a.free? }
+    if availabilities.find_by_shifttime(self)
       errors.add(:shift, "can't be the same as your own existing availability")
     end
   end
@@ -84,6 +84,14 @@ class Request < ActiveRecord::Base
       errors.add(:start, "must be in the future")
       false
     end
+  end
+
+  before_validation do
+    # Don't prevent request creation because of conflicting availability
+    # Requests are more important and the availability is probably stale.
+    # If this availability is tied to a sub/swap, the before_destroy hook
+    # will prevent this from succeeding.
+    user.availabilities.where_shifttime(self).destroy_all
   end
 
   def send_swap_offer_to(request_to_swap_with)

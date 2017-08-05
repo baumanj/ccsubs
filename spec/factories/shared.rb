@@ -17,11 +17,6 @@ module Faker
       in_date_range((1.day.from_now.to_date)...(1.year.from_now.to_date), excluding: excluding)
     end
 
-    # XXX remove this after FIRST_VALID_DATE is past
-    def self.in_the_on_call_range(excluding: nil)
-      in_date_range(OnCall::FIRST_VALID_DATE...(1.year.from_now.to_date), excluding: excluding)
-    end
-
     def self.in_the_past_year(excluding: nil)
       in_date_range((1.year.ago.to_date)...(1.day.ago.to_date), excluding: excluding)
     end

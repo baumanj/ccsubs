@@ -103,6 +103,31 @@ module ShiftTime
     end
   end
 
+  def self.next_date_and_shift(time=Time.current)
+    shift = next_shift(time)
+    date = if shift == 0 && time.seconds_since_midnight > SHIFT_OFFSETS.last.begin
+      time.to_date.tomorrow
+    else
+      time.to_date
+    end
+
+    [date, shift]
+  end
+
+  def self.last_started_date_and_shift(time=Time.current)
+    previous_days_shift_range = (time.midnight)...(time.midnight + ShiftTime::SHIFT_OFFSETS.first.begin)
+    date = previous_days_shift_range.cover?(time) ? time.to_date.yesterday : time.to_date
+
+    current_shift = time_to_shift(time)
+    shift = if current_shift.nil?
+      SHIFT_NAMES.find_index(SHIFT_NAMES.last)
+    else
+      current_shift
+    end
+
+    [date, shift]
+  end
+
   def self.time_to_shift_time_ranges(time=Time.current)
     date = if time.seconds_since_midnight < (SHIFT_OFFSETS.last.end - 24.hours)
         time.to_date.yesterday
@@ -189,9 +214,9 @@ end
 
 class ShiftTimeValidator < ActiveModel::Validator
   def validate(record)
-      if record.new_record?
-        record.no_schedule_conflicts
-        record.shift_is_between_now_and_a_year_from_now
-      end
+    if record.new_record?
+      record.no_schedule_conflicts
+      record.shift_is_between_now_and_a_year_from_now
+    end
   end
 end
