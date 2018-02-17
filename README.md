@@ -3,6 +3,7 @@
 This is a web application for facilitating exchanging shift assignments.
 
 ## TODO:
+* Don't allow signing up for an on-call when one has already done one that month
 * "Ccsubs issue" email about failure to create request with conflicting availability
 * Smart exclusions for broadcast email and shift tracking
 * On-call tracking
