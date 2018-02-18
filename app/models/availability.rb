@@ -62,7 +62,7 @@ class Availability < ActiveRecord::Base
 
   before_destroy do
     if locked?
-      errors.add(:availability, "Can not be deleted while tied to a request")
+      errors.add(:availability, "Can not be deleted while tied to a future request")
       false
     end
   end
@@ -133,7 +133,7 @@ class Availability < ActiveRecord::Base
   end
 
   def locked?
-    !request.nil?
+    !request.nil? && request.start.future?
   end
 
   # others are free for any of this user's requests

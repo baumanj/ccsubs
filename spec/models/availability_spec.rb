@@ -74,4 +74,15 @@ describe Availability do # without any subject, just calls Availability.new ?
     expect { bobs_availability.save }.to change { ActionMailer::Base.deliveries.count }.by(1)
     expect(ActionMailer::Base.deliveries.last).to eq_mailers(UserMailer.notify_full_matches(a, [b1]))
   end
+
+  it "can't be deleted when tied to a future request" do
+    a = create(:fulfilled_request).availability
+    a.destroy
+    expect(a.destroyed?).to be(false)
+
+    allow(Time).to receive(:current).and_return(a.end)
+    a.destroy
+    expect(a.destroyed?).to be(true)
+  end
+
 end
