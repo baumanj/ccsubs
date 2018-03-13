@@ -14,7 +14,6 @@ class Request < ActiveRecord::Base
   validates :user, presence: true
   validates :shift, presence: true
   validates_with ShiftTimeValidator
-  validate :no_availabilities_conflicts
   validate do
     case state_change
     when ['seeking_offers', 'sent_offer']
@@ -67,12 +66,6 @@ class Request < ActiveRecord::Base
     if fulfilling_swap && fulfilling_swap.fulfilling_swap != self
       # Later this may be relaxed to be a cycle
       errors.add(:fulfilling_swap, "must be a reflexive relation between two requests")
-    end
-  end
-
-  def no_availabilities_conflicts(availabilities=user.availabilities)
-    if availabilities.find_by_shifttime(self)
-      errors.add(:shift, "can't be the same as your own existing availability")
     end
   end
 

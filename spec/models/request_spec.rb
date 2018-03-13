@@ -19,11 +19,11 @@ describe Request do
     end
   end
 
-  it "fails creation if conflicting availability is tied to sub/swap" do
+  it "allows creation even if conflicting availability is tied to sub/swap" do
     subber = create(:user)
     r = create(:request)
     r.fulfill_by_sub(subber)
-    expect { create(:request, user: subber, date: r.date, shift: r.shift) }.to raise_error(ActiveRecord::RecordInvalid)
+    expect(create(:request, user: subber, date: r.date, shift: r.shift)).to be_valid
   end
 
   it "accepts a swap offer" do

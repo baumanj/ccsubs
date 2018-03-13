@@ -27,7 +27,6 @@ class User < ActiveRecord::Base
   validates :vic, presence: true, uniqueness: true, on: :create
   validate on: :update do
     requests.find_all(&:new_record?).each do |r|
-      r.no_availabilities_conflicts(availabilities)
       r.errors.each do |attr, msg|
         full_attr = :"requests.#{attr}"
         errors.add(full_attr, msg) if errors[full_attr].exclude? msg
