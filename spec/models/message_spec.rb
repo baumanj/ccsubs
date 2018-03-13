@@ -11,7 +11,7 @@ RSpec.describe Message, type: :model do
   end
 
   it 'accepts a shift that has started' do
-    todays_shift_ranges = ShiftTime::time_to_shift_time_ranges
+    todays_shift_ranges = ShiftTime::shift_ranges
     todays_shift_ranges.each do |shift_range|
       current_time = shift_range.end - 30.minutes
       expect(shift_range).to cover(current_time)
@@ -21,7 +21,7 @@ RSpec.describe Message, type: :model do
   end
 
   it 'rejects a shift that has ended' do
-    todays_shift_ranges = ShiftTime::time_to_shift_time_ranges
+    todays_shift_ranges = ShiftTime::shift_ranges
     todays_shift_ranges.each_with_index do |shift_range, shift|
       current_time = shift_range.end + 30.minutes
       expect(shift_range).to_not cover(current_time)

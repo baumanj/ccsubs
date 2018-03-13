@@ -5,7 +5,7 @@ module SessionsHelper
   def sign_in(user, password, auto_signout)
     remember_token = user.try_sign_in(password)
     if remember_token
-      auto_signout_time = auto_signout ? ShiftTime.shift_end : 20.years.from_now
+      auto_signout_time = auto_signout ? ShiftTime.next_shift_start : 20.years.from_now
       cookies[:auto_signout_time] = auto_signout_time
       flash[:notice] = "You will be automatically signed out in #{distance_of_time_in_words_to_now(auto_signout_time)}"
       cookies.permanent[:remember_token] = remember_token

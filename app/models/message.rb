@@ -5,7 +5,7 @@ class Message < ActiveRecord::Base
   validates :shift, presence: true
 
   validate do
-    if start && ShiftTime.shift_end(start).past?
+    if self.end.past?
       errors.add(:shift, "must not have already ended")
     end
   end
