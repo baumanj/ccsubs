@@ -20,5 +20,6 @@ task :check_for_missing_phone => :environment do
 end
 
 task :create_holiday_requests => :environment do
-	HolidayRequest.create_any_not_present
+  require "#{Rails.root}/app/helpers/application_helper"
+  HolidayRequest.create_any_not_present
 end
