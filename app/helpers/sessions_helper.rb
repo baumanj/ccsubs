@@ -34,7 +34,7 @@ module SessionsHelper
   end
 
   def current_user_owns?(obj)
-    current_user && current_user.id == obj.user.id
+    current_user && obj.user && current_user.id == obj.user.id
   end
 
   def current_user_can_edit?(obj)

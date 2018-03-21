@@ -1,0 +1,22 @@
+<% provide(:title, 'Holiday shifts') %>
+
+<h1>Holiday shifts</h1>
+
+<div>
+	<% if @requests.any? %>
+		<h2>There are currently <%= @requests.count %> shifts in need of coverage. Click on the shift time to sign up.</h2>
+		<% @requests.group_by(&:date).each do |date, reqs_for_date| %>
+			<h3><%= Holiday.to_name_and_date(date) %></h3>
+		    <ul class="requests">
+				<% reqs_for_date.group_by(&:shift).each do |shift, reqs_for_shift| %>
+			        <li>
+						<%= link_to shift, reqs_for_shift.first %>
+			        </li>
+				<% end %>
+		    </ul>
+		<% end %>
+	<% else %>
+	    <h2>All the holiday shifts are fully staffed! Hallelujah!</h2>
+	<% end %>
+
+</div>

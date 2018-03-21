@@ -1,4 +1,8 @@
 Ccsubs::Application.routes.draw do
+  get 'holiday_schedule(/:date)', to: 'holiday_schedule#index', as: :holiday_schedule
+
+  resources :holiday_requests, only: [:index]
+
   get 'on_calls/edit(/:date)', to: 'on_calls#edit', as: :edit_on_call
   get 'on_calls(/:date)', to: 'on_calls#index', as: :on_calls
   resources :on_calls, only: [:create, :update]

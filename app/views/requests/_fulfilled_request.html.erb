@@ -3,7 +3,7 @@
   <% if @request.fulfilling_swap %>
     in exchange for 
     <%= link_to @request.fulfilling_swap, @request.fulfilling_swap  %>
-  <% else %>
+  <% elsif @request.user %>
     <%= "in a selfless act of subbing (i.e., no swap)" %>
   <% end %>
 </h2>

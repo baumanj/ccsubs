@@ -18,3 +18,7 @@ end
 task :check_for_missing_phone => :environment do
   User.check_phone
 end
+
+task :create_holiday_requests => :environment do
+	HolidayRequest.create_any_not_present
+end

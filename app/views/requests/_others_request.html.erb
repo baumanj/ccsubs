@@ -8,7 +8,7 @@
       <% if @conflict.is_a? Request %>
         have <%= link_to "your own request", @conflict %> at that time.
       <% elsif @conflict.request %>
-        are covering <%= link_to "#{@conflict.request.user}'s shift", @conflict.request %> at that time.
+        are covering <%= link_to "another shift", @conflict.request %> at that time.
       <% else %>
         previously indicated you were not available.
         <div class="row">
@@ -27,42 +27,49 @@
     <div class="row">
       <div class="col-md-6 col-md-offset-3">
         <%= form_for(@request, url: offer_sub_url) do |f| %>
-          <%= f.submit "Offer to sub (no swap)", 
-              class: "btn btn-large btn-primary", data: { confirm: "You're so generous! To confirm: you agree to sub without anything in return?" } %>
+          <% if @request.user %>
+            <%= f.submit "Offer to sub (no swap)",
+                class: "btn btn-large btn-primary", data: { confirm: "You're so generous! To confirm: you agree to sub without anything in return?" } %>
+          <% else %>
+            <%= f.submit "Accept shift",
+                class: "btn btn-large btn-primary", data: { confirm: "Thank you! To confirm: you agree to take this shift without anything in return?" } %>
+          <% end %>
         <% end %>
       </div>
     </div>
 
-    <% if @requests_to_swap_with.empty? %>
-      <p>
-        This user doesn't have any shifts they are available to swap for that match your requests.
-        <% unless @request.user.availabilities.active.empty? %>
-          They are available to swap for the following shifts. If you need
-          coverage for one of these, you should create a request.
-          <% @request.user.availabilities.active.each do |availability| %>
-            <%= button_to "New request for #{availability}", new_request_path,
-                          class: "btn", method: :get,
-                          params: { date: availability.date,
-                                    shift: availability.shift } %>
+    <% if @request.user %>
+      <% if @requests_to_swap_with.empty? %>
+        <p>
+          This user doesn't have any shifts they are available to swap for that match your requests.
+          <% unless @request.user.availabilities.active.empty? %>
+            They are available to swap for the following shifts. If you need
+            coverage for one of these, you should create a request.
+            <% @request.user.availabilities.active.each do |availability| %>
+              <%= button_to "New request for #{availability}", new_request_path,
+                            class: "btn", method: :get,
+                            params: { date: availability.date,
+                                      shift: availability.shift } %>
+            <% end %>
           <% end %>
-        <% end %>
-      </p>
-    <% else %>
-      <p>Shifts this user is available to swap with you for:</p>
-      <ul class="requests">
-        <% @requests_to_swap_with.each do |my_request| %>
-          <%= form_for my_request do |f| %>
-            <li>
-              <%= render partial: 'offer_swap_button',
-                         locals: {form: f, req_to_swap_with: @request} %>
-            </li>
+        </p>
+      <% else %>
+        <p>Shifts this user is available to swap with you for:</p>
+        <ul class="requests">
+          <% @requests_to_swap_with.each do |my_request| %>
+            <%= form_for my_request do |f| %>
+              <li>
+                <%= render partial: 'offer_swap_button',
+                           locals: {form: f, req_to_swap_with: @request} %>
+              </li>
+            <% end %>
           <% end %>
-        <% end %>
-      </ul>
-      <%= render(partial: 'cant_offer_swap_form',
-                 locals: {user: @requests_to_swap_with.first.user,
-                          requests_user_cant_swap_with: @requests_to_swap_with,
-                          availabilities_for_requests_user_cant_swap_with: @availabilities_for_requests_to_swap_with}) %>
+        </ul>
+        <%= render(partial: 'cant_offer_swap_form',
+                   locals: {user: @requests_to_swap_with.first.user,
+                            requests_user_cant_swap_with: @requests_to_swap_with,
+                            availabilities_for_requests_user_cant_swap_with: @availabilities_for_requests_to_swap_with}) %>
+      <% end %>
     <% end %>
 
   <% end %>

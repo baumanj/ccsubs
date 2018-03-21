@@ -11,7 +11,7 @@ class Request < ActiveRecord::Base
   enum shift: ShiftTime::SHIFT_NAMES
   enum state: [ :seeking_offers, :received_offer, :sent_offer, :fulfilled ]
 
-  validates :user, presence: true
+  validates :user, presence: true, unless: :userless?
   validates :shift, presence: true
   validates_with ShiftTimeValidator
   validate do
@@ -79,12 +79,8 @@ class Request < ActiveRecord::Base
     end
   end
 
-  before_validation do
-    # Don't prevent request creation because of conflicting availability
-    # Requests are more important and the availability is probably stale.
-    # If this availability is tied to a sub/swap, the before_destroy hook
-    # will prevent this from succeeding.
-    user.availabilities.where_shifttime(self).destroy_all
+  def userless?
+    false
   end
 
   def send_swap_offer_to(request_to_swap_with)
@@ -210,7 +206,7 @@ class Request < ActiveRecord::Base
   end
 
   # Find all the active requests which match active requests in the current scope
-  # The current scope it typically a certain user's requests
+  # The current scope is typically a certain user's requests
   def self.matching_requests(match_type)
     match_type = MATCH_TYPE_MAP[match_type] || match_type
     future_requests = Request.future.to_a
@@ -324,7 +320,7 @@ class Request < ActiveRecord::Base
     if fulfilling_swap
       fulfilling_swap_str = ", fulfilling_swap: #{fulfilling_swap.user.name}[#{fulfilling_swap.user.id}]'s request[#{fulfilling_swap.id}]"
     end
-    "#<Request id: #{self.id}, user[#{user_id}]: #{user ? user.name : 'nil'} , "\
+    "#<Request id: #{self.id}, user[#{user_id}]: #{user ? user.name : 'nil'}, "\
       "date: #{date}, shift[#{self.class.shifts[shift]}]: #{shift}, "\
       "state[#{self.class.states[state]}]: #{state}#{fulfilling_swap_str}#{availability_str}>"
   end

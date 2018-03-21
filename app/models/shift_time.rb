@@ -4,6 +4,12 @@ module ShiftTime
     base.extend(ClassMethods)
   end
 
+  def self.date_to_s(date)
+    date_format = "%A, %B %-d"
+    date_format += ", %Y" if date.year != Date.current.year
+    date.strftime(date_format)
+  end
+
   module ClassMethods
     def where_shifttime(shifttime)
       self.where(shifttime.shifttime_attrs)
@@ -165,6 +171,8 @@ module ShiftTime
     if date && shift
       shift_index = self.class.shifts[shift]
       ShiftTime::shift_ranges(date)[shift_index]
+    else
+      nil...nil
     end
   end
 
@@ -181,9 +189,7 @@ module ShiftTime
   end
 
   def to_s
-    date_format = "%A, %B %e"
-    date_format += ", %Y" if date.year != Date.current.year
-    s = "#{date.strftime(date_format)}, #{shift}"
+    s = "#{ShiftTime.date_to_s(date)}, #{shift}"
     Rails.env.development? ? "#{s} [#{id}]" : s
   end
 

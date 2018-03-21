@@ -73,10 +73,15 @@ class RequestsController < ApplicationController
 
   def offer_sub
     if @request.fulfill_by_sub(current_user)
-      emails = [mailer.notify_sub(@request, current_user),
-                mailer.remind_sub(@request, current_user)]
-      emails.each &:deliver_now
-      flash[:success] = "Thanks! We send #{@request.user} an email to let them know the good news."
+      if @request.is_a? HolidayRequest
+        mailer.remind_holiday(@request, current_user).deliver_now
+        flash[:success] = "Thanks! We sent you an email reminder with the details."
+      else
+        emails = [mailer.notify_sub(@request, current_user),
+                  mailer.remind_sub(@request, current_user)]
+        emails.each &:deliver_now
+        flash[:success] = "Thanks! We sent #{@request.user} an email to let them know the good news."
+      end
     else
       flash[:error] = @request.errors.full_messages.join(". ")
     end
@@ -196,4 +201,9 @@ class RequestsController < ApplicationController
         redirect_to @request
       end
     end
+
+    def holiday_request_url(*args)
+      request_url(*args)
+    end
+
 end

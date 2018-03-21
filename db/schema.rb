@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170504055323) do
+ActiveRecord::Schema.define(version: 20180317215807) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -75,11 +75,12 @@ ActiveRecord::Schema.define(version: 20170504055323) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "text",               limit: 255
-    t.integer  "shift",                                      null: false
-    t.date     "date",                                       null: false
-    t.integer  "state",                          default: 0, null: false
+    t.integer  "shift",                                              null: false
+    t.date     "date",                                               null: false
+    t.integer  "state",                          default: 0,         null: false
     t.integer  "fulfilling_swap_id"
     t.integer  "availability_id"
+    t.string   "type",                           default: "Request", null: false
   end
 
   add_index "requests", ["user_id", "shift", "date"], name: "index_requests_on_user_id_and_shift_and_date", unique: true, using: :btree

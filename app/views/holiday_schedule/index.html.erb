@@ -1,0 +1,25 @@
+<% provide(:title, 'Holiday schedule') %>
+
+<h1>Holiday schedule</h1>
+
+<% @dates.each do |date| %>
+	<% @requests.group_by(&:date).each do |date, reqs_for_date| %>
+		<h3><%= Holiday.to_name_and_date(date) %></h3>
+	    <ul class="requests">
+			<% reqs_for_date.group_by(&:shift).each do |shift, reqs_for_shift| %>
+		        <li>
+					<%= shift %>:
+					<% if reqs_for_shift.any?(&:fulfilling_user) %>
+						<ol>
+						<% reqs_for_shift.map(&:fulfilling_user).compact.map do |user| %>
+							<li><%= link_to user, user, title: user.phone %></li>
+						<% end %>
+						</ol>
+					<% else %>
+						Unstaffed
+					<% end %>
+		        </li>
+			<% end %>
+	    </ul>
+	<% end %>
+<% end %>

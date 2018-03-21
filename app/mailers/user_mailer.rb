@@ -62,6 +62,14 @@ class UserMailer < ActionMailer::Base
          subject: "Sub/Swap #{@req}: match found! [ACTION REQUIRED]"
   end
 
+  def remind_holiday(req, fulfilling_user)
+    @req = req
+    @fulfilling_user = fulfilling_user
+    attach_ical @req.to_ical(summary: "Crisis Clinic Holiday Shift", description: "You agreed to cover this holiday shift because you're awesome")
+    mail to: @fulfilling_user,
+         subject: "#{@req}"
+  end
+
   def notify_sub(req, fulfilling_user)
     @req = req
     @fulfilling_user = fulfilling_user

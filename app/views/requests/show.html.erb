@@ -1,6 +1,8 @@
 <% provide(:title, @request) %>
 
-<h2><%= @request.user %> humbly requests coverage for</h2>
+<% if @request.user %>
+  <h2><%= @request.user %> humbly requests coverage for</h2>
+<% end %>
 <h1><%= @request %></h1>
 
 <% if @request.start.past? && !@request.received_offer? %>
