@@ -16,7 +16,6 @@ class HolidayRequest < Request
       date = Holiday.next_date(name)
       self.shifts.each_value do |shift|
         (1..SHIFT_SLOTS).each do |slot|
-          puts "self.find_or_create_by!(user_id: #{-slot}, date: #{date}, shift: #{shift})"
           self.find_or_create_by!(user_id: -slot, date: date, shift: shift)
         end
       end
