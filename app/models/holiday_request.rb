@@ -14,7 +14,14 @@ class HolidayRequest < Request
   def self.create_any_not_present
     Holiday::NAMES.each do |name|
       date = Holiday.next_date(name)
-      self.shifts.each_value do |shift|
+      shifts = case name
+        when Holiday::CHRISTMAS_EVE
+          self.shifts.values.last 2
+        else
+          self.shifts.values
+        end
+
+      shifts.each do |shift|
         (1..SHIFT_SLOTS).each do |slot|
           self.find_or_create_by!(user_id: -slot, date: date, shift: shift)
         end

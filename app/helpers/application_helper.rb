@@ -30,18 +30,30 @@ module ApplicationHelper
 end
 
 module Holiday
+  NEW_YEARS_DAY = "New Year's Day"
+  MARTIN_LUTHER_KING_JR_DAY = "Martin Luther King, Jr. Day"
+  PRESIDENTS_DAY = "President's Day"
+  MEMORIAL_DAY = "Memorial Day"
+  INDEPENDENCE_DAY = "Independence Day"
+  LABOR_DAY = "Labor Day"
+  THANKSGIVING = "Thanksgiving"
+  DAY_AFTER_THANKSGIVING = "Day after Thanksgiving"
+  CHRISTMAS_EVE = "Christmas Eve"
+  CHRISTMAS_DAY = "Christmas Day"
+  NEW_YEARS_EVE = "New Year's Eve"
+
   NAMES = [
-    "New Year's Day",
-    "Martin Luther King, Jr. Day",
-    "President's Day",
-    "Memorial Day",
-    "Independence Day",
-    "Labor Day",
-    "Day before Thanksgiving",
-    "Veterans Day",
-    "Thanksgiving",
-    "Christmas Day",
-    "New Year's Eve",
+    NEW_YEARS_DAY,
+    MARTIN_LUTHER_KING_JR_DAY,
+    PRESIDENTS_DAY,
+    MEMORIAL_DAY,
+    INDEPENDENCE_DAY,
+    LABOR_DAY,
+    THANKSGIVING,
+    DAY_AFTER_THANKSGIVING,
+    CHRISTMAS_EVE,
+    CHRISTMAS_DAY,
+    NEW_YEARS_EVE,
   ]
 
   def self.to_name_and_date(date)
@@ -50,32 +62,32 @@ module Holiday
 
   def self.next_date(name)
     case name
-    when "New Year's Day"
+    when NEW_YEARS_DAY
       Date.next("January", 1)
-    when "Martin Luther King, Jr. Day"
+    when MARTIN_LUTHER_KING_JR_DAY
       Date.nth_weekday_of(3, "Monday", "January")
-    when "President's Day"
+    when PRESIDENTS_DAY
       Date.nth_weekday_of(3, "Monday", "February")
-    when "Memorial Day"
+    when MEMORIAL_DAY
       Date.last_weekday_of("Monday", "May")
-    when "Independence Day"
+    when INDEPENDENCE_DAY
       Date.next("July", 4) # Should this be on the 4th or the observed day?
-    when "Labor Day"
+    when LABOR_DAY
       Date.nth_weekday_of(1, "Monday", "September")
-    when "Day before Thanksgiving"
-      next_date("Thanksgiving").prev_day
-    when "Thanksgiving"
+    when THANKSGIVING
       Date.nth_weekday_of(4, "Thursday", "November")
-    when "Veterans Day"
-      Date.next("November", 11)
-    when "Christmas Day"
+    when DAY_AFTER_THANKSGIVING
+      next_date("Thanksgiving").next_day
+    when CHRISTMAS_EVE
+      next_date("Christmas Day").prev_day
+    when CHRISTMAS_DAY
       Date.next("December", 25)
-    when "New Year's Eve"
+    when NEW_YEARS_EVE
       Date.next("December", 31)
     end
   end
 
   def self.name(date)
-    NAMES.find {|n| next_date(n) == date }
+    NAMES.find {|s| next_date(s) == date }
   end
 end
