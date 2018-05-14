@@ -7,9 +7,6 @@ task :nag_unresponded_offer_owners, [:days_old] => :environment do |t, args|
   Request.nag_unresponded_offer_owners(args[:days_old])
 end
 
-task :destroy_oldest_past_availabilities => :environment do
-end
-
 task :stay_under_heroku_row_limit => :environment do
   Rails.application.eager_load! # probably only necessary in dev
   record_counts = Hash[ActiveRecord::Base.descendants.map {|table| [table.name, table.count] }]
