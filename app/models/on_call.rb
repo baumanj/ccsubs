@@ -37,10 +37,12 @@ class OnCall < ActiveRecord::Base
 
   after_destroy do
     availability = user.availabilities.find_by(shifttime_attrs)
-    if availability.implicitly_created?
-      availability.destroy!
-    else
-      availability.update!(free: self.prior_availability)
+    if availability
+      if availability.implicitly_created?
+        availability.destroy!
+      else
+        availability.update!(free: self.prior_availability)
+      end
     end
   end
 
@@ -54,4 +56,12 @@ class OnCall < ActiveRecord::Base
     end
   end
 
+  def self.destroy_for_disabled_users
+    destroyed = OnCall.future.joins(:user).where(users: {disabled: true}).destroy_all
+    if destroyed.any?
+      message = "Destroyed #{destroyed.count} on calls of disabled users #{destroyed.map(&:user).map(&:name).uniq.join(', ')}"
+      puts message
+      UserMailer.alert(message).deliver_now
+    end
+  end
 end
