@@ -17,7 +17,7 @@ task :stay_under_heroku_row_limit => :environment do
   num_to_delete = total - 9000
 
   if num_to_delete > 0
-    destroyed = Availability.past.reorder(:created_at).limit(num_to_delete).destroy_all
+    destroyed = Availability.past.reorder(:date).limit(num_to_delete).destroy_all
     puts "Destroyed #{destroyed.count} oldest availabilities"
     num_to_delete -= destroyed.count
   else
@@ -30,6 +30,15 @@ task :stay_under_heroku_row_limit => :environment do
     num_to_delete -= destroyed.count
   else
     puts "No need to destroy any default availabilities"
+  end
+
+  if num_to_delete > 0
+    to_delete = Request.past.reorder(:date).limit(num_to_delete)
+    to_delete.each(&:delete)
+    puts "Deleted #{to_delete.count} oldest requests"
+    num_to_delete -= to_delete.count
+  else
+    puts "Only #{Request.count} requests; no need to destroy any"
   end
 
   if num_to_delete > 0
