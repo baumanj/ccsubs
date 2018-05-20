@@ -84,6 +84,7 @@ class Request < ActiveRecord::Base
   end
 
   def send_swap_offer_to(request_to_swap_with)
+    raise TypeError if request_to_swap_with.user.nil? || self.user.nil?
     with_lock do
       request_to_swap_with.lock!
       self.assign_attributes(
