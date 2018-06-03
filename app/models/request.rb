@@ -1,12 +1,13 @@
 class Request < ActiveRecord::Base
   include ShiftTime
-  default_scope { order(:date, :shift) }
+  default_scope { order(:date, :shift).where(type: 'Request') }
 
   belongs_to :user
   belongs_to :fulfilling_swap, class_name: "Request", autosave: true
   belongs_to :availability, autosave: true # the one with the same shift where user != self.user
   scope :active, -> { future.seeking_offers.where.not(user: nil) }
   scope :pending, -> { future.received_offer }
+  scope :including_holidays, -> { unscoped.order(:date, :shift) }
 
   enum shift: ShiftTime::SHIFT_NAMES
   enum state: [ :seeking_offers, :received_offer, :sent_offer, :fulfilled ]
@@ -212,7 +213,7 @@ class Request < ActiveRecord::Base
     match_type = MATCH_TYPE_MAP[match_type] || match_type
     future_requests = Request.future.to_a
     future_availabilities = Availability.future.to_a
-    Request.unscoped.all.active.order(:date, :shift).select do |receivers_request|
+    Request.default_scoped.active.select do |receivers_request|
       active.find do |my_request|
         my_request.match(receivers_request,
                          senders_availability: match_type[:senders_availability],
@@ -229,7 +230,7 @@ class Request < ActiveRecord::Base
     future_requests = Request.future.to_a
     future_availabilities = Availability.future.to_a
     # Would work with all; limiting to active is an optimization
-    Request.unscoped.all.active.order(:date, :shift).select do |receivers_request|
+    Request.default_scoped.active.select do |receivers_request|
       match(receivers_request,
             senders_availability: match_type[:senders_availability],
             receivers_availability: match_type[:receivers_availability],
@@ -242,6 +243,10 @@ class Request < ActiveRecord::Base
   # preloaded_{requests,availabilities} are ugly, but necessary to avoid hundreds of SQL queries
   def match(receivers_request, senders_availability:, receivers_availability:,
             preloaded_requests:, preloaded_availabilities:)
+    if user.nil? || receivers_request.user.nil?
+      logger.error "Missing user in match on receivers_request #{receivers_request.inspect}"
+      return false
+    end
     senders_availability_for_receivers_request =
       user.availability_state_for(receivers_request, preloaded_requests, preloaded_availabilities)
     receivers_availability_for_my_request =

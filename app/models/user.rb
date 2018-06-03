@@ -68,7 +68,7 @@ class User < ActiveRecord::Base
   end
 
   def upcoming_coverage
-    Request.on_or_after(Date.today).fulfilled.select {|r| r.fulfilling_user == self}
+    Request.including_holidays.on_or_after(Date.today).fulfilled.select {|r| r.fulfilling_user == self}
   end
 
   # Set the user signed in and return the remember token for the cookie
@@ -228,7 +228,7 @@ class User < ActiveRecord::Base
   end
 
   def self.with_active_requests
-    joins(:requests).merge(Request.unscoped.active).distinct
+    joins(:requests).merge(Request.unscoped.where(type: 'Request').active).distinct
   end
 
   def self.check_phone

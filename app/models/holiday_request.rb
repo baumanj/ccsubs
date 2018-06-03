@@ -1,6 +1,7 @@
 class HolidayRequest < Request
   SHIFT_SLOTS = 5
 
+  default_scope { where(type: 'HolidayRequest') }
   scope :active, -> { future.seeking_offers }
 
   before_save do

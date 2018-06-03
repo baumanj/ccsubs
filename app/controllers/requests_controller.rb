@@ -99,7 +99,7 @@ class RequestsController < ApplicationController
   end
 
   def fulfilled
-    @requests = Request.on_or_after(Date.today).fulfilled
+    @requests = Request.including_holidays.on_or_after(Date.today).fulfilled
     @today = @requests.where(date: Date.today)
     @this_week = @requests.where(date: (Date.today + 1)..(Date.today + 7))
     @later = @requests.where(date: (Date.today + 8)..(Date.today + 1000))
