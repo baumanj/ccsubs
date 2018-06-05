@@ -1,5 +1,6 @@
 class OnCallsController < ApplicationController
   before_action :require_signin
+  before_action :require_admin, except: [:index, :edit, :create]
 
   def index
     if current_user.staff_or_admin?
@@ -31,6 +32,18 @@ class OnCallsController < ApplicationController
       set_date_range_and_on_calls
       render 'edit' # Try again
     end
+  end
+
+  def destroy
+    on_call= OnCall.find(params[:id])
+    if on_call.start.past?
+      flash[:error] = "On calls cannot be deleted once their start time has passed"
+    else
+      on_call.destroy
+      flash[:success] = "Deleted #{on_call.user}'s #{on_call} on-call shift"
+    end
+
+    redirect_to :back
   end
 
   private

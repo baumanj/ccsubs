@@ -6,7 +6,18 @@
 <%= render layout: 'shared/month' do |date| %>
   <ol>
   <% @on_calls_for_date[date].each do |oc| %>
-    <li><%= link_to oc.user, oc.user, title: oc.user.phone if oc.user %></li>
+    <li>
+		<% if oc.user %>
+			<%= link_to oc.user, oc.user, title: oc.user.phone%>
+	        <% if current_user_admin? %>
+	          <%= button_to(oc, method: :delete, data: { confirm: "Really delete #{oc.user}'s on-call?" },
+	                        disabled: oc.start.past?,
+	                        class: "btn btn-default btn-xs", form_class: "inline-form", title: "Delete") do %>
+		          <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+	          <% end %>
+	        <% end %>
+	    <% end %>
+    </li>
   <% end %>
   </ol>
 <% end %>
