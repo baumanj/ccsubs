@@ -114,6 +114,19 @@ describe RequestsController do
       end
     end
 
+    context "when request is a holiday request" do
+      let(:ask) { create(:holiday_request) }
+      let(:expected_assigns) do
+        { request: eq(ask),
+          requests_to_swap_with: be_empty,
+          conflict: be_nil }
+      end
+
+      it "is successfuly found" do
+        expect(assigns[:request].type).to eq("HolidayRequest")
+      end
+    end
+
     context "when request belongs to current_user" do
       let(:ask) { create(:request, user: current_user) }
 
