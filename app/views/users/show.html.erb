@@ -25,3 +25,9 @@
   <%= link_to "Edit profile", edit_user_path(@user), class: "btn btn-lg btn-primary" %>
 <% end %>
 
+<% if current_user.id == 1 %>
+  <%= button_to "Sign in as #{@user}", sessions_path, class: "btn btn-lg btn-default", form_class: "inline-form",
+      params: { sign_in_as_user: true, 'session[email]': @user.email }
+  %>
+<% end %>
+

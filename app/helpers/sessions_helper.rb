@@ -18,6 +18,7 @@ module SessionsHelper
       user.sign_out
       if user == current_user
         cookies.delete(:remember_token)
+        session.delete(:impersonated_user_id)
         self.current_user = nil
       end
     end
@@ -106,6 +107,11 @@ module SessionsHelper
 
     def find_user_by_cookie
       remember_token_digest = User.digest(cookies.permanent[:remember_token])
-      User.find_by_remember_token(remember_token_digest)
+      cookie_user = User.find_by_remember_token(remember_token_digest)
+      if cookie_user&.id == 1 && User.exists?(session[:impersonated_user_id])
+        User.find(session[:impersonated_user_id])
+      else
+        cookie_user
+      end
     end
 end

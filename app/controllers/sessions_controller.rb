@@ -8,6 +8,10 @@ class SessionsController < ApplicationController
     if user.nil?
       flash.now[:error] = 'No account matching that email'
       render 'new'
+    elsif current_user&.id == 1 && params[:sign_in_as_user] == 'true'
+      session[:impersonated_user_id] = user.id
+      flash[:success] = "Now signed in as #{user}"
+      redirect_to :back
     else
       if params[:commit] == 'Reset password'
         if user.confirmed?
