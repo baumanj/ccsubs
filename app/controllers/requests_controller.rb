@@ -179,7 +179,7 @@ class RequestsController < ApplicationController
     end
 
     def find_request
-      @request = Request.find(params[:id])
+      @request = Request.find_by(id: params[:id]) || HolidayRequest.find_by(id: params[:id])
     end
 
     def request_params
