@@ -82,6 +82,7 @@ module ShiftTime
     end
   end
   
+  FIRST_SHIFT_START = { hour: 8, min: 0 }
   SHIFT_DURATIONS = [
     4.5.hours, # 0800–1230
     4.5.hours, # 1230–1700
@@ -92,7 +93,7 @@ module ShiftTime
   # The first shift always starts at 8am, even if Daylight Saving Time means
   # that it's not 8 hours since the beginning of that day
   def self.first_shift_start(date=Date.current)
-    date.in_time_zone.change(hour: 8)
+    date.in_time_zone.change(FIRST_SHIFT_START)
   end
 
   def self.shift_ranges(date=Date.current)
@@ -162,9 +163,15 @@ module ShiftTime
   end
 
   def self.next_shift_start(time=Time.current)
-    time_ranges = time_to_shift_ranges(time)
-    time_range = time_ranges.find {|r| r.cover?(time) }
-    time_range.nil? ? time_ranges.first.begin : time_range.end
+    first_shift_of_today_start = first_shift_start(time.to_date)
+    if time < first_shift_of_today_start
+      first_shift_of_today_start
+    else
+      time_to_shift_ranges(time).each_cons(2) do |curr, next_|
+        return next_.begin if curr.cover?(time)
+      end
+      first_shift_start(time.to_date.tomorrow)
+    end
   end
 
   def range
