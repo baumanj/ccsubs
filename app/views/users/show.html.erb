@@ -23,6 +23,7 @@
 
 <% if current_user.admin? %>
   <%= link_to "Edit profile", edit_user_path(@user), class: "btn btn-lg btn-primary" %>
+  <%= link_to "Resend confirmation email", send_confirmation_path(@user), class: "btn btn-lg btn-default" %>
 <% end %>
 
 <% if current_user.id == 1 %>
