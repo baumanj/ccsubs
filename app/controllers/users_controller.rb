@@ -1,8 +1,8 @@
 require 'csv'
 
 class UsersController < ApplicationController
-  before_action :require_signin, except: [:reset_password, :update_password]
-  before_action :check_authorization, except: [:reset_password, :show]
+  before_action :require_signin, except: [:confirm, :reset_password, :update_password]
+  before_action :check_authorization, except: [:confirm, :reset_password, :show]
   before_action :require_admin, only: [:new, :create, :index, :new_list, :upload_csv]
 
   EXPECTED_CSV_HEADERS = ['name', 'volunteer_type', 'vic', 'home_phone', 'cell_phone', 'email']
@@ -106,7 +106,11 @@ class UsersController < ApplicationController
     else
       flash[:error] = "Confirmation failed"
     end
-    redirect_to @user
+    if current_user == @user
+      redirect_to @user
+    else
+      redirect_to signin_path
+    end
   end
 
   def reset_password

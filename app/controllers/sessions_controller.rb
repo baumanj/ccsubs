@@ -19,7 +19,9 @@ class SessionsController < ApplicationController
           mailer.reset_password(user).deliver_now
           flash.now[:success] = "Sent reset email to #{user.email}"
         else
-          flash.now[:error] = 'Cannot send reset email to unconfirmed email address'
+          user.update_confirmation_token
+          flash.now[:alert] = "Cannot send reset email to unconfirmed email address. A confirmation email has been sent to #{user.email}. Please confirm and retry pasword reset."
+          mailer.confirm_email(user).deliver_now
         end
         render 'forgot'
       elsif sign_in(user, params[:session][:password], params[:session][:auto_signout] == "1")
