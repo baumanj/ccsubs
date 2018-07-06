@@ -1,14 +1,10 @@
 class Date
 
-  def self.next(month_name, day_number)
+  def self.next(month_name, day_number, after_date=self.current)
     month_index = MONTHNAMES.index(month_name)
-    date = self.current
-
-    until date.mon == month_index
-      date = date.advance(months: 1)
-    end
-
-    date.change(day: day_number)
+    date = after_date + 1
+    date += 1 until date.mon == month_index && date.day == day_number
+    date
   end
 
   def self.nth_weekday_of(n, day_name, month_name)
