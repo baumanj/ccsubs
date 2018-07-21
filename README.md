@@ -1,4 +1,4 @@
-# Crisis Clinic subs/swap tool
+# Crisis Connections subs/swap tool
 
 This is a web application for facilitating exchanging shift assignments.
 

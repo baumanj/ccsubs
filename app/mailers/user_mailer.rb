@@ -65,7 +65,7 @@ class UserMailer < ActionMailer::Base
   def remind_holiday(req, fulfilling_user)
     @req = req
     @fulfilling_user = fulfilling_user
-    attach_ical @req.to_ical(summary: "Crisis Clinic Holiday Shift", description: "You agreed to cover this holiday shift because you're awesome")
+    attach_ical @req.to_ical(summary: "Crisis Connections Holiday Shift", description: "You agreed to cover this holiday shift because you're awesome")
     mail to: @fulfilling_user,
          subject: "#{@req}"
   end
@@ -81,7 +81,7 @@ class UserMailer < ActionMailer::Base
   def remind_sub(req, fulfilling_user)
     @req = req
     @fulfilling_user = fulfilling_user
-    attach_ical @req.to_ical(summary: "Crisis Clinic Shift", description: "You agreed to sub for this shift because you're awesome")
+    attach_ical @req.to_ical(summary: "Crisis Connections Shift", description: "You agreed to sub for this shift because you're awesome")
     mail to: @fulfilling_user,
          subject: "Sub/Swap #{@req}: you have agreed to sub"
   end
@@ -107,7 +107,7 @@ class UserMailer < ActionMailer::Base
     @req = req
     @accepter = req.user
     @acceptee = req.fulfilling_user
-    attach_ical @req.to_ical(summary: "Crisis Clinic Shift", description: "You agreed to cover this shift in exchange for #{@req.fulfilling_swap}")
+    attach_ical @req.to_ical(summary: "Crisis Connections Shift", description: "You agreed to cover this shift in exchange for #{@req.fulfilling_swap}")
     mail to: @acceptee,
          subject: "Sub/Swap #{@req}: #{@acceptee} swapping for #{@accepter} covering #{@req.fulfilling_swap}",
          cc: VOLUNTEER_SERVICES
@@ -117,7 +117,7 @@ class UserMailer < ActionMailer::Base
     @req = req
     @accepter = req.user
     @acceptee = req.fulfilling_user
-    attach_ical @req.fulfilling_swap.to_ical(summary: "Crisis Clinic Shift", description: "You agreed to cover this shift in exchange for #{@req}")
+    attach_ical @req.fulfilling_swap.to_ical(summary: "Crisis Connections Shift", description: "You agreed to cover this shift in exchange for #{@req}")
     mail to: @accepter,
          subject: "Sub/Swap #{@req}: swap from #{@acceptee} accepted for #{@req.fulfilling_swap}"
   end
@@ -125,7 +125,7 @@ class UserMailer < ActionMailer::Base
   def confirm_on_call_signup(on_call)
     @description = "We only call you in if a regular shift member is sick or has an emergency but need to count on your help if that happens. If you have not received a call from the phone room 45 minutes into the on-call shift time you signed up for, you are free to assume that you are not needed!"
     @on_call = on_call
-    attach_ical @on_call.to_ical(summary: "Crisis Clinic on-call", description: @description)
+    attach_ical @on_call.to_ical(summary: "Crisis Connections on-call", description: @description)
     mail to: @on_call.user,
          subject: "On-call signup for #{@on_call} confirmed"
   end
