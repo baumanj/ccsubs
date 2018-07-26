@@ -2,7 +2,7 @@ class UserMailer < ActionMailer::Base
   include ApplicationHelper
 
   VOLUNTEER_SERVICES = if Rails.env.production?
-    "ccsubs <volunteerservices@crisisclinic.org>"
+    "ccsubs <volunteerservices@crisisconnections.org>"
   else
     "baumanj+volunteerservices@gmail.com" 
   end
@@ -30,7 +30,7 @@ class UserMailer < ActionMailer::Base
   end
 
   def all_hands_email(users, subject, body)
-    mail(reply_to: 'do-not-email-call-206-461-3210x1@crisisclinic.org', bcc: users, subject: subject) do |format|
+    mail(reply_to: 'do-not-email-call-206-461-3210x1@crisisconnections.org', bcc: users, subject: subject) do |format|
       format.text { render plain: body }
     end
   end
