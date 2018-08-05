@@ -7,7 +7,7 @@ RSpec.describe SignupReminder, type: :model do
   it "rejects a shift before the first valid date" do
     expect {
       date = OnCall::FIRST_VALID_DATE.prev_day
-      create(:signup_reminder, month: date.month, year: date.year)
+      create(:signup_reminder, month: date.month, year: date.year, day: date.day, event_type: :on_call)
     }.to raise_error(ActiveRecord::RecordInvalid)
   end
 
