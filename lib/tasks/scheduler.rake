@@ -51,7 +51,7 @@ task :destroy_disabled_users_future_on_calls => :environment do
 end
 
 task :send_on_call_reminder => :environment do
-  OnCallReminder.send_reminders
+  SignupReminder.send_for_on_call
 end
 
 task :check_for_missing_phone => :environment do

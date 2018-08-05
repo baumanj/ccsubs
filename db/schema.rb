@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180317215807) do
+ActiveRecord::Schema.define(version: 20180805142732) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -49,15 +49,6 @@ ActiveRecord::Schema.define(version: 20180317215807) do
     t.date     "date",       null: false
   end
 
-  create_table "on_call_reminders", force: :cascade do |t|
-    t.integer  "month",         null: false
-    t.integer  "year",          null: false
-    t.text     "user_ids",      null: false
-    t.datetime "created_at",    null: false
-    t.datetime "updated_at",    null: false
-    t.string   "mailer_method", null: false
-  end
-
   create_table "on_calls", force: :cascade do |t|
     t.date     "date",               null: false
     t.integer  "shift",              null: false
@@ -84,6 +75,15 @@ ActiveRecord::Schema.define(version: 20180317215807) do
   end
 
   add_index "requests", ["user_id", "shift", "date"], name: "index_requests_on_user_id_and_shift_and_date", unique: true, using: :btree
+
+  create_table "signup_reminders", force: :cascade do |t|
+    t.integer  "month",         null: false
+    t.integer  "year",          null: false
+    t.text     "user_ids",      null: false
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
+    t.string   "mailer_method", null: false
+  end
 
   create_table "users", force: :cascade do |t|
     t.string   "name",                         limit: 255
