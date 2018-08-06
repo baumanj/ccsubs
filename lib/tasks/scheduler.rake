@@ -1,3 +1,5 @@
+require "#{Rails.root}/app/helpers/application_helper"
+
 desc "This task is called by the Heroku scheduler add-on"
 task :decline_past_request_offers => :environment do
   Request.decline_past_offers
@@ -46,12 +48,24 @@ task :stay_under_heroku_row_limit => :environment do
   end
 end
 
+# Remove after updating scheduler to call cleanup_for_disabled_users instead
 task :destroy_disabled_users_future_on_calls => :environment do
   OnCall.destroy_for_disabled_users
 end
 
+task :cleanup_for_disabled_users => :environment do
+  OnCall.destroy_for_disabled_users
+  HolidayRequest.reset_for_disabled_users
+end
+
+# Remove after updating scheduler to call send_reminders instead
 task :send_on_call_reminder => :environment do
   SignupReminder.send_for_on_call
+end
+
+task :send_reminders => :environment do
+  SignupReminder.send_for_on_call
+  SignupReminder.send_for_holiday
 end
 
 task :check_for_missing_phone => :environment do
@@ -59,6 +73,5 @@ task :check_for_missing_phone => :environment do
 end
 
 task :create_holiday_requests => :environment do
-  require "#{Rails.root}/app/helpers/application_helper"
   HolidayRequest.create_any_not_present
 end

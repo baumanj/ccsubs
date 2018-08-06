@@ -2,7 +2,10 @@ require 'rails_helper'
 
 RSpec.describe SignupReminder, type: :model do
 
-  before { UserMailer.active_user = create(:recurring_shift_volunteer) }
+  before do
+    UserMailer.active_user = create(:recurring_shift_volunteer)
+    HolidayRequest.create_any_not_present
+  end
 
   it "rejects a shift before the first valid date" do
     expect {
@@ -11,7 +14,7 @@ RSpec.describe SignupReminder, type: :model do
     }.to raise_error(ActiveRecord::RecordInvalid)
   end
 
-  context "when there is a 1 month before reminder" do
+  context "when there is a 1 month before on-call reminder" do
     let(:templates) { [ SignupReminder::Template['remind_on_call_signup', -1.month] ] }
 
     context "when no reminders have been sent" do
@@ -39,6 +42,40 @@ RSpec.describe SignupReminder, type: :model do
         expected_num_reminders = date_range.map(&:month).uniq.size
         expect { date_range.each {|day| SignupReminder.send_for_on_call(templates: templates, today: day) } }.to change { ActionMailer::Base.deliveries.count }.by(expected_num_reminders)
         expect(SignupReminder.count).to eq(expected_num_reminders)
+      end
+    end
+  end
+
+  context "when there is a 1 month before holiday reminder" do
+    let(:templates) { [ SignupReminder::Template['remind_holiday_signup', -1.month] ] }
+
+    context "when no reminders have been sent" do
+      it "does nothing when more than 1 month before the next holiday" do
+        today = 1.month.ago(Holiday.next_after(Date.current)).prev_day
+        expect { SignupReminder.send_for_holiday(templates: templates, today: today) }.to_not change { ActionMailer::Base.deliveries.count }
+        expect(SignupReminder.count).to eq(0)
+      end
+
+      it "sends a reminder for the next holiday if a month before or less" do
+        next_holiday_date = Holiday.next_after(Date.current)
+        today = 3.weeks.ago(next_holiday_date)
+        expect(SignupReminder.count).to eq(0)
+        expect { SignupReminder.send_for_holiday(templates: templates, today: today) }.to change { ActionMailer::Base.deliveries.count }.by(1)
+        expect(SignupReminder.count).to eq(1)
+        expect(SignupReminder.last.mailer_method).to eq('remind_holiday_signup')
+        delivery = ActionMailer::Base.deliveries.last
+        expect(delivery.to).to be_empty
+        expect(delivery.bcc).to_not be_empty
+        expect(delivery.subject).to include(Holiday.name(next_holiday_date))
+      end
+
+      it "sends only one reminder per holiday" do
+        expect(SignupReminder.count).to eq(0)
+        holiday_dates = Holiday::NAMES.map {|n| Holiday.next_date(n) }
+        holiday_dates.each {|d| create(:holiday_request, date: d) }
+        date_range = (Date.current)...(holiday_dates.max)
+        expect { date_range.each {|day| SignupReminder.send_for_holiday(templates: templates, today: day) } }.to change { ActionMailer::Base.deliveries.count }.by(holiday_dates.size)
+        expect(SignupReminder.count).to eq(holiday_dates.size)
       end
     end
   end

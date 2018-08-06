@@ -1,0 +1,12 @@
+Hello again!
+
+This is your second reminder that <%= @holiday %> is coming up and still needs more help on the following <%= "shift".pluralize(@shifts.size) %>:
+<% @shifts.each do |shift| %>
+• <%= shift %>
+<% end %>
+
+Part of your volunteer commitment includes at least one holiday shift per year, so if you can help, please sign up here: <%= @url %>.
+
+You are receiving this reminder because you haven't signed up online for a holiday shift in the past year<%= '*' if @asterisk_text %>. Once you sign up, no more nagging for at least a year!
+
+<%= @asterisk_text %>

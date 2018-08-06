@@ -152,12 +152,33 @@ class UserMailer < ActionMailer::Base
          subject: "On-call signup second reminder for #{@date_string} [ACTION REQUIRED]"
   end
 
+  def remind_holiday_signup(users, date)
+    remind_holiday_signup_common(users, date)
+    mail bcc: users,
+         subject: "Holiday signup reminder for #{@holiday} [ACTION REQUIRED]"
+  end
+
+  def remind_holiday_signup_again(users, date)
+    remind_holiday_signup_common(users, date)
+    mail bcc: users,
+         subject: "Holiday signup second reminder for #{@holiday} [ACTION REQUIRED]"
+  end
+
   def reset_password(user)
     @user = user
     mail to: user, subject: "Reset your ccsubs password"
   end
 
   private
+
+    def remind_holiday_signup_common(users, date)
+      @holiday = Holiday.name(date)
+      @shifts = HolidayRequest.where(date: date).group_by(&:shift).keys
+      @url = holiday_requests_url
+      @asterisk_text = if 1.year.ago(date) < HolidayRequest::FIRST_VALID_DATE
+        "* Holiday sign-ups moved online starting #{HolidayRequest::FIRST_VALID_DATE}. Paper signups before then are unknown to the system, so if you are receiving this reminder despite having worked a holiday shift between #{1.year.ago(date)} and #{HolidayRequest::FIRST_VALID_DATE}, you can ignore this or sign up for your next holiday shift and you won't be notified again."
+      end
+    end
 
     def attach_ical(ical)
       attachments['ccsubs.ics'] = { mime_type: 'text/calendar', content: ical }

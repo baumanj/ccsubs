@@ -6,6 +6,11 @@ class SignupReminder < ActiveRecord::Base
     Template['remind_on_call_signup_again', -2.weeks],
   ]
 
+  HOLIDAY_TEMPLATES = [
+    Template['remind_holiday_signup', -1.month],
+    Template['remind_holiday_signup_again', -2.weeks],
+  ]
+
   enum event_type: [ :on_call, :holiday ]
   validates :day, presence: true
   validates :month, presence: true
@@ -35,6 +40,12 @@ class SignupReminder < ActiveRecord::Base
       return if event_start < OnCall::FIRST_VALID_DATE
       users = OnCall.users_to_nag(event_start.all_month)
       send_reminders(today, :on_call, event_start, templates, users)
+    end
+
+    def send_for_holiday(today: Date.current, templates: self::HOLIDAY_TEMPLATES)
+      holiday_date = Holiday.next_after(today)
+      users = HolidayRequest.users_to_nag(holiday_date)
+      send_reminders(today, :holiday, holiday_date, templates, users)
     end
 
     private
