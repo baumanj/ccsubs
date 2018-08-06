@@ -10,7 +10,7 @@
 		    <ul class="requests">
 				<% reqs_for_date.group_by(&:shift).each do |shift, reqs_for_shift| %>
 			        <li>
-						<%= link_to shift, reqs_for_shift.first %>
+						<%= link_to shift, current_user.availabilities.find_by(reqs_for_shift.first.shifttime_attrs)&.request || reqs_for_shift.first %>
 			        </li>
 				<% end %>
 		    </ul>
