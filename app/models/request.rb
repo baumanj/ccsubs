@@ -138,7 +138,10 @@ class Request < ActiveRecord::Base
     if seeking_offers?
       with_lock do
         sub_availability = subber.find_or_initialize_availability_for(self)
-        if sub_availability.free?
+        if sub_availability.request
+          errors.add(:subber, "must not already be subbing for that same shift")
+          false
+        elsif sub_availability.free?
           sub_availability.update!(free: false)
           update!(availability: sub_availability, state: :fulfilled)
         else

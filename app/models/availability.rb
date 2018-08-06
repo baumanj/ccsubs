@@ -3,7 +3,7 @@ class Availability < ActiveRecord::Base
   default_scope { order(:date, :shift) }
 
   belongs_to :user
-  has_one :request
+  has_one :request, -> { where(type: ["Request", "HolidayRequest"]) }
   
   enum shift: ShiftTime::SHIFT_NAMES
   attr_accessor :from_default # If this instance was populated from a DefaultAvailability
