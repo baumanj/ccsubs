@@ -60,34 +60,38 @@ module Holiday
     "#{name(date)} (#{ShiftTime.date_to_s(date)})"
   end
 
-  def self.next_date(name)
+  def self.next_date(name, after=Date.current)
     case name
     when NEW_YEARS_DAY
-      Date.next("January", 1)
+      Date.next("January", 1, after)
     when MARTIN_LUTHER_KING_JR_DAY
-      Date.nth_weekday_of(3, "Monday", "January")
+      Date.nth_weekday_of(3, "Monday", "January", after)
     when PRESIDENTS_DAY
-      Date.nth_weekday_of(3, "Monday", "February")
+      Date.nth_weekday_of(3, "Monday", "February", after)
     when MEMORIAL_DAY
-      Date.last_weekday_of("Monday", "May")
+      Date.last_weekday_of("Monday", "May", after)
     when INDEPENDENCE_DAY
-      Date.next("July", 4) # Should this be on the 4th or the observed day?
+      Date.next("July", 4, after) # Should this be on the 4th or the observed day?
     when LABOR_DAY
-      Date.nth_weekday_of(1, "Monday", "September")
+      Date.nth_weekday_of(1, "Monday", "September", after)
     when THANKSGIVING
-      Date.nth_weekday_of(4, "Thursday", "November")
+      Date.nth_weekday_of(4, "Thursday", "November", after)
     when DAY_AFTER_THANKSGIVING
-      next_date("Thanksgiving").next_day
+      next_date("Thanksgiving", after.prev_day).next_day
     when CHRISTMAS_EVE
-      next_date("Christmas Day").prev_day
+      next_date("Christmas Day", after.next_day).prev_day
     when CHRISTMAS_DAY
-      Date.next("December", 25)
+      Date.next("December", 25, after)
     when NEW_YEARS_EVE
-      Date.next("December", 31)
+      Date.next("December", 31, after)
     end
   end
 
+  def self.next_after(after_date)
+    NAMES.map {|n| next_date(n, after_date) }.min
+  end
+
   def self.name(date)
-    NAMES.find {|s| next_date(s) == date }
+    NAMES.find {|s| next_date(s) == date } || raise(ArgumentError, "#{date} is not a known holiday")
   end
 end

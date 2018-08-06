@@ -7,42 +7,50 @@ class Date
     date
   end
 
-  def self.nth_weekday_of(n, day_name, month_name)
+  def self.nth_weekday_of(n, day_name, month_name, after_date=self.current)
+    weekday_index = nil
     month_index = MONTHNAMES.index(month_name)
-    date = self.current
-
-    until date.mon == month_index
-      date = date.advance(months: 1)
+    date = after_date.beginning_of_year
+    max_date = if after_date.mon < month_index
+      after_date.end_of_year
+    else
+      after_date.next_year.end_of_month
     end
 
-    date = date.change(day: 1)
+    while date < max_date
+      if date.mon == month_index
+        weekday_index = 0 if date.day == 1
+        if date.send("#{day_name.downcase}?")
+          weekday_index += 1
+          return date if weekday_index == n && date > after_date
+        end
+      end
 
-    until date.send("#{day_name.downcase}?")
-      date = date.advance(days: 1)
+      date += 1
     end
 
-    date.advance(weeks: n - 1)
+    raise(ArgumentError, "#{month_name} has fewer than #{n} #{day_name}s")
   end
 
-  def self.last_weekday_of(day_name, month_name)
+  def self.last_weekday_of(day_name, month_name, after_date=self.current)
     month_index = MONTHNAMES.index(month_name)
-    date = self.current
 
-    until date.mon == month_index
-      date = date.advance(months: 1)
+    # find this year's
+    date = after_date.change(month: month_index).end_of_month
+
+    while date > after_date
+      return date if date.send("#{day_name.downcase}?")
+      date -= 1
     end
 
-    date = date.change(day: 1)
+    date = after_date.change(month: month_index).advance(years: 1).end_of_month
 
-    until date.send("#{day_name.downcase}?")
-      date = date.advance(days: 1)
+    while date > after_date
+      return date if date.send("#{day_name.downcase}?")
+      date -= 1
     end
 
-    while date.advance(weeks: 1).mon == month_index
-      date = date.advance(weeks: 1)
-    end
-
-    date
+    raise(ArgumentError, "#{month_name} has no #{day_name}s")
   end
 
 end
