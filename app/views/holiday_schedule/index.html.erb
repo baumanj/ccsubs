@@ -10,7 +10,7 @@
 				<%= shift %>:
 				<% if reqs_for_shift.any?(&:fulfilling_user) %>
 					<ol>
-					<% reqs_for_shift.map(&:fulfilling_user).compact.map do |user| %>
+					<% reqs_for_shift.map(&:fulfilling_user).compact.sort_by(&:name).map do |user| %>
 						<li><%= link_to user, user, title: user.phone %></li>
 					<% end %>
 					</ol>

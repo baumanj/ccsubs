@@ -1,5 +1,5 @@
 class HolidayRequest < Request
-  SHIFT_SLOTS = 5
+  SHIFT_SLOTS = 4
   FIRST_VALID_DATE = Date.new(2018, 9, 3)
 
   default_scope { where(type: 'HolidayRequest') }
