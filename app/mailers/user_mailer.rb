@@ -56,7 +56,7 @@ they were generous
 so sweet
 and so cool
     EOF
-    alert_recipient(VOLUNTEER_SERVICES, "Sub-only hoilday fulfullment", body)
+    alert_recipient(VOLUNTEER_SERVICES, "Sub-only hoilday fulfillment", body)
   end
 
   def confirm_email(user)
