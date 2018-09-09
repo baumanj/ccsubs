@@ -36,9 +36,27 @@ class UserMailer < ActionMailer::Base
   end
 
   def alert(body)
-    mail(to: User.first, subject: "Alert!") do |format|
-      format.text { render plain: body }
-    end
+    alert_recipient(User.first, "Alert!", body)
+  end
+
+  def alert_sub_only_holiday(holiday_request)
+    body =<<-EOF
+#{holiday_request.fulfilling_user} <#{holiday_request.fulfilling_user.email}> has taken
+the request
+that was for
+#{Holiday.to_name_and_date(holiday_request.date)} #{holiday_request.shift}
+
+and which
+you were probably
+saving
+for regular volunteers
+
+Applaud them
+they were generous
+so sweet
+and so cool
+    EOF
+    alert_recipient(VOLUNTEER_SERVICES, "Sub-only hoilday fulfullment", body)
   end
 
   def confirm_email(user)
@@ -170,6 +188,12 @@ class UserMailer < ActionMailer::Base
   end
 
   private
+
+    def alert_recipient(recipient, subject, body)
+      mail(to: recipient, subject: subject) do |format|
+        format.text { render plain: body }
+      end
+    end
 
     def remind_holiday_signup_common(users, date)
       @holiday = Holiday.name(date)
