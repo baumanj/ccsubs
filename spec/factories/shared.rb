@@ -24,5 +24,9 @@ module Faker
     def self.in_date_range(range, excluding: nil)
       (range.to_a - [*excluding]).sample
     end
+
+    def self.holiday_in_next_year(excluding: nil)
+      (Holiday::dates_in_coming_year - [*excluding]).sample
+    end
   end
 end

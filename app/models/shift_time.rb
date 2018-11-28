@@ -232,7 +232,7 @@ module ShiftTime
       errors.add(:start, "time must be specified.")
     elsif start < Time.current
       errors.add(:start, "time must be in the future.")
-    elsif start > 1.year.from_now
+    elsif start.to_date > 1.year.since(Date.today)
       errors.add(:start, "time must be within a year.")
     end
   end

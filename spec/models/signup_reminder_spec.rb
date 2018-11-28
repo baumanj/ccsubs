@@ -71,7 +71,7 @@ RSpec.describe SignupReminder, type: :model do
 
       it "sends only one reminder per holiday" do
         expect(SignupReminder.count).to eq(0)
-        holiday_dates = Holiday::NAMES.map {|n| Holiday.next_date(n) }
+        holiday_dates = Holiday::dates_in_coming_year
         holiday_dates.each {|d| create(:holiday_request, date: d) }
         date_range = (Date.current)...(holiday_dates.max)
         expect { date_range.each {|day| SignupReminder.send_for_holiday(templates: templates, today: day) } }.to change { ActionMailer::Base.deliveries.count }.by(holiday_dates.size)

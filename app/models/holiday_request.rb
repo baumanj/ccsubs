@@ -19,11 +19,9 @@ class HolidayRequest < Request
   end
 
   def self.create_any_not_present
-    Holiday::NAMES.each do |name|
-      date = Holiday.next_date(name)
-      next if date > 1.year.from_now # E.g., next MLK day on 2018-1-16
-      shifts = case name
-        when Holiday::CHRISTMAS_EVE
+    Holiday::dates_in_coming_year.each do |date|
+      shifts = case Holiday::name(date)
+        when Holiday::CHRISTMAS_EVE, Holiday::NEW_YEARS_EVE
           self.shifts.values.last 2
         else
           self.shifts.values

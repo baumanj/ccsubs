@@ -91,6 +91,10 @@ module Holiday
     NAMES.map {|n| next_date(n, after_date) }.min
   end
 
+  def self.dates_in_coming_year
+    NAMES.map {|n| next_date(n) }.reject {|d| d >= 1.year.since(Date.today) }
+  end
+
   def self.name(date)
     NAMES.find {|s| next_date(s) == date } || raise(ArgumentError, "#{date} is not a known holiday")
   end
