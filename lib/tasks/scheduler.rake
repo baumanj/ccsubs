@@ -19,7 +19,9 @@ task :stay_under_heroku_row_limit => :environment do
   num_to_delete = total - 9000
 
   if num_to_delete > 0
-    destroyed = Availability.past.reorder(:date).limit(num_to_delete).destroy_all
+    # Only select availabilties that aren't associated with a request
+    # We need to keep this info for holiday fulfillment tracking
+    destroyed = Availability.destroy_all(id: Availability.past.reorder(:date).reject(&:request).first(num_to_delete).map(&:id))
     puts "Destroyed #{destroyed.count} oldest availabilities"
     num_to_delete -= destroyed.count
   else
@@ -35,6 +37,9 @@ task :stay_under_heroku_row_limit => :environment do
   end
 
   if num_to_delete > 0
+    # This doesn't delete any holiday requests, but at some point we may need to
+    # As long as we prioritize the unfulfilled ones and then the ones which are
+    # 2+ years old, we shouldn't lose any important data
     to_delete = Request.past.reorder(:date).limit(num_to_delete)
     to_delete.each(&:delete)
     puts "Deleted #{to_delete.count} oldest requests"
