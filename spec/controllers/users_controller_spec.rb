@@ -62,6 +62,33 @@ describe UsersController do
           end
           it_behaves_like 'an invalid upload'
         end
+
+        context 'when new user has invalid user type' do
+          let(:params) do
+            invalid_user_type = UsersController::EXPECTED_CSV_HEADERS.to_csv + "bob,warm line,,,,\n"
+            { csv: StringFileUpload.new(invalid_user_type) }
+          end
+          it_behaves_like 'an invalid upload'
+        end
+
+        context 'when an existing user has invalid user type' do # XXX
+          let(:params) do
+            invalid_user = @users_before.sample
+            csv_string = CSV.generate do |csv|
+              csv << UsersController::EXPECTED_CSV_HEADERS
+              csv << UsersController::EXPECTED_CSV_HEADERS.map do |h|
+                if h == "volunteer_type"
+                  "some bogus type"
+                else
+                  invalid_user.send(h)
+                end
+              end
+            end
+            { csv: StringFileUpload.new(csv_string) }
+          end
+          it_behaves_like 'an invalid upload'
+        end
+
       end
 
       context "when CSV is valid" do

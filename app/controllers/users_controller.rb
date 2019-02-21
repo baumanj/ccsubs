@@ -55,16 +55,22 @@ class UsersController < ApplicationController
         }
 
         user = existing_users[vic.to_i]
-        if user
-          user.attributes = csv_attributes # don't save; just use to test for change
-          users_to_update[user.id] = csv_attributes if user.changed?
-        else
-          csv_attributes.merge!(
-            email: email,
-            vic: vic,
-            password: vic
-          )
-          new_users << csv_attributes
+        begin
+          if user
+            user.attributes = csv_attributes # don't save; just use to test for change
+            users_to_update[user.id] = csv_attributes if user.changed?
+          else
+            csv_attributes.merge!(
+              email: email,
+              vic: vic,
+              password: vic
+            )
+            new_users << csv_attributes
+          end
+        rescue ArgumentError => error
+          flash[:error] = "Update canceled due to invalid input. Could not add user '#{csv_attributes[:name]}' because #{error}."
+          render 'new_list'
+          return
         end
       end
 
@@ -84,6 +90,10 @@ class UsersController < ApplicationController
         rescue ActiveRecord::RecordInvalid => invalid
           flash[:error] = "Upload failed because new user '#{invalid.record.name}' could be created!"
           @errors = invalid.record.errors
+          render 'new_list'
+          raise ActiveRecord::Rollback
+        rescue ArgumentError => error
+          flash[:error] = "Update canceled due to invalid input. #{error}."
           render 'new_list'
           raise ActiveRecord::Rollback
         end
