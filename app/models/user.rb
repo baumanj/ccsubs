@@ -51,6 +51,15 @@ class User < ActiveRecord::Base
     SecureRandom.urlsafe_base64
   end
 
+  def User.new_admin(name:, email:)
+    password = SecureRandom.urlsafe_base64
+    u = User.new(name: name, email: email, confirmed: true, admin: true, staff: true, password: password, password_confirmation: password)
+    u.save(validate: false)
+    u.confirmed = true
+    u.save(validate: false)
+    u
+  end
+
   def staff_or_admin?
     staff? || admin?
   end
