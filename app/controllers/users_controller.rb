@@ -77,6 +77,12 @@ class UsersController < ApplicationController
       enabled_vics = User.where(disabled: false).pluck(:vic).compact
       vics_to_disable = enabled_vics - input_vics
 
+      if vics_to_disable.size > (enabled_vics.size / 10)
+        flash[:error] = "Update canceled since this would disable #{vics_to_disable.size} of the #{enabled_vics.size} currently enabled users. The provided user list should contain all users, not just new ones."
+        render 'new_list'
+        return
+      end
+
       User.transaction do
         begin
           User.update(users_to_update.keys, users_to_update.values)
