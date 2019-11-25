@@ -103,12 +103,11 @@ describe UsersController do
         end
 
         context 'when adding new users', expect_redirect_to: :users_path do
-          let(:csv_users) { build_list(:user, 10) }
+          let(:csv_users) { build_list(:user, 10) + @users_before }
 
           it "adds the new users" do
             expect(User.all.to_a).to_not eq(@users_before)
-            difference = User.all - @users_before
-            expect(difference).to contain_exactly_the_users(csv_users, UsersController::EXPECTED_CSV_HEADERS)
+            expect(User.all.to_a).to contain_exactly_the_users(csv_users, UsersController::EXPECTED_CSV_HEADERS)
           end
 
           it "doesn't remove the existing users" do
@@ -118,22 +117,18 @@ describe UsersController do
 
         context "when existing users aren't present in CSV", expect_redirect_to: :users_path do
           let(:evaluate_before_http_request) do
-            @existing_users = create_list(:user, 10)
-            @existing_users.sample(2).each {|u| u.update_attribute(:vic, nil) } # Skips validation
+            @existing_users = create_list(:user, 30)
+            create_list(:user, 2).each {|u| u.update_attribute(:vic, nil) } # Skips validation
           end
-          let(:csv_users) { [] }
+          let(:csv_users) { @existing_users.sample(28) }
           let(:evaluate_after_http_request) do
             @existing_users.each(&:reload)
             @existing_users_with_vic, @existing_users_without_vic = @existing_users.partition(&:vic)
           end
 
           it "disables them (unless they have a nil VIC, which implies a special account)" do
-            expect(@existing_users_with_vic).to all(be_disabled)
+            expect(@existing_users_with_vic - csv_users).to all(be_disabled)
             expect(@existing_users_without_vic).to_not include(be_disabled)
-          end
-
-          it "sets updated_at" do
-            expect(@existing_users_with_vic.map(&:updated_at)).to all(be > @time_before_http_request)
           end
         end
 
@@ -157,14 +152,30 @@ describe UsersController do
 
         context "when disabled users are present in CSV" do
           let(:evaluate_before_http_request) do
-            create_list(:user, 5)
-            @disabled_users = create_list(:user, 5, disabled: true)
+            @endabled_users = create_list(:user, 10)
+            @disabled_users = create_list(:user, 10, disabled: true)
           end
-          let(:csv_users) { @disabled_users }
+          let(:csv_users) { @endabled_users + @disabled_users }
           let(:evaluate_after_http_request) { @disabled_users.each(&:reload) }
 
           it "reenables them" do
             expect(@disabled_users).to_not include(be_disabled)
+          end
+        end
+
+        context "when only new users are specified in CSV (check against disabling > 10%)" do
+          let(:evaluate_before_http_request) do
+            create_list(:user, 4)
+            @users_before = User.all.to_a
+            # require 'byebug'; byebug
+          end
+          let(:csv_users) { build_list(:user, 2) }
+
+          let(:rendered_template) { "users/new_list" }
+          let(:expect_flash_error_to) { be_nonempty }
+
+          it "doesn't change the users" do
+            expect(User.all.to_a.inspect).to eq(@users_before.inspect)
           end
         end
       end

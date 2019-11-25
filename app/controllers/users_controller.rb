@@ -94,7 +94,7 @@ class UsersController < ApplicationController
             "Disabled #{num_disabled} #{'user'.pluralize(num_disabled)}."
           redirect_to users_path
         rescue ActiveRecord::RecordInvalid => invalid
-          flash[:error] = "Upload failed because new user '#{invalid.record.name}' could be created!"
+          flash[:error] = "Upload failed because new user '#{invalid.record.name}' couldn't be created! #{invalid.record.errors.to_a}"
           @errors = invalid.record.errors
           render 'new_list'
           raise ActiveRecord::Rollback
