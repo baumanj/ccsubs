@@ -38,7 +38,7 @@ class OnCall < ActiveRecord::Base
   after_destroy do
     availability = user.availabilities.find_by(shifttime_attrs)
     if availability
-      if availability.implicitly_created?
+      if availability.implicitly_created? || self.prior_availability.nil?
         availability.destroy!
       else
         availability.update!(free: self.prior_availability)

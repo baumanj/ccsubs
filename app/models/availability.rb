@@ -19,7 +19,7 @@ class Availability < ActiveRecord::Base
       if request && request.fulfilled? == free?
         errors.add(:request, "must be #{free? ? "not be" : "be"} fulfilled if free? is #{free?}")
       elsif user.on_calls.find_by(shifttime_attrs)
-        errors.add(:free, "can't be true if you're on call for that shift (#{self}")
+        errors.add(:free, "can't be true if you're on call for that shift (#{self})")
       end
     elsif free.nil?
       errors.add(:free, "must be indicated 'Yes' or 'No'")

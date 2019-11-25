@@ -131,7 +131,7 @@ class RequestsController < ApplicationController
         notify_swap_offered
       elsif request_to_swap_with.nil?
         flash[:error] = "Request to swap with could not be found; it may have just been deleted"
-      elsif @request.fulfilling_user
+      elsif @request.fulfilling_user && @request.fulfilling_user != request_to_swap_with.user
         flash[:error] = "Sorry, #{@request.fulfilling_user} beat you to it"
       else
         flash[:error] = "Something went wrong! We couldn't make the offer. #{@request.errors.full_messages.join(". ")}"
