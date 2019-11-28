@@ -95,7 +95,9 @@ module Holiday
     NAMES.map {|n| next_date(n) }.reject {|d| d >= 1.year.since(Date.today) }
   end
 
+  # We need to pass date.yesterday to `next_date` since it searches *after* the
+  # provided date, and we want to include the current day being a holiday
   def self.name(date)
-    NAMES.find {|s| next_date(s) == date } || raise(ArgumentError, "#{date} is not a known holiday")
+    NAMES.find {|s| next_date(s, date.yesterday) == date } || raise(ArgumentError, "#{date} is not a known holiday")
   end
 end
