@@ -7,23 +7,6 @@ class UsersController < ApplicationController
 
   EXPECTED_CSV_HEADERS = ['name', 'volunteer_type', 'vic', 'home_phone', 'cell_phone', 'email']
 
-  def new
-    @user = User.new
-  end
-  
-  def create
-    @user = User.new(user_params)
-    @user.password = @user.vic.to_s
-    if @user.save
-      # sign_in @user # If we want to sign in upon sign-up
-      flash[:success] = "User #{@user} created"
-      redirect_to @user
-    else
-      @errors = @user.errors
-      render 'new' # Try again
-    end
-  end
-
   def new_list
   end
 

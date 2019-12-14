@@ -21,7 +21,7 @@ Ccsubs::Application.routes.draw do
     delete '/users/delete/all/availability/:id', to: 'users#delete_all_availability', as: :delete_all_availability
   end
   # patch '/users/:id/request/create', to: 'users#create_request', as: :create_user_request
-  resources :users
+  resources :users, only: [:index, :show, :update, :edit]
   get '/requests/fulfilled', to: 'requests#fulfilled', as: :fulfilled_requests
   get '/requests/owned(/:user_id)', to: 'requests#owned_index', as: :owned_requests
   get '/requests/pending(/:user_id)', to: 'requests#pending', as: :pending_requests
@@ -30,7 +30,6 @@ Ccsubs::Application.routes.draw do
   resources :sessions, only: [:new, :create, :destroy]
   root 'static_pages#home'
   get '/help', to: 'static_pages#help', as: :help
-  match '/signup',  to: 'users#new',        via: 'get'
   match '/signin',  to: 'sessions#new',     via: 'get'
   match '/signout', to: 'sessions#destroy', via: 'delete'
 
