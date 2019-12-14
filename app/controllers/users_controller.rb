@@ -13,7 +13,7 @@ class UsersController < ApplicationController
   
   def create
     @user = User.new(user_params)
-    @user.password = @user.vic # TODO: email users for initial pass?
+    @user.password = @user.vic.to_s
     if @user.save
       # sign_in @user # If we want to sign in upon sign-up
       flash[:success] = "User #{@user} created"
