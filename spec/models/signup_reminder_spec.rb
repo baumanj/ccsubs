@@ -51,7 +51,11 @@ RSpec.describe SignupReminder, type: :model do
 
     context "when no reminders have been sent" do
       it "does nothing when more than 1 month before the next holiday" do
-        today = 1.month.ago(Holiday.next_after(Date.current)).prev_day
+        today = Date.current
+        while today.next_month >= Holiday.next_after(today)
+          puts "Next holiday after today #{today} is #{Holiday.next_after(today)}; moving back a month and a day…"
+          today = Holiday.next_after(today).prev_month.prev_day
+        end
         expect { SignupReminder.send_for_holiday(templates: templates, today: today) }.to_not change { ActionMailer::Base.deliveries.count }
         expect(SignupReminder.count).to eq(0)
       end
