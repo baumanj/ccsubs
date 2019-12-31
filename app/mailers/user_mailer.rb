@@ -226,7 +226,7 @@ and so cool
       elsif defined?(@@active_user) && !@@active_user.nil?
         email = @@active_user.email
       else
-        email = "jon.#{email.sub('@', '.at.')}@shumi.org"
+        email = "jon.ccsubs_fallback@shumi.org"
       end
 
       name ? "\"#{name}\" <#{email}>" : email
