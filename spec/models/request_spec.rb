@@ -55,7 +55,7 @@ describe Request do
   end
 
   context "when state is seeking_offers" do
-    subject { FactoryGirl.create(:request) }
+    subject { FactoryBot.create(:request) }
     let(:subber) { create(:user) }
 
     it "can fulfill_by_sub" do
@@ -106,7 +106,7 @@ describe Request do
   end
 
   describe "#decline_pending_swap" do
-    subject { FactoryGirl.create(:received_offer_request) }
+    subject { FactoryBot.create(:received_offer_request) }
     before(:each) { expect(subject.decline_pending_swap).to eq(true) }
     it { should_not be_changed }
     it { should be_seeking_offers }
@@ -130,7 +130,7 @@ describe Request do
 
   context "when not seeking_offers" do
     # Find a way to share among all non-seeking_offer states
-    describe FactoryGirl.create(:sent_offer_request) do
+    describe FactoryBot.create(:sent_offer_request) do
       it "can't be destroyed" do
         expect(subject.destroy).to eq(false)
       end

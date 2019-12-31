@@ -8,7 +8,7 @@ class HolidayRequest < Request
   before_save do
     case state
     when 'seeking_offers', 'fulfilled'
-      # Safe naviation needed for FactoryGirl linting
+      # Safe naviation needed for FactoryBot linting
       if fulfilling_user&.volunteer_type == 'Sub Only'
         UserMailer.alert_sub_only_holiday(self).deliver_now
       end

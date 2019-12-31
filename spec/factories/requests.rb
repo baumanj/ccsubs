@@ -5,7 +5,7 @@ date_in_the_past_year = proc do
   date { Faker::Date.unique(:in_the_past_year) }
 end
 
-FactoryGirl.define do
+FactoryBot.define do
   factory :request, aliases: [:seeking_offers_request] do
     user
     date { Faker::Date.unique(:in_the_next_year) }
@@ -23,7 +23,7 @@ FactoryGirl.define do
 
       date { sent_offer_request_date }
       shift { sent_offer_request_shift }
-      state :sent_offer
+      state {:sent_offer}
       availability { build(:availability, date: date, shift: shift) }
       fulfilling_swap do
         build(:request,

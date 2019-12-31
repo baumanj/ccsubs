@@ -2,7 +2,7 @@ module Faker
   class Number
     def self.vic
       loop do
-        new_vic = Faker::Number.number(5)
+        new_vic = Faker::Number.number(digits: 5)
         return new_vic unless User.exists?(vic: new_vic)
       end
     end
@@ -24,19 +24,19 @@ module Faker
   end
 end
 
-FactoryGirl.define do
+FactoryBot.define do
   factory :user do
     name { Faker::Name.unique_name }
     email { Faker::Internet.email }
     volunteer_type { User.volunteer_types.keys.sample }
     home_phone { Faker::PhoneNumber.phone_number }
     cell_phone { Faker::PhoneNumber.phone_number }
-    admin false
-    staff false
+    admin {false}
+    staff {false}
     vic { Faker::Number.vic }
-    password Faker::Internet.password(min_length = 5)
-    confirmed false
-    disabled false
+    password {Faker::Internet.password(min_length: 5)}
+    confirmed {false}
+    disabled {false}
 
     factory :confirmed_user do
       after(:create) do |u|
@@ -45,7 +45,7 @@ FactoryGirl.define do
       end
 
       factory :admin do
-        admin true
+        admin {true}
       end
     end
 

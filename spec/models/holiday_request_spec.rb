@@ -18,7 +18,7 @@ RSpec.describe HolidayRequest, type: :model do
   end
 
   context "when state is seeking_offers" do
-    subject { FactoryGirl.create(:holiday_request) }
+    subject { FactoryBot.create(:holiday_request) }
     let(:subber) { create(:user) }
 
     it "can fulfill_by_sub" do

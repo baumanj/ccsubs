@@ -63,6 +63,11 @@ RSpec.describe SignupReminder, type: :model do
       it "sends a reminder for the next holiday if a month before or less" do
         next_holiday_date = Holiday.next_after(Date.current)
         today = 3.weeks.ago(next_holiday_date)
+        while Holiday.next_after(today) < next_holiday_date
+          puts "Next holiday after 'today' (#{today}) falls before next_holiday_date (#{next_holiday_date}), advancing to #{Holiday.next_after(today).next_day}"
+          today = Holiday.next_after(today).next_day
+        end
+        expect(today).to be < next_holiday_date
         expect(SignupReminder.count).to eq(0)
         expect { SignupReminder.send_for_holiday(templates: templates, today: today) }.to change { ActionMailer::Base.deliveries.count }.by(1)
         expect(SignupReminder.count).to eq(1)

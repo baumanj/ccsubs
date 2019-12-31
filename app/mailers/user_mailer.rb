@@ -219,8 +219,12 @@ and so cool
 
       if Rails.env.development? || local_production?
         email = "jon.#{email.sub('@', '.at.')}@shumi.org"
+      elsif ENV['APP_NAME'] == 'ccsubs'
+        email = email
+      elsif @@active_user
+        @@active_user.email
       else
-        email = ENV['APP_NAME'] == 'ccsubs' ? email : @@active_user.email
+        current_user.email
       end
 
       name ? "\"#{name}\" <#{email}>" : email

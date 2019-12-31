@@ -47,6 +47,7 @@ RSpec.describe OnCall, type: :model do
   it "restores existing availability status if deleted" do
     [true, false].each do |free|
       oc = build(:on_call)
+      oc.user.save!
       a = oc.user.availability_for(oc)
       a.free = free
       a.save!

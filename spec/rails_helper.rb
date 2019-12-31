@@ -41,8 +41,9 @@ RSpec.configure do |config|
   # https://relishapp.com/rspec/rspec-rails/docs
   config.infer_spec_type_from_file_location!
 
-  # From http://www.rubydoc.info/gems/factory_girl/file/GETTING_STARTED.md
-  config.include FactoryGirl::Syntax::Methods
+  # From https://www.rubydoc.info/gems/factory_bot/file/GETTING_STARTED.md
+  # Previously http://www.rubydoc.info/gems/factory_girl/file/GETTING_STARTED.md
+  config.include FactoryBot::Syntax::Methods
 
   config.before(:suite) do
     DatabaseCleaner.strategy = :transaction
@@ -50,7 +51,7 @@ RSpec.configure do |config|
 
     begin
       DatabaseCleaner.start
-      FactoryGirl.lint
+      FactoryBot.lint
     ensure
       DatabaseCleaner.clean
     end

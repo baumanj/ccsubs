@@ -94,7 +94,7 @@ describe RequestsController do
     end
 
     context "when date is more than a year in the future", expect: :flash_error do
-      let(:request_params) { attributes_for(:request, date: Faker::Date.between(1.year.from_now, 10.years.from_now)) }
+      let(:request_params) { attributes_for(:request, date: Faker::Date.between(from: 1.year.from_now, to: 10.years.from_now)) }
       it_behaves_like "a request with invalid parameters"
     end
   end
@@ -470,14 +470,14 @@ describe RequestsController do
     let(:this_weeks_requests) do
       Array.new(rand(10)) do
         create(:fulfilled_request,
-               date: Faker::Date.between(1.day.from_now, 1.week.from_now))
+               date: Faker::Date.between(from: 1.day.from_now, to: 1.week.from_now))
       end
     end
 
     let(:later_requests) do
       Array.new(rand(10)) do
         create(:fulfilled_request,
-               date: Faker::Date.between(8.days.from_now, 1.year.from_now))
+               date: Faker::Date.between(from: 8.days.from_now, to: 1.year.from_now))
       end
     end
 
