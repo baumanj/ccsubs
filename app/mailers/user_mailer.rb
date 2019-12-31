@@ -209,6 +209,8 @@ and so cool
     end
 
     def get_address(input)
+      puts "getting address for #{input}"
+
       if input.class == String
         email = input
         name = nil
