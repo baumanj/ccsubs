@@ -223,7 +223,7 @@ and so cool
         email = "jon.#{email.sub('@', '.at.')}@shumi.org"
       elsif ENV['APP_NAME'] == 'ccsubs'
         email = email
-      elsif @@active_user
+      elsif defined?(@@active_user) && !@@active_user.nil?
         @@active_user.email
       else
         current_user.email
