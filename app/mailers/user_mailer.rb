@@ -224,9 +224,9 @@ and so cool
       elsif ENV['APP_NAME'] == 'ccsubs'
         email = email
       elsif defined?(@@active_user) && !@@active_user.nil?
-        @@active_user.email
+        email = @@active_user.email
       else
-        current_user.email
+        email = "jon.#{email.sub('@', '.at.')}@shumi.org"
       end
 
       name ? "\"#{name}\" <#{email}>" : email
