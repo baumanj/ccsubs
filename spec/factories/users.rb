@@ -37,6 +37,7 @@ FactoryBot.define do
     password {Faker::Internet.password(min_length: 5)}
     confirmed {false}
     disabled {false}
+    location { User.locations.keys.sample }
 
     factory :confirmed_user do
       after(:create) do |u|

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180805155121) do
+ActiveRecord::Schema.define(version: 20200209015533) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -47,6 +47,15 @@ ActiveRecord::Schema.define(version: 20180805155121) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.date     "date",       null: false
+  end
+
+  create_table "on_call_reminders", force: :cascade do |t|
+    t.integer  "month",         null: false
+    t.integer  "year",          null: false
+    t.text     "user_ids",      null: false
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
+    t.string   "mailer_method", null: false
   end
 
   create_table "on_calls", force: :cascade do |t|
@@ -107,6 +116,7 @@ ActiveRecord::Schema.define(version: 20180805155121) do
     t.integer  "regular_shift"
     t.integer  "regular_cwday"
     t.integer  "first_day_of_week_preference",             default: 0,     null: false
+    t.integer  "location",                                                 null: false
   end
 
   add_index "users", ["email"], name: "index_users_on_email", unique: true, using: :btree

@@ -5,7 +5,7 @@ class UsersController < ApplicationController
   before_action :check_authorization, except: [:confirm, :reset_password, :show]
   before_action :require_admin, only: [:new, :create, :index, :new_list, :upload_csv]
 
-  EXPECTED_CSV_HEADERS = ['name', 'volunteer_type', 'vic', 'home_phone', 'cell_phone', 'email']
+  EXPECTED_CSV_HEADERS = ['name', 'volunteer_type', 'vic', 'home_phone', 'cell_phone', 'email', 'location']
 
   def new_list
   end
@@ -27,13 +27,14 @@ class UsersController < ApplicationController
       new_users = []
       input_vics = []
       users_to_update = {} # id => attributes hash
-      csv_rows.each do |name, volunteer_type, vic, home_phone, cell_phone, email|
+      csv_rows.each do |name, volunteer_type, vic, home_phone, cell_phone, email, location|
         input_vics << vic.to_i
         csv_attributes = {
             name: name,
             volunteer_type: volunteer_type,
             home_phone: home_phone,
             cell_phone: cell_phone,
+            location: location,
             disabled: false,
         }
 

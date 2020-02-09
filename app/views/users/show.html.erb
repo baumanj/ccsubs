@@ -13,6 +13,9 @@
   <% if @user.volunteer_type %>
     <dt>Volunteer type</dt> <dd><%= @user.volunteer_type %></dd>
   <% end %>
+  <% if @user.location %>
+    <dt>Location</dt> <dd><%= @user.location %></dd>
+  <% end %>
   <% if @user.home_phone && current_user.staff_or_admin? %>
     <dt>Home phone</dt> <dd><%= @user.home_phone %></dd>
   <% end %>
