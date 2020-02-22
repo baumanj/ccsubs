@@ -3,7 +3,7 @@
 <%= render 'shared/error_messages' %>
 
 <%= render partial: 'shared/month_header',
-           locals: { date: @date_range.first, path_func: :edit_on_call_path } %>
+           locals: { location: @location, date: @date_range.first, path_func: :edit_on_call_path } %>
 
 <h2>
   Key:
@@ -17,6 +17,7 @@
     <%= form_for(oc) do |f| %>
       <%= f.hidden_field :date %>
       <%= f.hidden_field :shift %>
+      <%= f.hidden_field :location %>
       <% if oc.user == current_user %>
         <%= f.submit oc.shift, class: "selected-oncall", disabled: true %>
       <% elsif oc.persisted? || oc.start.past? %>

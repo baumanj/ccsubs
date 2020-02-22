@@ -6,7 +6,7 @@ class User < ActiveRecord::Base
 
   enum volunteer_type: [ 'Regular Shift', 'Alternating', 'Sub Only' ]
   enum first_day_of_week_preference: Date::DAYNAMES
-  enum location: ['Belltown', 'Renton']
+  enum location: ['Northgate', 'Belltown', 'Renton']
 
   attr_accessor :confirmation_token
   has_secure_password
@@ -26,7 +26,7 @@ class User < ActiveRecord::Base
   validates :email, presence: true, format: { with: VALID_EMAIL_REGEX },
     uniqueness: { case_sensitive: false }
   validates :vic, presence: true, uniqueness: true, on: :create
-  validates :location, presence: true, on: :create
+  validates :location, presence: true
   validate on: :update do
     requests.find_all(&:new_record?).each do |r|
       r.errors.each do |attr, msg|
@@ -220,6 +220,14 @@ class User < ActiveRecord::Base
 
   def default_availability_for(shifttime)
     default_availabilities.find_or_initialize_by_shifttime(shifttime)
+  end
+
+  def location_for(date)
+    if date.to_date < ShiftTime::LOCATION_CHANGE_DATE
+      ShiftTime::LOCATION_BEFORE
+    else
+      self.location
+    end
   end
 
   def self.like(conditions)

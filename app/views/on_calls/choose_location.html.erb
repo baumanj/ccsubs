@@ -1,0 +1,8 @@
+<% provide(:title, "On-call Schedule") %>
+
+<h1>Choose location</h1>
+<ul>
+	<% ShiftTime::LOCATIONS_AFTER.each do |location| %>
+		<li><%= link_to location, on_calls_path(location: location, date: @date) %></li>
+	<% end %>
+</ul>

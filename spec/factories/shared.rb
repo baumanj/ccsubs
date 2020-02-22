@@ -17,6 +17,16 @@ module Faker
       in_date_range((1.day.from_now.to_date)...(1.year.from_now.to_date), excluding: excluding)
     end
 
+    def self.in_the_next_year_minus_one_day(excluding: nil)
+      in_date_range((1.day.from_now.to_date)...(1.year.from_now.to_date.prev_day), excluding: excluding)
+    end
+
+    def self.in_the_next_year_post_location_change(excluding: nil)
+      start = [1.day.from_now.to_date, ShiftTime::LOCATION_CHANGE_DATE].max
+      end_ = [1.year.from_now.to_date, 1.year.from_now(start).to_date].min
+      in_date_range(start...end_, excluding: excluding)
+    end
+
     def self.in_the_past_year(excluding: nil)
       in_date_range((1.year.ago.to_date)...(1.day.ago.to_date), excluding: excluding)
     end

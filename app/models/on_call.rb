@@ -5,14 +5,17 @@ class OnCall < ActiveRecord::Base
 
   FIRST_VALID_DATE = Date.new(2017, 6, 1)
   enum shift: ShiftTime::SHIFT_NAMES
+  enum location: User.locations
 
   validates :user, presence: true
   validates :shift, presence: true
   validates :date, presence: true
-  validates :date, uniqueness: { scope: :shift }
+  validates :date, uniqueness: { scope: [:shift, :location] }
+  validates :location, presence: true
 
   validate do
     shift_is_between_now_and_a_year_from_now
+    location_is_valid_for_date
 
     if user.requests.find_by_shifttime(self)
       errors.add(:shift, "can't be the same as your request for coverage")

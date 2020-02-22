@@ -23,13 +23,46 @@ RSpec.describe OnCall, type: :model do
 
   it "rejects a second sign-up for the same shift" do
     first = create(:on_call)
-    expect { create(:on_call, date: first.date, shift: first.shift) }.to raise_error(ActiveRecord::RecordInvalid)
+    second_user = create(:user, location: first.location)
+    expect { create(:on_call, date: first.date, shift: first.shift, user: second_user) }.to raise_error(ActiveRecord::RecordInvalid)
+  end
+
+  it "accepts a second sign-up for the same shift in different locations" do
+    first_loc, second_loc = ShiftTime::LOCATIONS_AFTER.first(2)
+    first_user = create(:user, location: first_loc)
+    second_user = create(:user, location: second_loc)
+    first = create(:on_call, date: Faker::Date.unique(:in_the_next_year_post_location_change), user: first_user)
+    expect(create(:on_call, date: first.date, shift: first.shift, user: second_user)).to be_valid
   end
 
   it "rejects a second sign-up for the same user in a month" do
     dates = Date.today.next_month.all_month.to_a.sample(2)
-    first = create(:on_call, date: dates.first)
-    expect { create(:on_call, date: dates.second, user: first.user) }.to raise_error(ActiveRecord::RecordInvalid)
+    user = create(:user, location: ShiftTime::LOCATIONS_AFTER.sample)
+    first = create(:on_call, date: dates.first, user: user)
+    expect { create(:on_call, date: dates.second, user: user) }.to raise_error(ActiveRecord::RecordInvalid)
+  end
+
+  it "rejects a signup for new locations before the location change date" do
+    expect {
+      create(:on_call, date: ShiftTime::LOCATION_CHANGE_DATE.prev_day,
+                       location: ShiftTime::LOCATIONS_AFTER.sample)
+    }.to raise_error(ActiveRecord::RecordInvalid)
+  end
+
+  it "rejects a signup for the old location after the location change date" do
+    expect {
+      create(:on_call, date: ShiftTime::LOCATION_CHANGE_DATE,
+                       location: ShiftTime::LOCATION_BEFORE)
+    }.to raise_error(ActiveRecord::RecordInvalid)
+  end
+
+  it "rejects a signup for a location that doesn't match the user" do
+    first_loc, second_loc = ShiftTime::LOCATIONS_AFTER.sample(2)
+    user = create(:user, location: first_loc)
+    expect {
+      create(:on_call, user: user, date: ShiftTime::LOCATION_CHANGE_DATE,
+                       location: second_loc)
+    }.to raise_error(ActiveRecord::RecordInvalid)
   end
 
   it "makes the user unavabliable for swaps at that time" do
@@ -59,7 +92,12 @@ RSpec.describe OnCall, type: :model do
   end
 
   context "for a given date range" do
-    let(:date_range) { d = Faker::Date::in_the_next_year; (d)...(d.next_day) }
+    let(:date_range) do
+      # Minus one day to ensure that a day just outside the range is still
+      # within a year and thus valid to create
+      d = Faker::Date::in_the_next_year_minus_one_day
+      (d)...(d.next_day)
+    end
 
     context "when you're a recurring shift volunteer" do
       let!(:you) { create(:recurring_shift_volunteer) }

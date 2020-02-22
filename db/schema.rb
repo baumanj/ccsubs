@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200209015533) do
+ActiveRecord::Schema.define(version: 20200215210332) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -65,9 +65,10 @@ ActiveRecord::Schema.define(version: 20200209015533) do
     t.datetime "created_at",         null: false
     t.datetime "updated_at",         null: false
     t.boolean  "prior_availability"
+    t.integer  "location",           null: false
   end
 
-  add_index "on_calls", ["shift", "date"], name: "index_on_calls_on_shift_and_date", unique: true, using: :btree
+  add_index "on_calls", ["shift", "date", "location"], name: "index_on_calls_on_shift_and_date_and_location", unique: true, using: :btree
   add_index "on_calls", ["user_id"], name: "index_on_calls_on_user_id", using: :btree
 
   create_table "requests", force: :cascade do |t|

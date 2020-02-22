@@ -29,6 +29,8 @@ module ShiftTime
         # shift_as_int = ShiftTime::SHIFT_NAMES.find(attributes[:shift])
         shift_as_int = shifts[attributes[:shift]]
         attributes.merge!(shift: shift_as_int) if shift_as_int
+        location_as_int = User.locations[attributes[:location]]
+        attributes.merge!(location: location_as_int) if location_as_int
       rescue TypeError
         # sometimes the first arg to a where or find isn't an attribute hash
         # if not, there's nothing to do here
@@ -237,6 +239,21 @@ module ShiftTime
     end
   end
 
+  LOCATION_CHANGE_DATE = Date.new(2020, 3, 1)
+  LOCATION_BEFORE = User.locations.keys.first
+  LOCATIONS_AFTER = User.locations.keys.reject {|l| l == LOCATION_BEFORE }
+
+  def location_is_valid_for_date
+    if date < LOCATION_CHANGE_DATE && location != LOCATION_BEFORE
+      errors.add(:location, "must be #{LOCATION_BEFORE}")
+    elsif date >= LOCATION_CHANGE_DATE
+      if location == LOCATION_BEFORE
+        errors.add(:location, "must be #{LOCATIONS_AFTER.join(" or ")}")
+      elsif user.location != location
+        errors.add(:location, "must match user's location: #{user.location}")
+      end
+    end
+  end
 end
 
 class ShiftTimeValidator < ActiveModel::Validator

@@ -3,8 +3,8 @@ Ccsubs::Application.routes.draw do
 
   resources :holiday_requests, only: [:index]
 
-  get 'on_calls/edit(/:date)', to: 'on_calls#edit', as: :edit_on_call
-  get 'on_calls(/:date)', to: 'on_calls#index', as: :on_calls
+  get 'on_calls/edit(/:location(/:date))', to: 'on_calls#edit', as: :edit_on_call
+  get 'on_calls(/:location(/:date))', to: 'on_calls#index', as: :on_calls
   resources :on_calls, only: [:create, :update, :destroy]
 
   get '/messages/new', to: 'messages#new'

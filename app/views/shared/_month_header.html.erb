@@ -1,7 +1,7 @@
 <h1 class="month-header">
   <div class="btn-group" role="group">
-    <%= link_to "<", send(path_func, date.prev_month) %>
-    <div class="btn"><%= date.strftime(date.year == Date.current.year ? '%B' : '%B %Y') %></div>
-    <%= link_to ">", send(path_func, date.next_month) %>
+    <%= link_to "<", send(path_func, location: location, date: date.prev_month) %>
+    <div class="btn"><%= location %> <%= date.strftime(date.year == Date.current.year ? '%B' : '%B %Y') %></div>
+    <%= link_to ">", send(path_func, location: location, date: date.next_month) %>
   </div>
 </h1>
