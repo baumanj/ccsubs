@@ -239,7 +239,7 @@ module ShiftTime
     end
   end
 
-  LOCATION_CHANGE_DATE = Date.new(2020, 3, 1)
+  LOCATION_CHANGE_DATE = Date.new(2020, 4, 1)
   LOCATION_BEFORE = User.locations.keys.first
   LOCATIONS_AFTER = User.locations.keys.reject {|l| l == LOCATION_BEFORE }
 
