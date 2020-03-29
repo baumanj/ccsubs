@@ -42,10 +42,10 @@ shared_context "do request in before", autorequest: true do
     )
     assigns.each do |var_name, value|
       expect(expected_assigns).to include(var_name.to_sym)
-      expect(value).to expected_assigns[var_name.to_sym]
       if !expected_assigns[var_name.to_sym].matches?(value)
         puts "#{var_name} did not match"
       end
+      expect(value).to expected_assigns[var_name.to_sym]
     end
   end
 end

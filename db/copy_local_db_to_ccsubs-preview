@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -xeuo pipefail
+
+heroku pg:reset postgresql-shapely-2742 --app ccsubs-preview
+heroku pg:push ccsubs_development postgresql-shapely-2742 --app ccsubs-preview

@@ -4,7 +4,7 @@ class UserMailer < ActionMailer::Base
   VOLUNTEER_SERVICES = if Rails.env.production?
     "ccsubs <volunteerservices@crisisconnections.org>"
   else
-    "baumanj+volunteerservices@gmail.com" 
+    "baumanj+volunteerservices@gmail.com"
   end
   default from: VOLUNTEER_SERVICES
 
@@ -219,7 +219,7 @@ and so cool
 
       if Rails.env.development? || local_production?
         email = "jon.#{email.sub('@', '.at.')}@shumi.org"
-      elsif ENV['APP_NAME'] == 'ccsubs'
+      elsif ENV['APP_NAME'] == 'ccsubs' || Rails.env.test?
         email = email
       elsif defined?(@@active_user) && !@@active_user.nil?
         email = @@active_user.email

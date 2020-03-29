@@ -88,4 +88,40 @@ describe User do
 
   it "logs in and out correctly"
 
+  it "has potential to cover for shifts without conficts or availability" do
+    request = create(:request)
+    user = create(:user, location: request.location)
+    preloaded_requests = [request]
+    preloaded_availabilities = []
+
+    expect(user.availability_state_for(request, preloaded_requests, preloaded_availabilities)).to eq(:potential)
+  end
+
+  it "returns Northgate location before the change date" do
+    User.locations.keys.each do |location|
+      user = create(:user, location: location)
+      expect(user.location_for(ShiftTime::LOCATION_CHANGE_DATE.prev_day)).to eq(ShiftTime::LOCATION_BEFORE)
+    end
+  end
+
+  it "returns respective location after the change date" do
+    User.locations.keys.each do |location|
+      user = create(:user, location: location)
+      expect(user.location_for(ShiftTime::LOCATION_CHANGE_DATE)).to eq(user.location)
+    end
+  end
+
+  it "matches location for a request before the change date" do
+    user = create(:user)
+    date_before = ((1.day.from_now.to_date)...(ShiftTime::LOCATION_CHANGE_DATE)).to_a.sample
+    request = create(:request, date: date_before)
+    expect(user.location_matches(request)).to eq(true)
+  end
+
+  it "matches location for a request if the location on the date of the request is the same as the location of the request" do
+    user = create(:user)
+    request = create(:request, date: Faker::Date.unique(:in_the_next_year_post_location_change))
+    expect(user.location_matches(request)).to eq(user.location == request.location)
+  end
+
 end

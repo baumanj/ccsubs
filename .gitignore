@@ -25,3 +25,4 @@ doc/
 .secret
 public/assets/**
 .byebug_history
+*.csv

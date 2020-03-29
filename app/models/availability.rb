@@ -4,14 +4,17 @@ class Availability < ActiveRecord::Base
 
   belongs_to :user
   has_one :request, -> { where(type: ["Request", "HolidayRequest"]) }
-  
+
   enum shift: ShiftTime::SHIFT_NAMES
   attr_accessor :from_default # If this instance was populated from a DefaultAvailability
 
   validates :user, presence: true
   validates_with ShiftTimeValidator
   validate do
-    if user.requests.exists?(shifttime_attrs)
+    # If the avabilability isn't changing, this validation may be triggered
+    # by saving the associated request. In the case that someone created a new
+    # request to cover a shift they already agreed to cover, don't fail.
+    if changed? && user.requests.exists?(shifttime_attrs)
       errors.add(:shift, "can't be the same as your own existing request")
     end
 
@@ -104,12 +107,5 @@ class Availability < ActiveRecord::Base
 
   def locked?
     !request.nil? && request.start.future?
-  end
-
-  # others are free for any of this user's requests
-  def match?(my_requests = user.requests.active)
-    Request.where_shifttime(self).map(&:user).uniq.any? do |other|
-      [*my_requests].any? {|r| other.availability_state_for(r) == :free }
-    end
   end
 end

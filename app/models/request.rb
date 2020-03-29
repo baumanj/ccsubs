@@ -11,11 +11,19 @@ class Request < ActiveRecord::Base
 
   enum shift: ShiftTime::SHIFT_NAMES
   enum state: [ :seeking_offers, :received_offer, :sent_offer, :fulfilled ]
+  enum location: User.locations
 
   validates :user, presence: true, unless: :userless?
   validates :shift, presence: true
-  validates_with ShiftTimeValidator
+  validates :location, presence: true
+  validates :date, uniqueness: { scope: [:user_id, :shift, :location, :type] }
+
   validate do
+    location_is_valid_for_date
+    # Doing below checks with ShiftTimeValidator would restrict to new records
+    no_schedule_conflicts
+    shift_is_between_now_and_a_year_from_now
+
     case state_change
     when ['seeking_offers', 'sent_offer']
     when ['seeking_offers', 'received_offer']
@@ -26,7 +34,18 @@ class Request < ActiveRecord::Base
     when ['sent_offer', 'seeking_offers']
     when nil
       if changed? && !new_record?
-        errors.add(:state, "should change if request is changing")
+        # TODO: remove this location exception after all migrations finish
+        if changed == ["location"]
+          if userless? && fulfilled? && location == fulfilling_user.location
+            # Ok, updating holiday request location
+          elsif location == user.location
+            # Ok, updating reqular request location
+          else
+            errors.add(:location, "changed unexpectedly")
+          end
+        else
+          errors.add(:state, "should change if request is changing")
+        end
       end
     else
       errors.add(:state, "unexpectedly changed from #{state_change.join(' to ')}")
@@ -35,6 +54,10 @@ class Request < ActiveRecord::Base
     # Seeking offers <-> no availability
     if seeking_offers? != availability.nil?
       errors.add(:availability, "must #{seeking_offers? ? "not be" : "be"} set if the state is #{state}")
+    end
+
+    if !seeking_offers? && fulfilling_user.location_for(date) != location
+      errors.add(:location, "of the fulfilling user (#{fulfilling_user.location}) must match the request (#{location})")
     end
 
     # We can't check the seeking offers state here because we can't remove the connection between the
@@ -75,7 +98,7 @@ class Request < ActiveRecord::Base
       errors.add(:state, "cannot be #{state}")
       false
     elsif start.past?
-      errors.add(:start, "must be in the future")
+      errors.add(:start, "must be in the future; we can't destroy the past")
       false
     end
   end
@@ -86,6 +109,10 @@ class Request < ActiveRecord::Base
 
   def send_swap_offer_to(request_to_swap_with)
     raise TypeError if request_to_swap_with.user.nil? || self.user.nil?
+    unless self.location_compatible(request_to_swap_with)
+      errors.add(:request, "has incompatible with from swap offer")
+      return false
+    end
     with_lock do
       request_to_swap_with.lock!
       self.assign_attributes(
@@ -140,6 +167,9 @@ class Request < ActiveRecord::Base
         sub_availability = subber.find_or_initialize_availability_for(self)
         if sub_availability.request
           errors.add(:subber, "must not already be subbing for that same shift")
+          false
+        elsif !subber.location_matches(self)
+          errors.add(:subber, "has different location from request")
           false
         elsif sub_availability.free?
           sub_availability.update!(free: false)
@@ -242,6 +272,14 @@ class Request < ActiveRecord::Base
     end
   end
 
+  def location_compatible(other)
+    u1 = self.user
+    u2 = other.user
+    # puts "#{u1} wrong location (#{u1.location}) for #{other}" if !u1.location_matches(other)
+    # puts "#{u2} wrong location (#{u2.location}) for #{self}" if !u2.location_matches(self)
+    u1.location_matches(other) && u2.location_matches(self)
+  end
+
   # self is the sender's request
   # preloaded_{requests,availabilities} are ugly, but necessary to avoid hundreds of SQL queries
   def match(receivers_request, senders_availability:, receivers_availability:,
@@ -250,6 +288,11 @@ class Request < ActiveRecord::Base
       logger.error "Missing user in match on receivers_request #{receivers_request.inspect}"
       return false
     end
+
+    unless self.location_compatible(receivers_request)
+      return false
+    end
+
     senders_availability_for_receivers_request =
       user.availability_state_for(receivers_request, preloaded_requests, preloaded_availabilities)
     receivers_availability_for_my_request =
@@ -311,7 +354,7 @@ class Request < ActiveRecord::Base
       "The request can't be changed after it's been fulfilled."
     end
   end
-    
+
   def fulfilling_user
     unless seeking_offers?
       fulfillment = (availability || fulfilling_swap)
@@ -331,6 +374,7 @@ class Request < ActiveRecord::Base
     end
     "#<Request id: #{self.id}, user[#{user_id}]: #{user ? user.name : 'nil'}, "\
       "date: #{date}, shift[#{self.class.shifts[shift]}]: #{shift}, "\
+      "location[#{self.class.locations[location]}]: #{location}, "\
       "state[#{self.class.states[state]}]: #{state}#{fulfilling_swap_str}#{availability_str}>"
   end
 end

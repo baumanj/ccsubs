@@ -3,6 +3,12 @@
 This is a web application for facilitating exchanging shift assignments.
 
 ## TODO:
+* Fix up locations of future on-calls and requests
+* Check holiday requests
+* Confirm bad locations don't show up as matches (including holidays)
+* Mail users about Request.active.select {|r| r.uncertain_avail.any? }
+* Remove request location validation exception after all migrations finish
+* Resolve cross-location matches
 * Remind about upcoming shifts (esp holiday) if they were scheduled more than a week out
 * Don't allow signing up for an on-call when one has already done one that month
 * "Ccsubs issue" email about failure to create request with conflicting availability

@@ -41,6 +41,9 @@ class UsersController < ApplicationController
         user = existing_users[vic.to_i]
         begin
           if user
+            if user.email.downcase != email.downcase
+              puts "#{user.name}'s email (#{user.email}) doesn't match volgisics: #{email}"
+            end
             user.attributes = csv_attributes # don't save; just use to test for change
             users_to_update[user.id] = csv_attributes if user.changed?
           else
@@ -53,6 +56,7 @@ class UsersController < ApplicationController
           end
         rescue ArgumentError => error
           flash[:error] = "Update canceled due to invalid input. Could not add user '#{csv_attributes[:name]}' because #{error}."
+          puts flash[:error]
           render 'new_list'
           return
         end
@@ -63,6 +67,7 @@ class UsersController < ApplicationController
 
       if vics_to_disable.size > (enabled_vics.size / 10)
         flash[:error] = "Update canceled since this would disable #{vics_to_disable.size} of the #{enabled_vics.size} currently enabled users. The provided user list should contain all users, not just new ones."
+        puts flash[:error]
         render 'new_list'
         return
       end
@@ -80,10 +85,12 @@ class UsersController < ApplicationController
         rescue ActiveRecord::RecordInvalid => invalid
           flash[:error] = "Upload failed because new user '#{invalid.record.name}' couldn't be created! #{invalid.record.errors.to_a}"
           @errors = invalid.record.errors
+          puts flash[:error]
           render 'new_list'
           raise ActiveRecord::Rollback
         rescue ArgumentError => error
           flash[:error] = "Update canceled due to invalid input. #{error}."
+          puts flash[:error]
           render 'new_list'
           raise ActiveRecord::Rollback
         end

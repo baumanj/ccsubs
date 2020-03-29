@@ -7,9 +7,10 @@ end
 
 FactoryBot.define do
   factory :request, aliases: [:seeking_offers_request] do
-    user
+    user { build(:user) } # To satifsy attributes_for
     date { Faker::Date.unique(:in_the_next_year) }
     shift { Request.shifts.keys.sample }
+    location { user.location_for(date) }
 
     factory :past_request, aliases: [:past_seeking_offers_request], &date_in_the_past_year
 
@@ -24,13 +25,20 @@ FactoryBot.define do
       date { sent_offer_request_date }
       shift { sent_offer_request_shift }
       state {:sent_offer}
-      availability { build(:availability, date: date, shift: shift) }
+      availability {
+        build(:availability,
+          user: build(:user, location: user.location),
+          date: date,
+          shift: shift
+        )
+      }
       fulfilling_swap do
         build(:request,
           user: availability.user, state: :received_offer,
           date: received_offer_request_date,
           shift: received_offer_request_shift,
-          availability: build(:availability, date: received_offer_request_date, shift: received_offer_request_shift)
+          location: availability.user.location_for(received_offer_request_date),
+          availability: build(:availability, date: received_offer_request_date, shift: received_offer_request_shift, user: user)
         )
       end
       after(:build) {|r| r.fulfilling_swap.fulfilling_swap = r }

@@ -1,3 +1,12 @@
+require "#{Rails.root}/app/helpers/application_helper"
+
+def requests_in_locations(*locations)
+  locations.map do |l|
+    u = create(:user, location: l)
+    create(:request, user: u)
+  end
+end
+
 module Faker
   class Date
     def self.unique(date_method)
@@ -7,6 +16,7 @@ module Faker
         @previously_selected[date_method] << unique_date
       else
         # If we've used all the ones in the range, recycle oldest
+        puts "XXX All #{@previously_selected[date_method].size} dates for #{date_method} used, recycling"
         @previously_selected[date_method].rotate!
       end
 

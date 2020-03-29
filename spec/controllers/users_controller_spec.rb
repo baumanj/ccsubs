@@ -167,7 +167,6 @@ describe UsersController do
           let(:evaluate_before_http_request) do
             create_list(:user, 4)
             @users_before = User.all.to_a
-            # require 'byebug'; byebug
           end
           let(:csv_users) { build_list(:user, 2) }
 

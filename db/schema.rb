@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200215210332) do
+ActiveRecord::Schema.define(version: 20200223004617) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -82,9 +82,10 @@ ActiveRecord::Schema.define(version: 20200215210332) do
     t.integer  "fulfilling_swap_id"
     t.integer  "availability_id"
     t.string   "type",                           default: "Request", null: false
+    t.integer  "location",                                           null: false
   end
 
-  add_index "requests", ["user_id", "shift", "date"], name: "index_requests_on_user_id_and_shift_and_date", unique: true, using: :btree
+  add_index "requests", ["user_id", "shift", "date", "location"], name: "index_requests_on_user_id_and_shift_and_date_and_location", unique: true, using: :btree
 
   create_table "signup_reminders", force: :cascade do |t|
     t.integer  "month",         null: false

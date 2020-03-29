@@ -2,8 +2,9 @@ require 'controllers/shared'
 
 shared_context "receivable_request", create: :receivable_request do
   let(:receivable_request) do
-    create(:request,
-      user: create(:availability, date: ask.date, shift: ask.shift).user)
+    user = create(:user, location: ask.user.location)
+    create(:availability, date: ask.date, shift: ask.shift, user: user)
+    create(:request, user: user)
   end
 end
 
@@ -100,7 +101,8 @@ describe RequestsController do
   end
 
   describe "GET 'show'", autorequest: true, requires: :confirmed_current_user do
-    let(:ask) { create(:request) }
+    let(:ask_user) { create(:user, location: current_user.location) }
+    let(:ask) { create(:request, user: ask_user) }
     let(:params) { { id: ask.id } }
     let(:expected_assigns) do
       { request: eq(ask),
@@ -151,7 +153,7 @@ describe RequestsController do
       end
 
       context "when there are potential matches" do
-        let(:potential_match_request) { create(:request) }
+        let(:potential_match_request) { create(:request, user: create(:user, location: current_user.location)) }
         let(:nonmatching_requests) do
           [ create(:request, user:
               create(:availability, free: false, date: ask.date, shift: ask.shift)
@@ -215,8 +217,9 @@ describe RequestsController do
       context "when request can recieve a swap offer from current_user" do
         let(:current_user_request) { create(:request, user: current_user) }
         let(:ask) do
+          user = create(:user, location: current_user.location)
           create(:request,
-            user: create(:availability, date: current_user_request.date, shift: current_user_request.shift).user)
+            user: create(:availability, user: user, date: current_user_request.date, shift: current_user_request.shift).user)
         end
         let(:expected_assigns) do
           { request: eq(ask),
@@ -259,7 +262,8 @@ describe RequestsController do
       context "when current_user is covering a conflicting request" do
         let(:conflict) do
           availability = create(:availability, user: current_user)
-          create(:fulfilled_request, date: availability.date, shift: availability.shift, availability: availability)
+          fulfilled_request_user = create(:user, location: current_user.location)
+          create(:fulfilled_request, date: availability.date, shift: availability.shift, availability: availability, user: fulfilled_request_user)
           availability
         end
         let(:ask) { create(:request, date: conflict.date, shift: conflict.shift) }
@@ -391,12 +395,13 @@ describe RequestsController do
   end
 
   describe "PATCH 'offer_sub'", autorequest: true, requires: :confirmed_current_user do
-    let(:ask) { create(:request) }
+    let(:ask_user) { create(:user, location: current_user.location) }
+    let(:ask) { create(:request, user: ask_user) }
     let(:params) { { id: ask.id } }
     let(:expected_assigns) { { request: eq(ask) } }
 
     context "when request is seeking_offers", expect: :request_saved do
-      let(:ask) { create(:seeking_offers_request) }
+      let(:ask) { create(:seeking_offers_request, user: ask_user) }
       let(:rendered_templates) { ["user_mailer/notify_sub", "user_mailer/remind_sub"] }
       it "sets the request state to 'fulfilled' and sends nofitication" do
         expect(assigns(:request)).to be_fulfilled
@@ -405,7 +410,7 @@ describe RequestsController do
 
     [:sent_offer_request, :received_offer_request, :fulfilled_request].each do |request_type|
       context "when request is #{request_type}" do
-        let(:ask) { create(request_type) }
+        let(:ask) { create(request_type, user: ask_user) }
         let(:original_request_state) { ask.state }
 
         it "displays an error and doesn't change the request", expect: :flash_error do
@@ -415,7 +420,7 @@ describe RequestsController do
     end
 
     context "when the subber doesn't have the availability" do
-      let(:ask) { create(:seeking_offers_request) }
+      let(:ask) { create(:seeking_offers_request, user: ask_user) }
       let(:evaluate_before_http_request) do
         create(:availability, user: current_user, free: false, date: ask.date, shift: ask.shift)
       end

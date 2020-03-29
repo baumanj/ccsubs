@@ -42,6 +42,21 @@ module ShiftTime
       super
     end
 
+    def find_or_create_by(attributes)
+      fix_enum_attributes!(attributes)
+      super
+    end
+
+    def find_or_create_by!(attributes)
+      fix_enum_attributes!(attributes)
+      super
+    end
+
+    def find_or_initialize_by(attributes)
+      fix_enum_attributes!(attributes)
+      super
+    end
+
     def where(opts = :chain, *rest)
       fix_enum_attributes!(opts)
       super
@@ -197,8 +212,9 @@ module ShiftTime
     self.class.active.include?(self)
   end
 
-  def to_s
+  def to_s(with_location: true)
     s = "#{ShiftTime.date_to_s(date)}, #{shift}"
+    s += " in #{location}" if with_location && self.respond_to?(:location)
     Rails.env.development? ? "#{s} [#{id}]" : s
   end
 
@@ -224,7 +240,7 @@ module ShiftTime
   end
 
   def no_schedule_conflicts
-    if self.class.find_by(slice(:user, :date, :shift))
+    if self.class.where.not(id: self.id).find_by(slice(:user, :date, :shift))
       errors.add(:shift, "can't be the same as your own existing #{self.class.to_s.humanize(capitalize: false)}")
     end
   end
@@ -233,7 +249,7 @@ module ShiftTime
     if start.nil?
       errors.add(:start, "time must be specified.")
     elsif start < Time.current
-      errors.add(:start, "time must be in the future.")
+      errors.add(:start, "time must be in the future. #{start} is in the past")
     elsif start.to_date > 1.year.since(Date.today)
       errors.add(:start, "time must be within a year.")
     end
@@ -249,6 +265,8 @@ module ShiftTime
     elsif date >= LOCATION_CHANGE_DATE
       if location == LOCATION_BEFORE
         errors.add(:location, "must be #{LOCATIONS_AFTER.join(" or ")}")
+      elsif user.nil? && self.userless?
+        # Ok (e.g., holiday requests)
       elsif user.location != location
         errors.add(:location, "must match user's location: #{user.location}")
       end
@@ -262,5 +280,6 @@ class ShiftTimeValidator < ActiveModel::Validator
       record.no_schedule_conflicts
       record.shift_is_between_now_and_a_year_from_now
     end
+    # ^ can these be for more than just new records?
   end
 end

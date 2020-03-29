@@ -11,6 +11,7 @@ class RequestsController < ApplicationController
   def create
     @request = Request.new(request_params)
     @request.user ||= current_user
+    @request.location = @request.user.location_for(@request.date)
     if @request.save
       redirect_to @request
     else

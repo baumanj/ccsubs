@@ -4,6 +4,8 @@ class User < ActiveRecord::Base
 
   MAX_LOGIN_ATTEMPTS = 10
 
+  scope :active, -> { where(disabled: false) }
+
   enum volunteer_type: [ 'Regular Shift', 'Alternating', 'Sub Only' ]
   enum first_day_of_week_preference: Date::DAYNAMES
   enum location: ['Northgate', 'Belltown', 'Renton']
@@ -228,6 +230,10 @@ class User < ActiveRecord::Base
     else
       self.location
     end
+  end
+
+  def location_matches(request)
+    self.location_for(request.date) == request.location
   end
 
   def self.like(conditions)

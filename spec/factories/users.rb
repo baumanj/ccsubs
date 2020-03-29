@@ -1,10 +1,16 @@
 module Faker
   class Number
     def self.vic
-      loop do
+      @previously_selected ||= Set.new
+      100.times do
         new_vic = Faker::Number.number(digits: 5)
-        return new_vic unless User.exists?(vic: new_vic)
+        if !@previously_selected.include?(new_vic) && !User.exists?(vic: new_vic)
+          @previously_selected.add(new_vic)
+          return new_vic
+        end
       end
+
+      raise "Couldn't find unique vic after many tries"
     end
   end
 

@@ -19,7 +19,7 @@ RSpec.describe HolidayRequest, type: :model do
 
   context "when state is seeking_offers" do
     subject { FactoryBot.create(:holiday_request) }
-    let(:subber) { create(:user) }
+    let(:subber) { create(:user, location: subject.location) }
 
     it "can fulfill_by_sub" do
       expect(subject.fulfill_by_sub(subber)).to eq(true)
@@ -49,4 +49,6 @@ RSpec.describe HolidayRequest, type: :model do
     HolidayRequest.create_any_not_present
     puts HolidayRequest.find_by(date: Holiday.next_date(Holiday::MARTIN_LUTHER_KING_JR_DAY))
   end
+
+  it "Only nags users if there are open slots in their location"
 end

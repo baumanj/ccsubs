@@ -6,5 +6,9 @@ set -o errexit
 set -o xtrace
 heroku pg:backups capture --app ccsubs
 curl -o /tmp/ccsubs.dump `heroku pg:backups public-url --app ccsubs`
-pg_restore --verbose --clean --no-acl --no-owner -h localhost -d ccsubs_"$RAILS_ENV" /tmp/ccsubs.dump
-RAILS_ENV="$RAILS_ENV" "`dirname $0`"/../bin/rake db:migrate
+if pg_restore --verbose --clean --no-acl --no-owner -h localhost -d ccsubs_"$RAILS_ENV" /tmp/ccsubs.dump
+then
+	RAILS_ENV="$RAILS_ENV" "`dirname $0`"/../bin/rake db:migrate
+else
+	echo "WARNING! pg_restore exited $?: rake db:migrate was not run"
+fi

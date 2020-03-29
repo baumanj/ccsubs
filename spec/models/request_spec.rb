@@ -2,7 +2,10 @@ describe Request do
 	# subject { Request.new(user_id: 104, shift: 3, date: Date.today) }
 
   before do
-    r1, r2 = @requests = create_list(:request, 2)
+    r1 = create(:request)
+    r1.save
+    r2 = create(:request, user: create(:user, location: r1.user.location))
+    @requests = [r1, r2]
     create(:availability, user: r2.user, date: r1.date, shift: r1.shift)
     @requests.each {|r| expect(r).to be_seeking_offers }
   end
@@ -12,8 +15,8 @@ describe Request do
   end
 
   it "allows creation even if conflicting availability is tied to sub/swap" do
-    subber = create(:user)
     r = create(:request)
+    subber = create(:user, location: r.location)
     r.fulfill_by_sub(subber)
     expect(create(:request, user: subber, date: r.date, shift: r.shift)).to be_valid
   end
@@ -54,9 +57,63 @@ describe Request do
     check_request_not_found(*@requests, destroyed_request: @requests.second)
   end
 
+  def users_in_different_locations
+    user = create(:user)
+    other_location = (ShiftTime::LOCATIONS_AFTER - [user.location]).sample
+    [user, create(:user, location: other_location)]
+  end
+
+  it "fails to offer swap if locations don't match" do
+    u1, u2 = users_in_different_locations
+
+    date1 = Faker::Date.unique(:in_the_next_year_post_location_change)
+    date2 = Faker::Date.unique(:in_the_next_year_post_location_change)
+
+    sender = create(:request, user: u1, date: date1)
+    receiver = create(:request, user: u2, date: date2)
+    create(:availability, user: receiver.user, date: sender.date, shift: sender.shift)
+
+    expect(sender.send_swap_offer_to(receiver)).to_not be_truthy
+  end
+
+  it "returns a match for offerable swaps" do
+    location = ShiftTime::LOCATIONS_AFTER.sample
+    senders_request, receivers_request = requests_in_locations(location, location)
+    receivers_availability = receivers_request.user.availability_for(senders_request)
+    receivers_availability.free = true
+    receivers_availability.save!
+    match_type = Request::MATCH_TYPE_MAP[:offerable_swaps]
+
+    found_match = senders_request.match(receivers_request,
+      senders_availability: match_type[:senders_availability],
+      receivers_availability: match_type[:receivers_availability],
+      preloaded_requests: Request.future.to_a,
+      preloaded_availabilities: Availability.future.to_a)
+
+    expect(found_match).to eq(true)
+  end
+
+  it "returns no match for offerable swaps at different locations" do
+    location1, location2 = ShiftTime::LOCATIONS_AFTER.sample(2)
+    senders_request, receivers_request = requests_in_locations(location1, location2)
+    receivers_availability = receivers_request.user.availability_for(senders_request)
+    receivers_availability.free = true
+    receivers_availability.save!
+    match_type = Request::MATCH_TYPE_MAP[:offerable_swaps]
+
+    found_match = senders_request.match(receivers_request,
+      senders_availability: match_type[:senders_availability],
+      receivers_availability: match_type[:receivers_availability],
+      preloaded_requests: Request.future.to_a,
+      preloaded_availabilities: Availability.future.to_a)
+
+    both_before_location_change = [senders_request, receivers_request].all? {|r| r.date < ShiftTime::LOCATION_CHANGE_DATE }
+    expect(found_match).to eq(both_before_location_change)
+  end
+
   context "when state is seeking_offers" do
     subject { FactoryBot.create(:request) }
-    let(:subber) { create(:user) }
+    let(:subber) { create(:user, location: subject.location) }
 
     it "can fulfill_by_sub" do
       expect(subject.fulfill_by_sub(subber)).to eq(true)

@@ -29,7 +29,15 @@ class HolidayRequest < Request
 
       shifts.each do |shift|
         (1..SHIFT_SLOTS).each do |slot|
-          self.find_or_create_by!(user_id: -slot, date: date, shift: shift)
+          locations = if date < ShiftTime::LOCATION_CHANGE_DATE
+            [ShiftTime::LOCATION_BEFORE]
+          else
+            ShiftTime::LOCATIONS_AFTER
+          end
+
+          locations.each do |location|
+            self.find_or_create_by!(user_id: -slot, date: date, shift: shift, location: location)
+          end
         end
       end
     end
@@ -80,8 +88,9 @@ class HolidayRequest < Request
     elsif availability
       availability_str = ", availability: #{availability.user.name}[#{availability.user.id}]'s availability[#{availability.id || 'new'}]"
     end
-    "#<HolidayRequest id: #{self.id}, "\
+    "#<HolidayRequest id: #{self.id}, user_id: #{user_id}, "\
       "date: #{date}, shift[#{self.class.shifts[shift]}]: #{shift}, "\
+      "location[#{self.class.locations[location]}]: #{location}, "\
       "state[#{self.class.states[state]}]: #{state}#{availability_str}>"
   end
 
