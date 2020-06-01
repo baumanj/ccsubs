@@ -30,6 +30,7 @@ describe UsersController do
 
       shared_examples "an invalid upload" do
         let(:expect_flash_error_to) { be_nonempty }
+        let(:expected_assigns) { { users_to_disable: be_any } }
 
         it "doesn't change the users" do
           expect(User.all.to_a.inspect).to eq(@users_before.inspect)
@@ -115,6 +116,19 @@ describe UsersController do
           end
         end
 
+        context 'when adding a user with the same name but different vic', expect_redirect_to: :users_path do
+          let(:csv_users) { @users_before + [create(:user, name: @users_before.sample.name)] }
+
+          it "adds the new users" do
+            expect(User.all.to_a).to_not eq(@users_before)
+            expect(User.all.to_a).to contain_exactly_the_users(csv_users, UsersController::EXPECTED_CSV_HEADERS)
+          end
+
+          it "doesn't remove the existing users" do
+            expect(@users_before - User.all).to be_none
+          end
+        end
+
         context "when existing users aren't present in CSV", expect_redirect_to: :users_path do
           let(:evaluate_before_http_request) do
             @existing_users = create_list(:user, 30)
@@ -168,6 +182,7 @@ describe UsersController do
             create_list(:user, 4)
             @users_before = User.all.to_a
           end
+          let(:expected_assigns) { { users_to_disable: contain_exactly(*@users_before) } }
           let(:csv_users) { build_list(:user, 2) }
 
           let(:rendered_template) { "users/new_list" }
@@ -176,7 +191,24 @@ describe UsersController do
           it "doesn't change the users" do
             expect(User.all.to_a.inspect).to eq(@users_before.inspect)
           end
+
         end
+
+        context 'when confirming an update that will disable > 10%', expect_redirect_to: :users_path do
+          let(:evaluate_before_http_request) do
+            create_list(:user, 4)
+            @users_before = User.all.to_a
+          end
+          let(:params) { super().merge(users_to_disable_confirmation: @users_before.size) }
+          let(:csv_users) { build_list(:user, 2) }
+          let(:users_to_disable_confirmation) { @users_before.size }
+
+          it "adds the new users" do
+            expect(User.all.to_a).to_not eq(@users_before)
+            expect(User.active.to_a).to contain_exactly_the_users(csv_users, UsersController::EXPECTED_CSV_HEADERS)
+          end
+        end
+
       end
 
     end

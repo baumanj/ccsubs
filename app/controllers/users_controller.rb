@@ -66,10 +66,17 @@ class UsersController < ApplicationController
       vics_to_disable = enabled_vics - input_vics
 
       if vics_to_disable.size > (enabled_vics.size / 10)
-        flash[:error] = "Update canceled since this would disable #{vics_to_disable.size} of the #{enabled_vics.size} currently enabled users. The provided user list should contain all users, not just new ones."
-        puts flash[:error]
-        render 'new_list'
-        return
+        if params[:users_to_disable_confirmation].to_i == vics_to_disable.size
+          message = "Disabing #{vics_to_disable.size} users with confirmed update"
+          puts message
+          UserMailer.alert(message).deliver_now
+        else
+          flash[:error] = "Update canceled since this would disable #{vics_to_disable.size} of the #{enabled_vics.size} currently enabled users. The provided user list should contain all users, not just new ones."
+          puts flash[:error]
+          @users_to_disable = User.where(vic: vics_to_disable)
+          render 'new_list'
+          return
+        end
       end
 
       User.transaction do

@@ -112,10 +112,12 @@ describe User do
   end
 
   it "matches location for a request before the change date" do
-    user = create(:user)
-    date_before = ((1.day.from_now.to_date)...(ShiftTime::LOCATION_CHANGE_DATE)).to_a.sample
-    request = create(:request, date: date_before)
-    expect(user.location_matches(request)).to eq(true)
+    if Date.current < ShiftTime::LOCATION_CHANGE_DATE
+      user = create(:user)
+      date_before = ((1.day.from_now.to_date)...(ShiftTime::LOCATION_CHANGE_DATE)).to_a.sample
+      request = create(:request, date: date_before)
+      expect(user.location_matches(request)).to eq(true)
+    end
   end
 
   it "matches location for a request if the location on the date of the request is the same as the location of the request" do
