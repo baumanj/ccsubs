@@ -95,7 +95,12 @@ describe RequestsController do
     end
 
     context "when date is more than a year in the future", expect: :flash_error do
-      let(:request_params) { attributes_for(:request, date: Faker::Date.between(from: 1.year.from_now, to: 10.years.from_now)) }
+      let(:request_params) { attributes_for(:request, date: Faker::Date.between(from: 1.year.from_now.to_date.next_day, to: 10.years.from_now)) }
+      it_behaves_like "a request with invalid parameters"
+    end
+
+    context "when date is not set", expect: :flash_error do
+      let(:request_params) { attributes_for(:request).merge(date: nil) }
       it_behaves_like "a request with invalid parameters"
     end
   end

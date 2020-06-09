@@ -49,6 +49,10 @@ class OnCall < ActiveRecord::Base
     end
   end
 
+  def userless?
+    false
+  end
+
   def self.users_to_nag(date_range)
     on_calls = OnCall.where(date: date_range)
     if on_calls.count == date_range.count * OnCall.shifts.size

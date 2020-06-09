@@ -16,7 +16,7 @@
       <% if signed_in? %>
         <% if !current_user.confirmed? %>
           <div class="alert alert-warning">
-            <%= link_to "Please confirm your email address",
+            <%= link_to "Please click here to confirm your email address",
                 send_confirmation_path(current_user) %>
           </div>
         <% end%>

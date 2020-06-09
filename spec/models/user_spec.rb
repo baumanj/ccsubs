@@ -4,13 +4,13 @@ describe User do
   before do
     @user = create(:user)
   end
-  
+
   it "has a valid factory" do
     expect(create(:user)).to be_valid
   end
 
   subject { @user }
-  
+
   it { should respond_to(:name) }
   it { should respond_to(:email) }
   it { should respond_to(:password) }
@@ -104,19 +104,17 @@ describe User do
     end
   end
 
-  it "returns respective location after the change date" do
+  it "returns Belltown location before the Renton opening date" do
     User.locations.keys.each do |location|
       user = create(:user, location: location)
-      expect(user.location_for(ShiftTime::LOCATION_CHANGE_DATE)).to eq(user.location)
+      expect(user.location_for(ShiftTime::RENTON_OPENING_DATE.prev_day)).to eq("Belltown")
     end
   end
 
-  it "matches location for a request before the change date" do
-    if Date.current < ShiftTime::LOCATION_CHANGE_DATE
-      user = create(:user)
-      date_before = ((1.day.from_now.to_date)...(ShiftTime::LOCATION_CHANGE_DATE)).to_a.sample
-      request = create(:request, date: date_before)
-      expect(user.location_matches(request)).to eq(true)
+  it "returns respective location after the change date" do
+    ShiftTime::LOCATIONS_AFTER.each do |location|
+      user = create(:user, location: location)
+      expect(user.location_for(ShiftTime::RENTON_OPENING_DATE)).to eq(user.location)
     end
   end
 

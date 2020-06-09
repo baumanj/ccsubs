@@ -98,7 +98,7 @@ module ShiftTime
       puts medium == slow
     end
   end
-  
+
   FIRST_SHIFT_START = { hour: 8, min: 0 }
   SHIFT_DURATIONS = [
     4.5.hours, # 0800–1230
@@ -214,8 +214,15 @@ module ShiftTime
 
   def to_s(with_location: true)
     s = "#{ShiftTime.date_to_s(date)}, #{shift}"
-    s += " in #{location}" if with_location && self.respond_to?(:location)
-    Rails.env.development? ? "#{s} [#{id}]" : s
+    if with_location && self.respond_to?(:location)
+      if location == "Renton" && date < RENTON_OPENING_DATE
+        s += " in Belltown*"
+      else
+        s += " in #{location}"
+      end
+    end
+    s += " [#{id}]" if Rails.env.development?
+    s
   end
 
   def to_ical(summary:, description:)
@@ -256,22 +263,32 @@ module ShiftTime
   end
 
   LOCATION_CHANGE_DATE = Date.new(2020, 4, 1)
+  RENTON_OPENING_DATE = Date.new(2020, 7, 1)
   LOCATION_BEFORE = User.locations.keys.first
   LOCATIONS_AFTER = User.locations.keys.reject {|l| l == LOCATION_BEFORE }
 
-  def location_is_valid_for_date
-    if date < LOCATION_CHANGE_DATE && location != LOCATION_BEFORE
-      errors.add(:location, "must be #{LOCATION_BEFORE}")
-    elsif date >= LOCATION_CHANGE_DATE
-      if location == LOCATION_BEFORE
-        errors.add(:location, "must be #{LOCATIONS_AFTER.join(" or ")}")
-      elsif user.nil? && self.userless?
-        # Ok (e.g., holiday requests)
-      elsif user.location != location
-        errors.add(:location, "must match user's location: #{user.location}")
-      end
+  def self.valid_locations_for(date)
+    date = date.to_date
+    if date < LOCATION_CHANGE_DATE
+      [LOCATION_BEFORE]
+    elsif date < RENTON_OPENING_DATE
+      LOCATIONS_AFTER - ["Renton"]
+    else
+      LOCATIONS_AFTER
     end
   end
+
+  def location_is_valid_for_date
+    valid_locations = ShiftTime::valid_locations_for(date)
+    if !valid_locations.include?(location)
+      errors.add(:location, "must be #{valid_locations.join(" or ")}")
+    elsif self.userless?
+        # Ok (e.g., holiday requests)
+    elsif location != user.location_for(date)
+      errors.add(:location, "must match user's location for #{date}: #{user.location_for(date)}")
+    end
+  end
+
 end
 
 class ShiftTimeValidator < ActiveModel::Validator

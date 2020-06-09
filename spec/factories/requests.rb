@@ -12,6 +12,16 @@ FactoryBot.define do
     shift { Request.shifts.keys.sample }
     location { user.location_for(date) }
 
+    factory :belltown_request do
+      user { build(:user, location: User.locations["Belltown"]) } # To satifsy attributes_for
+      date { Faker::Date.unique(:in_the_next_year_post_location_change)}
+    end
+
+    factory :renton_request do
+      user { build(:user, location: User.locations["Renton"]) } # To satifsy attributes_for
+      date { Faker::Date.unique(:in_the_next_year_post_location_change)}
+    end
+
     factory :past_request, aliases: [:past_seeking_offers_request], &date_in_the_past_year
 
     factory :sent_offer_request, class: Request do

@@ -146,9 +146,9 @@ describe UsersController do
           end
         end
 
-        context "when existing users have attributes different from CSV" do
+        context "when existing users have attributes different from CSV (save location)" do
           let(:evaluate_before_http_request) { @existing_users = create_list(:user, 10) }
-          let(:csv_users) { @existing_users.map {|u| build(:user, vic: u.vic) } }
+          let(:csv_users) { @existing_users.map {|u| build(:user, vic: u.vic, location: u.location) } }
           let(:evaluate_after_http_request) do
             @reloaded_existing_users = User.where(id: @existing_users.map(&:id))
           end
@@ -177,6 +177,24 @@ describe UsersController do
           end
         end
 
+        context "when a user changes locations" do
+          let(:evaluate_before_http_request) do
+            @users_before = User.all.to_a
+          end
+          let(:csv_users) {
+            @users_before.map do |u|
+              User.new(u.attributes.merge(location: u.location == "Belltown" ? "Renton" : "Belltown"))
+            end
+          }
+
+          let(:rendered_template) { "users/new_list" }
+          let(:expect_flash_error_to) { be_nonempty }
+
+          it "doesn't change the users" do
+            expect(User.all.to_a.inspect).to eq(@users_before.inspect)
+          end
+        end
+
         context "when only new users are specified in CSV (check against disabling > 10%)" do
           let(:evaluate_before_http_request) do
             create_list(:user, 4)
@@ -191,7 +209,6 @@ describe UsersController do
           it "doesn't change the users" do
             expect(User.all.to_a.inspect).to eq(@users_before.inspect)
           end
-
         end
 
         context 'when confirming an update that will disable > 10%', expect_redirect_to: :users_path do

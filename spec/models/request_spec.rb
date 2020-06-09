@@ -94,8 +94,8 @@ describe Request do
   end
 
   it "returns no match for offerable swaps at different locations" do
-    location1, location2 = ShiftTime::LOCATIONS_AFTER.sample(2)
-    senders_request, receivers_request = requests_in_locations(location1, location2)
+    requests = create(:belltown_request), create(:renton_request)
+    senders_request, receivers_request = requests.shuffle
     receivers_availability = receivers_request.user.availability_for(senders_request)
     receivers_availability.free = true
     receivers_availability.save!
@@ -107,8 +107,7 @@ describe Request do
       preloaded_requests: Request.future.to_a,
       preloaded_availabilities: Availability.future.to_a)
 
-    both_before_location_change = [senders_request, receivers_request].all? {|r| r.date < ShiftTime::LOCATION_CHANGE_DATE }
-    expect(found_match).to eq(both_before_location_change)
+    expect(found_match).to eq(false)
   end
 
   context "when state is seeking_offers" do

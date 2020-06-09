@@ -44,6 +44,14 @@ class UsersController < ApplicationController
             if user.email.downcase != email.downcase
               puts "#{user.name}'s email (#{user.email}) doesn't match volgisics: #{email}"
             end
+
+            if user.location != location
+              puts "#{user.name}'s location changing from #{user.location} to #{location}"
+              flash[:error] = "Update canceled: changing location not supported (#{name} was #{user.location}, now #{location}"
+              render 'new_list'
+              return
+            end
+
             user.attributes = csv_attributes # don't save; just use to test for change
             users_to_update[user.id] = csv_attributes if user.changed?
           else

@@ -1,11 +1,18 @@
 <footer class="footer">
+  <% if Date.current < ShiftTime::RENTON_OPENING_DATE %>
+    <p>
+      * Volunteers assigned to Renton will work in Belltown until the Renton
+      office opens and shifts occurring before
+      <%= ShiftTime::RENTON_OPENING_DATE %> will be treated as Belltown shifts.
+    </p>
+  <% end %>
   <small>
     Crisis Connections sub/swap by Jon Bauman
   </small>
   <nav>
     <ul>
       <li>Problems, questions, etc: <%= mail_to "jonccsubs@shumi.org" %>.
-      	See also: <%= link_to "known issues", "https://github.com/baumanj/ccsubs/issues" %></li>
+        See also: <%= link_to "known issues", "https://github.com/baumanj/ccsubs/issues" %></li>
     </ul>
   </nav>
 </footer>

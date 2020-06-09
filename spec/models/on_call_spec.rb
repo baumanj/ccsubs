@@ -31,7 +31,7 @@ RSpec.describe OnCall, type: :model do
     first_loc, second_loc = ShiftTime::LOCATIONS_AFTER.first(2)
     first_user = create(:user, location: first_loc)
     second_user = create(:user, location: second_loc)
-    first = create(:on_call, date: Faker::Date.unique(:in_the_next_year_post_location_change), user: first_user)
+    first = create(:on_call, date: Faker::Date.unique(:in_the_next_year_for_renton), user: first_user)
     expect(create(:on_call, date: first.date, shift: first.shift, user: second_user)).to be_valid
   end
 
@@ -60,7 +60,7 @@ RSpec.describe OnCall, type: :model do
     first_loc, second_loc = ShiftTime::LOCATIONS_AFTER.sample(2)
     user = create(:user, location: first_loc)
     expect {
-      create(:on_call, user: user, date: ShiftTime::LOCATION_CHANGE_DATE,
+      create(:on_call, user: user, date: ShiftTime::RENTON_OPENING_DATE,
                        location: second_loc)
     }.to raise_error(ActiveRecord::RecordInvalid)
   end

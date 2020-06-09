@@ -29,13 +29,8 @@ class HolidayRequest < Request
 
       shifts.each do |shift|
         (1..SHIFT_SLOTS).each do |slot|
-          locations = if date < ShiftTime::LOCATION_CHANGE_DATE
-            [ShiftTime::LOCATION_BEFORE]
-          else
-            ShiftTime::LOCATIONS_AFTER
-          end
-
-          locations.each do |location|
+          valid_locations = ShiftTime.valid_locations_for(date)
+          valid_locations.each do |location|
             self.find_or_create_by!(user_id: -slot, date: date, shift: shift, location: location)
           end
         end

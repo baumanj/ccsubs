@@ -42,13 +42,15 @@ describe Availability do # without any subject, just calls Availability.new ?
     expect(ActionMailer::Base.deliveries.last).to eq_mailers(UserMailer.notify_potential_matches(a, [b]))
   end
 
-  it "does not potential matches in different locations about updated availability" do
+  it "does not notify potential matches in different locations about updated availability" do
     # Alice has a request A in location1, Bob has a request B in location2
     # When Bob saves a new availability for A, Alice should not receive an email
     location1, location2 = ShiftTime::LOCATIONS_AFTER.sample(2)
-    a, b = requests_in_locations(location1, location2)
-    bobs_availability = build(:availability, user: b.user, date: a.date, shift: a.shift)
-    expect { bobs_availability.save }.to change { ActionMailer::Base.deliveries.count }.by(0)
+    alice = create(:user, location: location1)
+    bob = create(:user, location: location2)
+    a = create(:request, user: alice, date: Faker::Date.unique(:in_the_next_year_for_renton))
+    b = create(:request, user: bob, date: Faker::Date.unique(:in_the_next_year_for_renton))
+    expect { bob.availability_for(a).update!(free: true) }.to change { ActionMailer::Base.deliveries.count }.by(0)
   end
 
   it "notifies full matches in the same location about updated availability" do
@@ -66,14 +68,12 @@ describe Availability do # without any subject, just calls Availability.new ?
   it "does not notifiy full matches in different locations about updated availability" do
     # Alice has a request A in location 1, Bob has a request B in location 2 and Alice is available for B
     # When Bob saves a new availability for A, Alice should not receive an email
-    location1, location2 = ShiftTime::LOCATIONS_AFTER.sample(2)
-    alice = create(:user, location: location1)
-    a = create(:seeking_offers_request, user: alice)
-    alices_availability = create(:availability, user: a.user)
-    bob = create(:user, location: location2)
-    b = create(:seeking_offers_request, user: bob, date: alices_availability.date, shift: alices_availability.shift)
-    bobs_availability = build(:availability, user: b.user, date: a.date, shift: a.shift)
-    expect { bobs_availability.save }.to change { ActionMailer::Base.deliveries.count }.by(0)
+    a = create(:belltown_request)
+    b = create(:renton_request)
+    expect(a.location).to_not eq(b.location)
+    a.user.availability_for(b).update!(free: true)
+    bobs_availability = b.user.availability_for(a)
+    expect { bobs_availability.update!(free: true) }.to change { ActionMailer::Base.deliveries.count }.by(0)
   end
 
   it "notifies multiple users in the same location about updated availability" do
@@ -99,8 +99,8 @@ describe Availability do # without any subject, just calls Availability.new ?
     location1, location2 = ShiftTime::LOCATIONS_AFTER.sample(2)
     alice, bob, clarice = create_list(:user, 3, location: location1)
     david = create(:user, location: location2)
-    a = create(:seeking_offers_request, user: alice)
-    b = create(:seeking_offers_request, user: bob)
+    a = create(:seeking_offers_request, user: alice, date: Faker::Date.unique(:in_the_next_year_for_renton))
+    b = create(:seeking_offers_request, user: bob, date: Faker::Date.unique(:in_the_next_year_for_renton))
     c = create(:seeking_offers_request, user: clarice, date: a.date, shift: a.shift)
     d = create(:seeking_offers_request, user: david,   date: a.date, shift: a.shift)
     bobs_availability = build(:availability, user: b.user, date: a.date, shift: a.shift)

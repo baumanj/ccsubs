@@ -224,15 +224,20 @@ class User < ActiveRecord::Base
   end
 
   def location_for(date)
-    if date.to_date < ShiftTime::LOCATION_CHANGE_DATE
-      ShiftTime::LOCATION_BEFORE
-    else
+    valid_locations = ShiftTime.valid_locations_for(date)
+    if valid_locations.include?(self.location)
       self.location
+    elsif valid_locations.size == 1
+      valid_locations.first
+    else
+      raise "No valid location for #{self.inspect} on #{date}"
     end
   end
 
   def location_matches(request)
     self.location_for(request.date) == request.location
+    # XXX this effectively ignores the request's stored location
+    # self.location_for(request.date) == request.user.location_for(request.date)
   end
 
   def self.like(conditions)

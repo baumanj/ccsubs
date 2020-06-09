@@ -31,8 +31,21 @@ module Faker
       in_date_range((1.day.from_now.to_date)...(1.year.from_now.to_date.prev_day), excluding: excluding)
     end
 
-    def self.in_the_next_year_post_location_change(excluding: nil)
+    def self.in_the_next_year_for_belltown(excluding: nil)
       start = [1.day.from_now.to_date, ShiftTime::LOCATION_CHANGE_DATE].max
+      end_ = [1.year.from_now.to_date, 1.year.from_now(start).to_date].min
+      in_date_range(start...end_, excluding: excluding)
+    end
+
+    # TODO: Remove in favor of in_the_next_year_post_location_change
+    def self.in_the_next_year_for_renton(excluding: nil)
+      start = [1.day.from_now.to_date, ShiftTime::RENTON_OPENING_DATE].max
+      end_ = [1.year.from_now.to_date, 1.year.from_now(start).to_date].min
+      in_date_range(start...end_, excluding: excluding)
+    end
+
+    def self.in_the_next_year_post_location_change(excluding: nil)
+      start = [1.day.from_now.to_date, ShiftTime::RENTON_OPENING_DATE].max
       end_ = [1.year.from_now.to_date, 1.year.from_now(start).to_date].min
       in_date_range(start...end_, excluding: excluding)
     end
