@@ -35,6 +35,12 @@ class User < ActiveRecord::Base
         errors.add(full_attr, msg) if errors[full_attr].exclude? msg
       end
     end
+
+    if changes.include?(:location)
+      errors.add(:location, "cannot be changed due to upcoming coverage") if upcoming_coverage.any?
+      errors.add(:location, "cannot be changed due to future requests") if requests.future.any?
+      errors.add(:location, "cannot be changed due to future on-calls") if on_calls.future.any?
+    end
   end
 
   include Gravtastic

@@ -8,9 +8,12 @@ class UsersController < ApplicationController
   EXPECTED_CSV_HEADERS = ['name', 'volunteer_type', 'vic', 'home_phone', 'cell_phone', 'email', 'location']
 
   def new_list
+    @users_with_failed_update = []
   end
 
   def upload_csv
+    @users_with_failed_update = []
+
     if params[:csv].nil?
       flash[:error] = "Please specify a CSV file"
       render 'new_list'
@@ -23,7 +26,9 @@ class UsersController < ApplicationController
         return
       end
 
-      existing_users = User.where.not(vic: nil).index_by(&:vic)
+      existing_users = User.where.not(vic: nil)
+      existing_users_by_vic = existing_users.index_by(&:vic)
+      existing_users_by_id = existing_users.index_by(&:id)
       new_users = []
       input_vics = []
       users_to_update = {} # id => attributes hash
@@ -38,18 +43,11 @@ class UsersController < ApplicationController
             disabled: false,
         }
 
-        user = existing_users[vic.to_i]
+        user = existing_users_by_vic[vic.to_i]
         begin
           if user
             if user.email.downcase != email.downcase
               puts "#{user.name}'s email (#{user.email}) doesn't match volgisics: #{email}"
-            end
-
-            if user.location != location
-              puts "#{user.name}'s location changing from #{user.location} to #{location}"
-              flash[:error] = "Update canceled: changing location not supported (#{name} was #{user.location}, now #{location}"
-              render 'new_list'
-              return
             end
 
             user.attributes = csv_attributes # don't save; just use to test for change
@@ -68,6 +66,19 @@ class UsersController < ApplicationController
           render 'new_list'
           return
         end
+      end
+
+      users_to_update.each do |user_id, new_attributes|
+        user_to_update = existing_users_by_id[user_id]
+        if !user_to_update.valid?
+          @users_with_failed_update << user_to_update
+        end
+      end
+
+      if @users_with_failed_update.any?
+        flash[:error] = "Update canceled due to unsupported user " + 'update'.pluralize(@users_with_failed_update.size)
+        render 'new_list'
+        return
       end
 
       enabled_vics = User.where(disabled: false).pluck(:vic).compact

@@ -19,6 +19,14 @@
 	  <%= hidden_field_tag 'users_to_disable_confirmation', @users_to_disable.size %>
 	<% end %>
 
+	<% if @users_with_failed_update.any? %>
+    <ul>
+    <% @users_with_failed_update.each do |u| %>
+      <li><%= u %>: <%= u.errors.full_messages.join(", ") %></li>
+    <% end %>
+    </ul>
+	<% end %>
+
   <%= file_field_tag 'csv' %>
   <%= submit_tag "Upload CSV", class: "btn btn-large btn-primary" %>
 <% end %>

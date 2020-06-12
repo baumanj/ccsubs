@@ -27,10 +27,11 @@ describe UsersController do
       let(:evaluate_before_http_request) do
         @users_before = User.all.to_a
       end
+      let(:expected_assigns) { { users_with_failed_update: be_empty } }
 
       shared_examples "an invalid upload" do
         let(:expect_flash_error_to) { be_nonempty }
-        let(:expected_assigns) { { users_to_disable: be_any } }
+        let(:expected_assigns) { super().merge(users_to_disable: be_any) }
 
         it "doesn't change the users" do
           expect(User.all.to_a.inspect).to eq(@users_before.inspect)
@@ -177,6 +178,23 @@ describe UsersController do
           end
         end
 
+        context "when a user changes locations without any upcoming obligations" do
+          let(:evaluate_before_http_request) do
+            @users_before = User.all.to_a
+          end
+          let(:csv_users) {
+            @users_before.map do |u|
+              User.new(u.attributes.merge(location: u.location == "Belltown" ? "Renton" : "Belltown"))
+            end
+          }
+
+          it "changes the location" do
+            @users_before.each do |user|
+              expect(user.location).to_not eq(User.find(user.id).location)
+            end
+          end
+        end
+
         context "when a user changes locations" do
           let(:evaluate_before_http_request) do
             @users_before = User.all.to_a
@@ -189,9 +207,32 @@ describe UsersController do
 
           let(:rendered_template) { "users/new_list" }
           let(:expect_flash_error_to) { be_nonempty }
+          let(:expected_assigns) { super().merge(users_with_failed_update: eq(@users_before)) }
 
-          it "doesn't change the users" do
-            expect(User.all.to_a.inspect).to eq(@users_before.inspect)
+          context "when they have a future on-call" do
+            let(:evaluate_before_http_request) do
+              super()
+              @users_before.each {|u| create(:on_call, user: u) }
+            end
+
+            it "doesn't change the users" do
+              expect(User.all.to_a.inspect).to eq(@users_before.inspect)
+            end
+          end
+
+          [:seeking_offers_request, :sent_offer_request, :received_offer_request, :fulfilled_request].each do |request_type|
+            context "when they have a future #{request_type}" do
+              let(:evaluate_before_http_request) do
+                super()
+                @users_before.each {|u| create(request_type, user: u) }
+              end
+
+              it "doesn't change the users" do
+                @users_before.each do |user|
+                  expect(User.find(user.id).inspect).to eq(user.inspect)
+                end
+              end
+            end
           end
         end
 
@@ -200,7 +241,7 @@ describe UsersController do
             create_list(:user, 4)
             @users_before = User.all.to_a
           end
-          let(:expected_assigns) { { users_to_disable: contain_exactly(*@users_before) } }
+          let(:expected_assigns) { super().merge(users_to_disable: contain_exactly(*@users_before)) }
           let(:csv_users) { build_list(:user, 2) }
 
           let(:rendered_template) { "users/new_list" }
