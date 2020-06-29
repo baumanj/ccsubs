@@ -50,5 +50,12 @@ RSpec.describe HolidayRequest, type: :model do
     puts HolidayRequest.find_by(date: Holiday.next_date(Holiday::MARTIN_LUTHER_KING_JR_DAY))
   end
 
+  it "Only creates requests for open locations" do
+    HolidayRequest.create_any_not_present
+    HolidayRequest.active.each do |hr|
+      expect(ShiftTime.valid_locations_for(hr.date)).to include(hr.location)
+    end
+  end
+
   it "Only nags users if there are open slots in their location"
 end

@@ -8,7 +8,7 @@ RSpec.describe HolidayRequestsController do
 
   describe "GET 'index'", autorequest: true, requires: :confirmed_current_user do
     let(:requests_for_current_user_location) do
-      HolidayRequest.active.select {|hr| hr.location == current_user.location }
+      HolidayRequest.active.select {|hr| hr.location == current_user.location_for(hr.date) }
     end
     let(:expected_assigns) { { requests: contain_exactly(*requests_for_current_user_location) } }
 
