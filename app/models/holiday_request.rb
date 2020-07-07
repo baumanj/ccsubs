@@ -1,5 +1,5 @@
 class HolidayRequest < Request
-  SHIFT_SLOTS = 4
+  SHIFT_SLOTS = { "Belltown" => 6, "Renton" => 4 }
   FIRST_VALID_DATE = Date.new(2018, 9, 3)
 
   default_scope { where(type: 'HolidayRequest') }
@@ -28,9 +28,9 @@ class HolidayRequest < Request
         end
 
       shifts.each do |shift|
-        (1..SHIFT_SLOTS).each do |slot|
-          valid_locations = ShiftTime.valid_locations_for(date)
-          valid_locations.each do |location|
+        valid_locations = ShiftTime.valid_locations_for(date)
+        valid_locations.each do |location|
+          (1..SHIFT_SLOTS[location]).each do |slot|
             self.find_or_create_by!(user_id: -slot, date: date, shift: shift, location: location)
           end
         end

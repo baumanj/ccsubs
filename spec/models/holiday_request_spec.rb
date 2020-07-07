@@ -57,5 +57,19 @@ RSpec.describe HolidayRequest, type: :model do
     end
   end
 
+  it "Creates 4 slots per Renton shift" do
+    HolidayRequest.create_any_not_present
+    HolidayRequest.active.Renton.group_by(&:start).values.each do |reqs|
+      expect(reqs.size).to eq(4)
+    end
+  end
+
+  it "Creates 6 slots per Belltown shift" do
+    HolidayRequest.create_any_not_present
+    HolidayRequest.active.Belltown.group_by(&:start).values.each do |reqs|
+      expect(reqs.size).to eq(6)
+    end
+  end
+
   it "Only nags users if there are open slots in their location"
 end
