@@ -263,7 +263,7 @@ module ShiftTime
   end
 
   LOCATION_CHANGE_DATE = Date.new(2020, 4, 1)
-  RENTON_OPENING_DATE = Date.new(2020, 10, 1)
+  RENTON_OPENING_DATE = Date.new(2021, 6, 1)
   LOCATION_BEFORE = User.locations.keys.first
   LOCATIONS_AFTER = User.locations.keys.reject {|l| l == LOCATION_BEFORE }
 

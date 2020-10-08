@@ -188,6 +188,11 @@ class RequestsController < ApplicationController
 
     def find_request
       @request = Request.find_by(id: params[:id]) || HolidayRequest.find_by(id: params[:id])
+      if @request.nil?
+        flash[:error] = "Request #{params[:id]} not found. Perhaps it has been deleted."
+        redirect_to requests_path
+        false
+      end
     end
 
     def request_params
