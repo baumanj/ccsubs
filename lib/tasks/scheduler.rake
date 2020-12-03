@@ -37,6 +37,22 @@ task :stay_under_heroku_row_limit => :environment do
   end
 
   if num_to_delete > 0
+    destroyed = OnCall.joins(:user).where(users: {disabled: true}).limit(num_to_delete).destroy_all
+    puts "Destroyed #{destroyed.count} on-calls (of disabled users)"
+    num_to_delete -= destroyed.count
+  else
+    puts "No need to destroy any on-calls"
+  end
+
+  if num_to_delete > 0
+    destroyed = SignupReminder.where("created_at < :a_year_ago", {a_year_ago: 1.year.ago}).limit(num_to_delete).destroy_all
+    puts "Destroyed #{destroyed.count} signup reminders"
+    num_to_delete -= destroyed.count
+  else
+    puts "No need to destroy any signup reminders"
+  end
+
+  if num_to_delete > 0
     # This doesn't delete any holiday requests, but at some point we may need to
     # As long as we prioritize the unfulfilled ones and then the ones which are
     # 2+ years old, we shouldn't lose any important data
