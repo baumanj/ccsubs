@@ -94,11 +94,11 @@ class Request < ActiveRecord::Base
   end
 
   before_destroy do
-    if !seeking_offers?
-      errors.add(:state, "cannot be #{state}")
-      false
-    elsif start.past?
+    if start.past?
       errors.add(:start, "must be in the future; we can't destroy the past")
+      false
+    elsif !seeking_offers?  && !userless?
+      errors.add(:state, "cannot be #{state}")
       false
     end
   end

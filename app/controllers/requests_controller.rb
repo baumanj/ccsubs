@@ -121,9 +121,8 @@ class RequestsController < ApplicationController
   end
 
   def destroy
-    if @request.seeking_offers?
-      @request.destroy
-      flash[:success] = "Request deleted"
+    if (@request.seeking_offers? || current_user_can_edit?(@request)) && @request.destroy
+      flash[:success] = "Request deleted: #{@request}"
       redirect_to params[:redirect_to] || :back
     else
       flash[:error] = "Request cannot be deleted in the #{@request.state} state"
@@ -209,7 +208,7 @@ class RequestsController < ApplicationController
     end
 
     def check_editable
-      if @request.locked?
+      if @request.locked? && !current_user_can_edit?(@request)
         flash[:error] = @request.locked_reason
         redirect_to @request
       end

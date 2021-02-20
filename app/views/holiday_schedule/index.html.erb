@@ -10,8 +10,19 @@
 				<%= shift %>:
 				<% if reqs_for_shift.any?(&:fulfilling_user) %>
 					<ol>
-					<% reqs_for_shift.map(&:fulfilling_user).compact.sort_by(&:name).map do |user| %>
-						<li><%= link_to user, user, title: user.phone %> in <%= user.location_for(date) %></li>
+					<% reqs_for_shift.select(&:fulfilling_user).sort_by {|r| r.fulfilling_user.name }.each do |req| %>
+						<li>
+							<%= link_to req.fulfilling_user, req.fulfilling_user, title: req.fulfilling_user.phone %> in <%= req.fulfilling_user.location_for(date) %>
+
+				        <% if current_user.admin? %>
+				          <%= link_to(req, method: :delete, data: { confirm: "Really delete this request?" }) do %>
+				            <button type="button" class="btn btn-default btn-xs" aria-label="Left Align" title="Delete">
+				              <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+				            </button>
+				          <% end %>
+				        <% end %>
+						</li>
+
 					<% end %>
 					</ol>
 				<% else %>
