@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '2.5.7'
+ruby '2.6.6'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '4.2.11.1'
@@ -17,7 +17,7 @@ gem 'gravtastic'
 gem 'icalendar'
 
 # Use postgresql as the database for Active Record
-gem 'pg', '0.17.1'
+gem 'pg', '~> 0.18'
 
 # Use SCSS for stylesheets
 gem 'sass-rails', '~> 4.0.0'
