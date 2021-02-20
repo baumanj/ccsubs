@@ -8,7 +8,7 @@ gem 'rails', '4.2.11.1'
 # http://stackoverflow.com/questions/35893584/nomethoderror-undefined-method-last-comment-after-upgrading-to-rake-11
 gem 'rake', '< 11.0'
 
-gem 'bootstrap-sass', '3.2.0.4'
+gem 'bootstrap-sass', '3.4.1'
 
 gem 'bootstrap-datepicker-rails'
 
