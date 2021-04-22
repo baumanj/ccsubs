@@ -41,7 +41,15 @@ task :stay_under_heroku_row_limit => :environment do
     puts "Destroyed #{destroyed.count} on-calls (of disabled users)"
     num_to_delete -= destroyed.count
   else
-    puts "No need to destroy any on-calls"
+    puts "No need to destroy any on-calls of disabled users"
+  end
+
+  if num_to_delete > 0
+    destroyed = OnCall.where("date < :a_year_ago", {a_year_ago: 1.year.ago}).limit(num_to_delete).destroy_all
+    puts "Destroyed #{destroyed.count} old on-calls (shifts over 1 year ago)"
+    num_to_delete -= destroyed.count
+  else
+    puts "No need to destroy any old on-calls"
   end
 
   if num_to_delete > 0
@@ -53,8 +61,8 @@ task :stay_under_heroku_row_limit => :environment do
   end
 
   if num_to_delete > 0
-    destroyed = Message.where("created_at < :a_year_ago", {a_year_ago: 1.year.ago}).limit(num_to_delete).destroy_all
-    puts "Destroyed #{destroyed.count} messages"
+    destroyed = Message.where("date < :a_month_ago", {a_month_ago: 1.month.ago}).limit(num_to_delete).destroy_all
+    puts "Destroyed #{destroyed.count} messages (for shifts over 1 month ago)"
     num_to_delete -= destroyed.count
   else
     puts "No need to destroy any messages"
@@ -71,6 +79,15 @@ task :stay_under_heroku_row_limit => :environment do
   else
     puts "Only #{Request.count} requests; no need to destroy any"
   end
+
+  # # Uncomment if we need to delete old users
+  # if num_to_delete > 0
+  #   destroyed = User.where(disabled: true, admin: false).where("updated_at < :a_year_ago", {a_year_ago: 1.year.ago}).limit(num_to_delete).destroy_all
+  #   puts "Destroyed #{destroyed.count} disabled users that hadn't been updated in over a year"
+  #   num_to_delete -= destroyed.count
+  # else
+  #   puts "No need to destroy any users"
+  # end
 
   if num_to_delete > 0
     UserMailer.alert("Wanted to delete #{num_to_delete} more records\n#{record_counts}\nTotal: #{total}").deliver_now
