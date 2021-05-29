@@ -45,8 +45,8 @@ task :stay_under_heroku_row_limit => :environment do
   end
 
   if num_to_delete > 0
-    destroyed = OnCall.where("date < :a_year_ago", {a_year_ago: 1.year.ago}).limit(num_to_delete).destroy_all
-    puts "Destroyed #{destroyed.count} old on-calls (shifts over 1 year ago)"
+    destroyed = OnCall.where("date < :time_ago", {time_ago: 6.months.ago}).limit(num_to_delete).destroy_all
+    puts "Destroyed #{destroyed.count} old on-calls (shifts over 6 months ago)"
     num_to_delete -= destroyed.count
   else
     puts "No need to destroy any old on-calls"
@@ -80,6 +80,7 @@ task :stay_under_heroku_row_limit => :environment do
     puts "Only #{Request.count} requests; no need to destroy any"
   end
 
+  # User.where(disabled: false).where("updated_at < :t", {t: 6.months.ago}).map(&:default_availabilities).flatten.count
   # Uncomment if we need to delete old users
   if num_to_delete > 0
     destroyed = User.where(disabled: true, admin: false).where("updated_at < :a_year_ago", {a_year_ago: 1.year.ago}).limit(num_to_delete).destroy_all
