@@ -33,19 +33,22 @@ class OnCallsController < ApplicationController
   end
 
   def create
-    @on_call =
-      OnCall.where(date: on_call_params[:date].to_date.all_month, user: current_user).first ||
-      OnCall.new(user: current_user)
+    flash[:error] = "No new signups allowed"
+    redirect_to on_calls_path
 
-    if @on_call.update(on_call_params)
-      flash[:success] = "On call for #{@on_call.date.strftime('%B')} saved"
-      mailer.confirm_on_call_signup(@on_call).deliver_now
-      redirect_to edit_on_call_path(location: @on_call.location, date: @on_call.date)
-    else
-      @errors = @on_call.errors
-      set_date_range_and_on_calls(on_call_params[:location])
-      render 'edit' # Try again
-    end
+    # @on_call =
+    #   OnCall.where(date: on_call_params[:date].to_date.all_month, user: current_user).first ||
+    #   OnCall.new(user: current_user)
+
+    # if @on_call.update(on_call_params)
+    #   flash[:success] = "On call for #{@on_call.date.strftime('%B')} saved"
+    #   mailer.confirm_on_call_signup(@on_call).deliver_now
+    #   redirect_to edit_on_call_path(location: @on_call.location, date: @on_call.date)
+    # else
+    #   @errors = @on_call.errors
+    #   set_date_range_and_on_calls(on_call_params[:location])
+    #   render 'edit' # Try again
+    # end
   end
 
   def destroy

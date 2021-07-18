@@ -9,23 +9,24 @@ class RequestsController < ApplicationController
   end
 
   def create
-    @request = Request.new(request_params)
-    @request.user ||= current_user
+    redirect_to new_request_path
+    # @request = Request.new(request_params)
+    # @request.user ||= current_user
 
-    # This is a bit awkward, but necessary as long as location varies by date
-    if @request.date.nil?
-      @request.errors.add(:date, "can't be blank")
-    else
-      @request.location = @request.user.location_for(@request.date)
-    end
+    # # This is a bit awkward, but necessary as long as location varies by date
+    # if @request.date.nil?
+    #   @request.errors.add(:date, "can't be blank")
+    # else
+    #   @request.location = @request.user.location_for(@request.date)
+    # end
 
-    if @request.location && @request.save
-      redirect_to @request
-    else
-      flash.now[:error] = "Request couldn't be created. Please check the errors and retry."
-      @errors = @request.errors
-      render 'new'
-    end
+    # if @request.location && @request.save
+    #   redirect_to @request
+    # else
+    #   flash.now[:error] = "Request couldn't be created. Please check the errors and retry."
+    #   @errors = @request.errors
+    #   render 'new'
+    # end
   end
 
   def show
@@ -80,7 +81,10 @@ class RequestsController < ApplicationController
   end
 
   def offer_sub
-    if @request.fulfill_by_sub(current_user)
+    if @request.is_a? HolidayRequest
+      redirect_to holiday_requests_path
+      return
+    elsif @request.fulfill_by_sub(current_user)
       if @request.is_a? HolidayRequest
         mailer.remind_holiday(@request, current_user).deliver_now
         flash[:success] = "Thanks! We sent you an email reminder with the details."
